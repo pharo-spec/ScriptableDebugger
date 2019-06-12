@@ -1,9 +1,6 @@
 Class {
 	#name : #ScriptableDebuggerTests,
 	#superclass : #TestCase,
-	#instVars : [
-		'scdbg'
-	],
 	#category : #'ScriptableDebugger-Tests'
 }
 
@@ -146,7 +143,7 @@ ScriptableDebuggerTests >> runCaseManaged [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testAddStepHook [
-	| stepCounter stepHook |
+	| stepCounter stepHook scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod11 ].
 	stepCounter := 0.
 	stepHook := [ stepCounter := stepCounter + 1 ].
@@ -162,7 +159,7 @@ ScriptableDebuggerTests >> testAddStepHook [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testArguments [
-	| p |
+	| p scdbg |
 	p := Point new.
 	scdbg := ScriptableDebugger debug: [ self helperMethod18: 1 with: p ].
 	scdbg step.
@@ -174,7 +171,7 @@ ScriptableDebuggerTests >> testArguments [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testAssignmentValue [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod2 ].
 	scdbg step.
 	self assert: scdbg assignmentValue equals: 5.
@@ -182,7 +179,7 @@ ScriptableDebuggerTests >> testAssignmentValue [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testAssignmentVariableName [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod3 ].
 	scdbg step.
 	self assert: scdbg assignmentVariableName equals: #a.
@@ -190,6 +187,7 @@ ScriptableDebuggerTests >> testAssignmentVariableName [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testContext [
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod15 ].
 	self assert: scdbg context equals: scdbg debugSession interruptedContext.
 	scdbg step.
@@ -198,6 +196,7 @@ ScriptableDebuggerTests >> testContext [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testContinue [
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
@@ -211,8 +210,7 @@ ScriptableDebuggerTests >> testContinue [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testCurrentNode [
-	
-	| node |
+	| node scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod1 ].
 	node := scdbg currentNode.
 	self assert: node isMessage.
@@ -229,6 +227,7 @@ ScriptableDebuggerTests >> testCurrentNode [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testIsExecutionFinished [
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod16 ].
 	self assert: scdbg isExecutionFinished not.
 	scdbg stepOver; step; step; stepOver; step; stepOver; step.
@@ -238,7 +237,7 @@ ScriptableDebuggerTests >> testIsExecutionFinished [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageArguments [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod4 ].
 	scdbg step; step.
 	self assert: scdbg messageArguments isEmpty.
@@ -249,7 +248,7 @@ ScriptableDebuggerTests >> testMessageArguments [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageReceiver [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod5 ].
 	self assert: scdbg messageReceiver equals: self.
 	scdbg step; step.
@@ -258,7 +257,7 @@ ScriptableDebuggerTests >> testMessageReceiver [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageSelector [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod6 ].
 	self assert: scdbg messageSelector equals: #helperMethod6.
 	scdbg step; step.
@@ -269,7 +268,7 @@ ScriptableDebuggerTests >> testMessageSelector [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testMethod [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod7 ].
 	self assert: scdbg method equals: ScriptableDebuggerTests>>#testMethod.
 	scdbg step.
@@ -280,7 +279,7 @@ ScriptableDebuggerTests >> testMethod [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testOnceBreakpoint [
-	| breakpoint |
+	| breakpoint scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
@@ -295,7 +294,7 @@ ScriptableDebuggerTests >> testOnceBreakpoint [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testReceiver [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod8 ].
 	self assert: scdbg receiver equals: self.
 	scdbg step.
@@ -306,7 +305,7 @@ ScriptableDebuggerTests >> testReceiver [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testRemoveBreakpoint [
-	| breakpoint |
+	| breakpoint scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
@@ -319,7 +318,7 @@ ScriptableDebuggerTests >> testRemoveBreakpoint [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testSelector [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod9 ].
 	self assert: scdbg selector equals: #testSelector.
 	scdbg step.
@@ -335,7 +334,7 @@ ScriptableDebuggerTests >> testSetBreakpoint [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testSkip [
-	|a p|
+	|a p scdbg |
 	a := 1.
 	scdbg := ScriptableDebugger debug: [ a := 2. p := Point x: 2 y: 3].
 	scdbg skip.
@@ -347,7 +346,7 @@ ScriptableDebuggerTests >> testSkip [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testSkipWith [
-	|a p|
+	|a p scdbg |
 	a := 1.
 	scdbg := ScriptableDebugger debug: [ a := 2. p := Point x: 2 y: 3].
 	scdbg skipWith: 3.
@@ -359,7 +358,7 @@ ScriptableDebuggerTests >> testSkipWith [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testStack [
-	| context1 context2 storeContextBlock|
+	| context1 context2 storeContextBlock scdbg |
 	storeContextBlock := [ :thisCtx | context2 := thisCtx ].
 	scdbg := ScriptableDebugger debug: [ context1 := thisContext. self helperMethod17: storeContextBlock ].
 	scdbg step.
@@ -371,8 +370,7 @@ ScriptableDebuggerTests >> testStack [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testStep [
-	
-	| node |
+	| node scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod13 ].
 	scdbg step.
 	node := scdbg currentNode.
@@ -386,7 +384,7 @@ ScriptableDebuggerTests >> testStep [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testStepOver [
-	
+	|scdbg|
 	scdbg := ScriptableDebugger debug: [ self helperMethod14 ].
 	scdbg stepOver.
 	self assert: scdbg currentNode isBlock.
@@ -394,8 +392,7 @@ ScriptableDebuggerTests >> testStepOver [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testStepUntil [
-	
-	| i |
+	| i scdbg |
 	i := 20.
 	scdbg := ScriptableDebugger debug: [ [i = 0] whileFalse: [i := i - 1]].
 	scdbg stepUntil: [ i = 12 ].
@@ -404,7 +401,7 @@ ScriptableDebuggerTests >> testStepUntil [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testTemporaries [
-	
+	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod10 ].
 	self assert: scdbg temporaries size equals: 0.
 	scdbg step.
@@ -417,7 +414,7 @@ ScriptableDebuggerTests >> testTemporaries [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testWhenHitBreakpoint [
-	| breakpoint toggle |
+	| breakpoint toggle scdbg |
 	toggle := false.
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.

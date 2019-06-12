@@ -7,41 +7,10 @@ Class {
 	#name : #DebugSessionPlus,
 	#superclass : #DebugSession,
 	#instVars : [
-		'stepRecord',
 		'triggerEventOn'
-	],
-	#classVars : [
-		'StepRecords'
 	],
 	#category : #ScriptableDebugger
 }
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus class >> StepRecords [
-	^ StepRecords
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus class >> StepRecords: aValue [
-	StepRecords := aValue
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus class >> clearStepRecords [
-	<script>
-	StepRecords := LinkedList new.
-]
-
-{ #category : #'class initialization' }
-DebugSessionPlus class >> initialize [
-	StepRecords := LinkedList new.
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus class >> inspectStepRecords [
-	<script>
-	StepRecords inspect.
-]
 
 { #category : #initialization }
 DebugSessionPlus >> activateEventTriggering [
@@ -76,19 +45,8 @@ DebugSessionPlus >> getApplicableStepRecords [
 
 { #category : #initialization }
 DebugSessionPlus >> initialize [
-	stepRecord := StepRecord new.
 	triggerEventOn := true.
 	super initialize.
-]
-
-{ #category : #initialization }
-DebugSessionPlus >> process: aProcess context: aContext [
-	super process: aProcess context: aContext.
-	(aContext sender isNotNil)
-		ifTrue: [ stepRecord senderMethodAST: (aContext sender method ast) ]
-		"Not sure setting senderMethodAST to nil actually works"
-		ifFalse: [ stepRecord senderMethodAST: (aContext sender) ]
-	
 ]
 
 { #category : #initialization }
@@ -150,9 +108,7 @@ DebugSessionPlus >> resume: aValue [
 ]
 
 { #category : #'debugging actions' }
-DebugSessionPlus >> stepInto: aContext [
-	stepRecord add: (RegisteredStep new stepCommand: #stepInto; sourceAstNode: aContext sourceNodeExecuted; yourself).
-	
+DebugSessionPlus >> stepInto: aContext [	
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self interruptedProcess isTerminating ifTrue: [ SteppingATerminatingProcess signal ].
 	

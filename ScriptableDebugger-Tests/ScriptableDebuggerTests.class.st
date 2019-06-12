@@ -1,6 +1,9 @@
 Class {
 	#name : #ScriptableDebuggerTests,
 	#superclass : #TestCase,
+	#instVars : [
+		'breakpointsBeforeTest'
+	],
 	#category : #'ScriptableDebugger-Tests'
 }
 
@@ -138,7 +141,20 @@ ScriptableDebuggerTests >> helperMethod9 [
 ScriptableDebuggerTests >> runCaseManaged [
 	"This prevents the TestExecutionEnvironment from trying to kill processes created during the test. Without it, it adds on:do: contexts on the process, and this somehow makes the process answers true to isTerminating, triggering the protection against stepping terminating processes from DebugSessionPlus>>stepInto:
 	It is not necessary to terminate processes created by ScriptableDebugger because these processes are not scheduled."
-	^ self runCase
+	^ self runCase.
+]
+
+{ #category : #running }
+ScriptableDebuggerTests >> setUp [
+	"Hooks that subclasses may override to define the fixture of test."
+	breakpointsBeforeTest := VirtualBreakpoint all.
+	VirtualBreakpoint all removeAll.
+]
+
+{ #category : #running }
+ScriptableDebuggerTests >> tearDown [
+	VirtualBreakpoint all removeAll.
+	breakpointsBeforeTest do: [ :brkpt | VirtualBreakpoint all add: brkpt ].
 ]
 
 { #category : #tests }
@@ -403,7 +419,7 @@ ScriptableDebuggerTests >> testStepUntil [
 ScriptableDebuggerTests >> testTemporaries [
 	| scdbg |
 	scdbg := ScriptableDebugger debug: [ self helperMethod10 ].
-	self assert: scdbg temporaries size equals: 0.
+	self assert: scdbg temporaries size equals: 1.
 	scdbg step.
 	self assert: scdbg temporaries size equals: 1.
 	self assert: (scdbg temporaries at: #a) equals: nil.

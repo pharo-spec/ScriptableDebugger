@@ -15,7 +15,7 @@ Ideas:
 -> Added to DebugSessionPlus>>#stepInto:, DebugSessionPlus>>#stepOver: and DebugSessionPlus>>#stepThrough:
 "
 Class {
-	#name : #ScriptableDebugger2,
+	#name : #ScriptableDebuggerOld,
 	#superclass : #Object,
 	#instVars : [
 		'process',
@@ -24,14 +24,11 @@ Class {
 		'stepHooks',
 		'virtualBreakpoints'
 	],
-	#classVars : [
-		'debuggerScripts'
-	],
 	#category : #ScriptableDebugger
 }
 
 { #category : #start }
-ScriptableDebugger2 class >> attachTo: aDebugSessionPlus [
+ScriptableDebuggerOld class >> attachTo: aDebugSessionPlus [
 	"Returns a new instance of ScriptableDebugger attached to aDebugSessionPlus"
 	(aDebugSessionPlus class == DebugSessionPlus) ifFalse: [ Error signal: 'ScriptableDebugger can only attach to instances of DebugSessionPlus' ].
 	^ self new attachTo: aDebugSessionPlus.
@@ -39,67 +36,52 @@ ScriptableDebugger2 class >> attachTo: aDebugSessionPlus [
 ]
 
 { #category : #start }
-ScriptableDebugger2 class >> debug: aBlock [
+ScriptableDebuggerOld class >> debug: aBlock [
 	"Creates an execution of aBlock and returns an instance of ScriptableDebugger attached to this execution"
 	^ self new debug: aBlock
 
 ]
 
-{ #category : #'debugger scripts' }
-ScriptableDebugger2 class >> debuggerScripts [
-	^ debuggerScripts
-]
-
-{ #category : #initialize }
-ScriptableDebugger2 class >> initialize [
-	debuggerScripts := Dictionary new.
-]
-
-{ #category : #'debugger scripts' }
-ScriptableDebugger2 class >> registerDebuggerScript: aBlock underName: aSymbol [
-	self debuggerScripts at: aSymbol put: aBlock.
-]
-
 { #category : #'graphical debugger' }
-ScriptableDebugger2 >> activateAutoRefreshOfAttachedGraphicalDebugger [
+ScriptableDebuggerOld >> activateAutoRefreshOfAttachedGraphicalDebugger [
 	debugSession activateEventTriggering.
 	self refreshAttachedGraphicalDebugger.
 ]
 
 { #category : #'step hook' }
-ScriptableDebugger2 >> addStepHook: aBlock [
+ScriptableDebuggerOld >> addStepHook: aBlock [
 	"Adds aBlock to the list of step hooks. Step hooks are executed after each step of the execution"
 	stepHooks add: aBlock
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> assignmentValue [
+ScriptableDebuggerOld >> assignmentValue [
 	"If the currentNode is an assignment node, returns the value of being assigned"
 	(self currentNode isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
 	^ self currentContext at: (self valueStackSizeOfContext: self currentContext).
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> assignmentVariableName [
+ScriptableDebuggerOld >> assignmentVariableName [
 	"If the currentNode is an assignment node, returns the name of the variable being assigned a value"
 	(self currentNode isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
 	^ self currentNode variable name.
 ]
 
 { #category : #contextValueStack }
-ScriptableDebugger2 >> at: anInteger fromTheEndOfValueStackOfContext: aContext [
+ScriptableDebuggerOld >> at: anInteger fromTheEndOfValueStackOfContext: aContext [
 	"Returns the value at index <size of the value stack of aContext> - anInteger of the value stack of aContext"
 	^ aContext at: ((self valueStackSizeOfContext: aContext) - anInteger).
 ]
 
 { #category : #contextValueStack }
-ScriptableDebugger2 >> at: anInteger ofValueStackOfContext: aContext [
+ScriptableDebuggerOld >> at: anInteger ofValueStackOfContext: aContext [
 	"Returns the value at index anInteger of the value stack of aContext"
 	^ aContext at: anInteger.
 ]
 
 { #category : #start }
-ScriptableDebugger2 >> attachTo: aDebugSessionPlus [
+ScriptableDebuggerOld >> attachTo: aDebugSessionPlus [
 	"Attaches this scriptable debugger to an already existing instance of DebugSessionPlus"
 	process := aDebugSessionPlus interruptedProcess.
 	debugSession := aDebugSessionPlus.
@@ -108,43 +90,43 @@ ScriptableDebugger2 >> attachTo: aDebugSessionPlus [
 ]
 
 { #category : #accessing }
-ScriptableDebugger2 >> breakpoints [
+ScriptableDebuggerOld >> breakpoints [
 	"Returns the list of all breakpoints set by this scriptable debugger"
 	^ breakpoints
 ]
 
 { #category : #helper }
-ScriptableDebugger2 >> class: aClass isEqualOrSubclassOf: anotherClass [
+ScriptableDebuggerOld >> class: aClass isEqualOrSubclassOf: anotherClass [
 	(aClass = anotherClass) ifTrue: [ ^ true ].
 	^ anotherClass allSubclasses includes: aClass.
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> commitVBreakpoints [
+ScriptableDebuggerOld >> commitVBreakpoints [
 	"Sets actual breakpoints in the system at locations where this scriptable debugger has set virtual breakpoints. Empties the virtualBreakpoint collection of this scriptable debugger."
 	virtualBreakpoints do: [ :vBrkpt | self setBreakpointOnASTNode: vBrkpt node ].
 	virtualBreakpoints := OrderedCollection new.
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> completeExecution [
+ScriptableDebuggerOld >> completeExecution [
 	"Runs the execution until the process itself is about to terminate. That's as far as you can safely step an execution without freezing the image."
 	[process isTerminating] whileFalse: [ self step ]
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> completeTo: aContext [
+ScriptableDebuggerOld >> completeTo: aContext [
 	"Runs the execution until aContext is the top context"
 	process completeTo: aContext
 ]
 
 { #category : #'querying - temporary variables' }
-ScriptableDebugger2 >> context: aContext hasTemporaryNamed: aSymbol [
+ScriptableDebuggerOld >> context: aContext hasTemporaryNamed: aSymbol [
 	^ aContext tempNames includes: aSymbol.
 ]
 
 { #category : #'querying - context property' }
-ScriptableDebugger2 >> context: aContext isAboutToSend: aSymbol toAnInstanceOrSubInstanceOfClass: aClass [
+ScriptableDebuggerOld >> context: aContext isAboutToSend: aSymbol toAnInstanceOrSubInstanceOfClass: aClass [
 	"Returns whether aContext is about to send a message of selector aSymbol to an object that is an instance of aClass, or an instance of one of its subclasses"
 	| currentNode argumentNb receiverClass |
 	currentNode := self currentNodeForContext: aContext.
@@ -158,14 +140,14 @@ ScriptableDebugger2 >> context: aContext isAboutToSend: aSymbol toAnInstanceOrSu
 ]
 
 { #category : #'querying - context property' }
-ScriptableDebugger2 >> context: aContext isForBlock: aBlock [
+ScriptableDebuggerOld >> context: aContext isForBlock: aBlock [
 	"Returns whether aContext is a block context for aBlock"
 	aContext isBlockContext ifFalse: [ ^ false ].
 	^ aContext closure sourceNode == aBlock sourceNode.
 ]
 
 { #category : #'querying - context property' }
-ScriptableDebugger2 >> contextIsAboutToSignalException: aContext [
+ScriptableDebuggerOld >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 	| node |
 	node := aContext method sourceNodeForPC: aContext pc.
@@ -179,13 +161,13 @@ ScriptableDebugger2 >> contextIsAboutToSignalException: aContext [
 ]
 
 { #category : #'querying - context stack' }
-ScriptableDebugger2 >> contextIsOnStack: aContext [
+ScriptableDebuggerOld >> contextIsOnStack: aContext [
 	"Returns whether aContext is somewhere on the stack"
 	^ (self findContextSuchThat: [ :aContexta| aContexta == aContext ]) isNotNil.
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> continue [
+ScriptableDebuggerOld >> continue [
 	"Steps the execution until it is about to signal an exception. If this exception is Halt or Break (i.e. a Breakpoint), skip the exception signal."
 	| signalMessageNode exceptionClassBeingSignalled |
 	self stepWhileFalse: [ self contextIsAboutToSignalException: self currentContext ].
@@ -203,48 +185,48 @@ ScriptableDebugger2 >> continue [
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> currentContext [
+ScriptableDebuggerOld >> currentContext [
 	"Returns the context on top of the stack"
 	^ debugSession interruptedContext.
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> currentMethod [
+ScriptableDebuggerOld >> currentMethod [
 	"Returns the method being executed by the current context."
 	^ self currentContext method
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> currentNode [
+ScriptableDebuggerOld >> currentNode [
 	"Returns the AST node about to be executed by the top context of the execution"
 	^ self currentNodeForContext: self currentContext.
 ]
 
 { #category : #'querying - context property' }
-ScriptableDebugger2 >> currentNodeForContext: aContext [
+ScriptableDebuggerOld >> currentNodeForContext: aContext [
 	"Returns the AST node aContext is about to execute"
 	^ aContext method sourceNodeForPC: aContext pc.
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> currentReceiver [
+ScriptableDebuggerOld >> currentReceiver [
 	"Returns the receiver of the current context"
 	^ self currentContext receiver
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> currentSelector [
+ScriptableDebuggerOld >> currentSelector [
 	"Returns the selector of the method being executed by the current context."
 	^ self currentContext method selector
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger2 >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
+ScriptableDebuggerOld >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 	debugSession deactivateEventTriggering.
 ]
 
 { #category : #start }
-ScriptableDebugger2 >> debug: aBlock [
+ScriptableDebuggerOld >> debug: aBlock [
 	| context |
 	process := aBlock newProcess name: 'ScrptblDbgExec'.
 	debugSession := DebugSessionPlus new
@@ -256,62 +238,38 @@ ScriptableDebugger2 >> debug: aBlock [
 ]
 
 { #category : #accessing }
-ScriptableDebugger2 >> debugSession [
+ScriptableDebuggerOld >> debugSession [
 	"Returns the DebugSession representing the execution this ScriptableDebugger is debugging"
 	^ debugSession 
 ]
 
-{ #category : #'debugger script' }
-ScriptableDebugger2 >> executeDebuggerScriptNamed: aSymbol [
-	"Executes the debugger script named aSymbol."
-	(ScriptableDebugger2 debuggerScripts at: aSymbol ifAbsent: [ Error signal: ('No debugger script found with name: ', aSymbol) ]) new execute: self.
-]
-
-{ #category : #'debugger script' }
-ScriptableDebugger2 >> executeDebuggerScriptNamed: aSymbol multipleTimes: anInteger [
-	"Executes the debugger script named aSymbol as many times as anInteger"
-	anInteger timesRepeat: [ self executeDebuggerScriptNamed: aSymbol ].
-]
-
-{ #category : #'debugger script' }
-ScriptableDebugger2 >> executeDebuggerScriptNamed: aSymbol withArgs: anOrderedCollection [
-	"Executes the debugger script named aSymbol, and giving it anOrderedCollection as argument."
-	(ScriptableDebugger2 debuggerScripts at: aSymbol ifAbsent: [ Error signal: ('No debugger script found with name: ', aSymbol) ]) new execute: self withArgs: anOrderedCollection.
-]
-
-{ #category : #'debugger script' }
-ScriptableDebugger2 >> executeDebuggerScriptNamed: aSymbol withArgs: anOrderedCollection multipleTimes: anInteger [
-	"Executes the debugger script named aSymbol with arguments anOrderedCollection as many times as anInteger"
-	anInteger timesRepeat: [ self executeDebuggerScriptNamed: aSymbol withArgs: anOrderedCollection ].
-]
-
 { #category : #'querying - context stack' }
-ScriptableDebugger2 >> findContextForSelector: aSymbol andClassOrSubclassOf: aClass [
+ScriptableDebuggerOld >> findContextForSelector: aSymbol andClassOrSubclassOf: aClass [
 	"Run through the context stack from top to bottom to find a context whose selector is aSymbol and for which the class of its receiver is equal to or a subclass of aClass"
 	^ self findContextSuchThat: [ :ctxt | (ctxt method selector = aSymbol) and: [ self class: ctxt receiver class isEqualOrSubclassOf: aClass  ] ]
 ]
 
 { #category : #'querying - context stack' }
-ScriptableDebugger2 >> findContextSuchThat: aBlock [
+ScriptableDebuggerOld >> findContextSuchThat: aBlock [
 	"Run through the context stack from top to bottom to find a context for which aBlock evaluates to true. Returns the first such context found, or nil if none are found."
 	^ self currentContext findContextSuchThat: aBlock
 ]
 
 { #category : #initialization }
-ScriptableDebugger2 >> initialize [
+ScriptableDebuggerOld >> initialize [
 	breakpoints := OrderedCollection new.
 	stepHooks := OrderedCollection new.
 	virtualBreakpoints := OrderedCollection new.
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> isExecutionFinished [
+ScriptableDebuggerOld >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 	^ process isTerminating
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> messageFirstArg [
+ScriptableDebuggerOld >> messageFirstArg [
 	"If the currentNode is a message node with arguments, returns the value of its first argument"
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	(self currentNode arguments size >= 1) ifFalse: [ Error signal: 'Message about to be sent does not have a first argument' ].
@@ -319,14 +277,14 @@ ScriptableDebugger2 >> messageFirstArg [
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> messageReceiver [
+ScriptableDebuggerOld >> messageReceiver [
 	"If the currentNode is a message node, returns the value of its receiver"
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	^ self currentContext at: (self valueStackSizeOfContext: self currentContext) - (self currentNode arguments size).
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> messageSecondArg [
+ScriptableDebuggerOld >> messageSecondArg [
 	"If the currentNode is a message node with arguments, returns the value of its second argument"
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	(self currentNode arguments size >= 2) ifFalse: [ Error signal: 'Message about to be sent does not have a second argument' ].
@@ -334,14 +292,14 @@ ScriptableDebugger2 >> messageSecondArg [
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> messageSelector [
+ScriptableDebuggerOld >> messageSelector [
 	"If the currentNode is a message node, returns its selector"
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	^ self currentNode selector.
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> messageThirdArg [
+ScriptableDebuggerOld >> messageThirdArg [
 	"If the currentNode is a message node with arguments, returns the value of its third argument"
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	(self currentNode arguments size >= 3) ifFalse: [ Error signal: 'Message about to be sent does not have a third argument' ].
@@ -349,57 +307,57 @@ ScriptableDebugger2 >> messageThirdArg [
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger2 >> openInGraphicalDebugger [
+ScriptableDebuggerOld >> openInGraphicalDebugger [
 	| specDbg |
 	specDbg := SpecDebugger openOn: debugSession withFullView: true.
 	specDbg terminateDebugSessionWhenClearing: false.
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> pcOfContext: aContext [
+ScriptableDebuggerOld >> pcOfContext: aContext [
 	^ aContext pc
 ]
 
 { #category : #contextValueStack }
-ScriptableDebugger2 >> popFromValueStackOfContext: aContext [
+ScriptableDebuggerOld >> popFromValueStackOfContext: aContext [
 	^ aContext pop
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> previousContext [
+ScriptableDebuggerOld >> previousContext [
 	"Returns the context sender of the top context on the stack"
 	^ self currentContext sender.
 ]
 
 { #category : #querying }
-ScriptableDebugger2 >> previousMethod [
+ScriptableDebuggerOld >> previousMethod [
 	"Returns the method being executed by the sender of the top context on the stack"
 	^ self currentContext sender method.
 ]
 
 { #category : #contextValueStack }
-ScriptableDebugger2 >> push: aValue onValueStackOfContext: aContext [
+ScriptableDebuggerOld >> push: aValue onValueStackOfContext: aContext [
 	^ aContext push: aValue.
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger2 >> refreshAttachedGraphicalDebugger [
+ScriptableDebuggerOld >> refreshAttachedGraphicalDebugger [
 	debugSession refreshAttachedDebugger.
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> removeAllBreakpointsSetByMe [
+ScriptableDebuggerOld >> removeAllBreakpointsSetByMe [
 	"Remove all the breakpoints set by self"
 	breakpoints do: [ :breakpoint | breakpoint remove ].
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> removeAllVBreakpointsSetByMe [
+ScriptableDebuggerOld >> removeAllVBreakpointsSetByMe [
 	virtualBreakpoints := OrderedCollection new.
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> removeBreakpointOnMethod: aCompiledMethod [
+ScriptableDebuggerOld >> removeBreakpointOnMethod: aCompiledMethod [
 	"Remove all breakpoints set by this scriptable debugger on aCompiledMethod's method node (leaves breakpoints set on nodes inside aCompiledMethod)"
 	| breakpointsToRemove |
 	breakpointsToRemove := breakpoints select: [ :aBreakpoint | aBreakpoint node == aCompiledMethod ast ].
@@ -407,13 +365,13 @@ ScriptableDebugger2 >> removeBreakpointOnMethod: aCompiledMethod [
 ]
 
 { #category : #'step hook' }
-ScriptableDebugger2 >> removeStepHook: aBlock [
+ScriptableDebuggerOld >> removeStepHook: aBlock [
 	"Remove aBlock from the list of step hooks"
 	stepHooks remove: aBlock
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> runExecutionWhilePlacingBreakpointsWhen: aBlock [
+ScriptableDebuggerOld >> runExecutionWhilePlacingBreakpointsWhen: aBlock [
 	"Steps the execution until the end. After each step, evaluate aBlock. If true, sets a virtual breakpoint on the current node. After the execution is finished, commits all virtual breakpoints"
 	| stepHook |
 	stepHook := [ aBlock value ifTrue: [ self setVBreakpoint ] ].
@@ -424,7 +382,7 @@ ScriptableDebugger2 >> runExecutionWhilePlacingBreakpointsWhen: aBlock [
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> setBreakpointOnASTNode: anASTNode [
+ScriptableDebuggerOld >> setBreakpointOnASTNode: anASTNode [
 	"Sets a breakpoint on anASTNode"
 	|b|
 	b := Breakpoint new.
@@ -436,7 +394,7 @@ ScriptableDebugger2 >> setBreakpointOnASTNode: anASTNode [
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> setBreakpointOnCurrentMethod [
+ScriptableDebuggerOld >> setBreakpointOnCurrentMethod [
 	"Set a breakpoint on the method of the current context"
 	|b|
 	b := Breakpoint new.
@@ -448,7 +406,7 @@ ScriptableDebugger2 >> setBreakpointOnCurrentMethod [
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> setBreakpointOnMethod: aCompiledMethod [
+ScriptableDebuggerOld >> setBreakpointOnMethod: aCompiledMethod [
 	"Sets a breakpoint on a method"
 	|b|
 	b := Breakpoint new.
@@ -460,29 +418,29 @@ ScriptableDebugger2 >> setBreakpointOnMethod: aCompiledMethod [
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> setVBreakpoint [
+ScriptableDebuggerOld >> setVBreakpoint [
 	"Sets a virtual breakpoint on the current node"
 	self setVBreakpointOnASTNode: self currentNode.
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> setVBreakpointOnASTNode: aNode [
+ScriptableDebuggerOld >> setVBreakpointOnASTNode: aNode [
 	virtualBreakpoints add: (VirtualBreakpoint newOnNode: aNode)
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger2 >> setVBreakpointOnMethod: aCompiledMethod [
+ScriptableDebuggerOld >> setVBreakpointOnMethod: aCompiledMethod [
 	"Sets a virtual breakpoint on aCompiledMethod"
 	virtualBreakpoints add: (VirtualBreakpoint newOnNode: aCompiledMethod ast)
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> skip [
+ScriptableDebuggerOld >> skip [
 	self skipWith: nil.
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> skipWith: replacementValue [
+ScriptableDebuggerOld >> skipWith: replacementValue [
 	"Skips the current message-send or assignment and use replacementValue as their return value instead"
 	"If the current node is a message send or assignment"
 	((self currentNode isMessage not) and: [ self currentNode isAssignment not]) ifTrue: [ ^false ].
@@ -513,14 +471,14 @@ ScriptableDebugger2 >> skipWith: replacementValue [
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> step [
+ScriptableDebuggerOld >> step [
 	"Step the execution once"
 	debugSession stepInto.
 	stepHooks do: [ :aBlock | aBlock value ].
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepOver [
+ScriptableDebuggerOld >> stepOver [
 	|startContext|
 	startContext := self currentContext.
 	self step.
@@ -528,24 +486,24 @@ ScriptableDebugger2 >> stepOver [
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepThrough [
+ScriptableDebuggerOld >> stepThrough [
 	debugSession stepThrough.
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepToContext: aContext [
+ScriptableDebuggerOld >> stepToContext: aContext [
 	"Runs the execution until aContext is the top context"
 	self stepWhileFalse: [ self currentContext == aContext ].
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepToContextForBlock: aBlock [
+ScriptableDebuggerOld >> stepToContextForBlock: aBlock [
 	"Runs the execution until the current context is a block context for aBlock"
 	self stepWhileFalse: [ self context: (self currentContext) isForBlock: aBlock ].
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepToNextBreakpointOrHalt [
+ScriptableDebuggerOld >> stepToNextBreakpointOrHalt [
 	"Step the execution until a breakpoint or halt is reached. Skips the breakpoint/halt so that no exception is signalled"
 	self stepWhileFalse: [
 		(self currentNode isMessage) and: [ (self currentNode selector = #signal) and: [(self currentReceiver = Halt) or: [self currentReceiver = Break]  ]]].
@@ -554,58 +512,58 @@ ScriptableDebugger2 >> stepToNextBreakpointOrHalt [
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepUntil: aBlock [
+ScriptableDebuggerOld >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 	aBlock whileFalse: [ self step ]
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepWhileFalse: aBlock [
+ScriptableDebuggerOld >> stepWhileFalse: aBlock [
 	"Steps the execution while aBlock evaluates to false. The loop stops if it would step while the execution's process is terminating"
 	self stepWhileTrue: [ aBlock value not ].
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepWhileFalse: aBlock andContextOnStack: aContext [
+ScriptableDebuggerOld >> stepWhileFalse: aBlock andContextOnStack: aContext [
 	"Steps the execution while aBlock evaluates to false AND aContext is on the stack. The loop stops if it would step while the execution's process is terminating"
 	self stepWhileTrue: [ aBlock value not and: [self contextIsOnStack: aContext]].
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepWhileTrue: aBlock [
+ScriptableDebuggerOld >> stepWhileTrue: aBlock [
 	"Steps the execution while aBlock evaluates to false. Stops the loop if it would step while the execution's process is terminating"
 	[[aBlock value] whileTrue: [ self step ]] on: SteppingATerminatingProcess do: [ ^ self. ]
 ]
 
 { #category : #stepping }
-ScriptableDebugger2 >> stepWhileTrue: aBlock andContextOnStack: aContext [
+ScriptableDebuggerOld >> stepWhileTrue: aBlock andContextOnStack: aContext [
 	"Steps the execution while aBlock evaluates to true AND aContext is on the stack. The loop stops if it would step while the execution's process is terminating"
 	self stepWhileTrue: [ aBlock value and: [self contextIsOnStack: aContext]].
 ]
 
 { #category : #'querying - temporary variables' }
-ScriptableDebugger2 >> temporaryNamed: aSymbol ofContext: aContext [
+ScriptableDebuggerOld >> temporaryNamed: aSymbol ofContext: aContext [
 	^ aContext tempNamed: aSymbol
 ]
 
 { #category : #'querying - temporary variables' }
-ScriptableDebugger2 >> temporaryNamed: aSymbol ofContext: aContext put: aValue [
+ScriptableDebuggerOld >> temporaryNamed: aSymbol ofContext: aContext put: aValue [
 	^ aContext tempNamed: aSymbol put: aValue.
 ]
 
 { #category : #'querying - temporary variables' }
-ScriptableDebugger2 >> temporaryNamesOfContext: aContext [
+ScriptableDebuggerOld >> temporaryNamesOfContext: aContext [
 	^ aContext tempNames
 ]
 
 { #category : #contextValueStack }
-ScriptableDebugger2 >> topValueOfCurrentContextValueStack [
+ScriptableDebuggerOld >> topValueOfCurrentContextValueStack [
 	"Returns the value on the top of the value stack of the current context"
 	^ self at: 0 fromTheEndOfValueStackOfContext: self currentContext.
 ]
 
 { #category : #contextValueStack }
-ScriptableDebugger2 >> valueStackSizeOfContext: aContext [
+ScriptableDebuggerOld >> valueStackSizeOfContext: aContext [
 	"Returns the size of the value stack of aContext"
 	^ aContext basicSize
 ]

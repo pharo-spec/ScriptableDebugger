@@ -8,23 +8,6 @@ Class {
 	#category : #ScriptableDebugger
 }
 
-{ #category : #initialize }
-DebuggerScript class >> initialize [
-	ScriptableDebugger2 registerDebuggerScript: self underName: self scriptName.
-]
-
-{ #category : #initialize }
-DebuggerScript class >> registerAllSubclasses [
-	<script>
-	self allSubclassesDo: [ :aSubclass | ScriptableDebugger2 registerDebuggerScript: aSubclass underName: aSubclass scriptName. ]
-	
-]
-
-{ #category : #accessing }
-DebuggerScript class >> scriptName [
-	self subclassResponsibility.
-]
-
 { #category : #running }
 DebuggerScript >> execute: aScriptableDebugger [
 	self subclassResponsibility

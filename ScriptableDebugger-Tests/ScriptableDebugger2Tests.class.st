@@ -49,20 +49,20 @@ ScriptableDebugger2Tests >> sumXPoint_v2 [
 
 { #category : #tests }
 ScriptableDebugger2Tests >> testAssignmentValue [
-	scdbg := ScriptableDebugger2 debug: [ |a| a := 2 ].
+	scdbg := ScriptableDebuggerOld debug: [ |a| a := 2 ].
 	self assert: (scdbg assignmentValue) equals: 2.
 ]
 
 { #category : #tests }
 ScriptableDebugger2Tests >> testAssignmentVariableName [
-	scdbg := ScriptableDebugger2 debug: [ |a| a := 2 ].
+	scdbg := ScriptableDebuggerOld debug: [ |a| a := 2 ].
 	self assert: (scdbg assignmentVariableName) equals: #a.
 ]
 
 { #category : #tests }
 ScriptableDebugger2Tests >> testContinue [
 	|a|
-	scdbg := ScriptableDebugger2 debug: [ a:=0. self sendHalt. a:=1. self sendHalt. ].
+	scdbg := ScriptableDebuggerOld debug: [ a:=0. self sendHalt. a:=1. self sendHalt. ].
 	scdbg continue.
 	self assert: a equals: 0.
 	scdbg continue.
@@ -74,7 +74,7 @@ ScriptableDebugger2Tests >> testContinue [
 ScriptableDebugger2Tests >> testSetBreakpoints [
 "Not a real test"
 	| node1 node2 |
-	scdbg := ScriptableDebugger2 debug: [ self helperToSetBreakpointsOn ].
+	scdbg := ScriptableDebuggerOld debug: [ self helperToSetBreakpointsOn ].
 	scdbg step.
 	node1 := scdbg currentNode.
 	scdbg stepOver.
@@ -87,7 +87,7 @@ ScriptableDebugger2Tests >> testSetBreakpoints [
 { #category : #tests }
 ScriptableDebugger2Tests >> testSkipWith [
 	"Skips the #new message send, pushing 5 instead. Then step once to fo the assignment to 'a'. After this, 'a' should be worth 5"
-	scdbg := ScriptableDebugger2 debug: [ |a| a := Point new. ].
+	scdbg := ScriptableDebuggerOld debug: [ |a| a := Point new. ].
 	scdbg skipWith: 5.
 	"scdbg executeDebuggerScriptNamed: #skip withArgs: { 5}."
 	scdbg step.
@@ -98,7 +98,7 @@ ScriptableDebugger2Tests >> testSkipWith [
 { #category : #tests }
 ScriptableDebugger2Tests >> testTemporaryVariables [
 
-	scdbg := ScriptableDebugger2 debug: [ |a| a := 5. ].
+	scdbg := ScriptableDebuggerOld debug: [ |a| a := 5. ].
 	self assert: (scdbg context: scdbg currentContext hasTemporaryNamed: #a).
 	self assert: (scdbg temporaryNamed: #a ofContext: scdbg currentContext) equals: nil.
 	scdbg temporaryNamed: #a ofContext: scdbg currentContext put: 2.

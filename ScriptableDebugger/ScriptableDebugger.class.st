@@ -42,6 +42,7 @@ ScriptableDebugger class >> debug: aBlock [
 
 { #category : #'graphical debugger' }
 ScriptableDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
+	"Does not work for the GT debugger"
 	debugSession activateEventTriggering.
 	self refreshAttachedGraphicalDebugger.
 ]
@@ -141,6 +142,7 @@ ScriptableDebugger >> currentNode [
 
 { #category : #'graphical debugger' }
 ScriptableDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
+	"Does not work for the GT debugger"
 	debugSession deactivateEventTriggering.
 ]
 
@@ -210,9 +212,8 @@ ScriptableDebugger >> method [
 
 { #category : #'graphical debugger' }
 ScriptableDebugger >> openInGraphicalDebugger [
-	| specDbg |
-	specDbg := SpecDebugger openOn: debugSession withFullView: true.
-	specDbg terminateDebugSessionWhenClearing: false.
+	debugSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
+	GTGenericStackDebugger openOn: debugSession withFullView: true.
 ]
 
 { #category : #stackAccessHelpers }
@@ -223,6 +224,7 @@ ScriptableDebugger >> receiver [
 
 { #category : #'graphical debugger' }
 ScriptableDebugger >> refreshAttachedGraphicalDebugger [
+	"Does not work for the GT debugger"
 	debugSession refreshAttachedDebugger.
 ]
 

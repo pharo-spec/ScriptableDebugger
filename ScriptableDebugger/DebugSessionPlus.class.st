@@ -7,7 +7,8 @@ Class {
 	#name : #DebugSessionPlus,
 	#superclass : #DebugSession,
 	#instVars : [
-		'triggerEventOn'
+		'triggerEventOn',
+		'canBeTerminated'
 	],
 	#category : #ScriptableDebugger
 }
@@ -18,14 +19,14 @@ DebugSessionPlus >> activateEventTriggering [
 	self refreshAttachedDebugger.
 ]
 
-{ #category : #testing }
-DebugSessionPlus >> canStepSkip [
-	^ StepSkip isValidForDebugSession: self.
+{ #category : #accessing }
+DebugSessionPlus >> canBeTerminated [
+	^ canBeTerminated
 ]
 
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> canStepToNextDoIteration: aContext [
-	^ StepToNextDoIteration isValidForContext: aContext
+{ #category : #accessing }
+DebugSessionPlus >> canBeTerminated: anObject [
+	canBeTerminated := anObject
 ]
 
 { #category : #'debugging actions' }
@@ -38,14 +39,10 @@ DebugSessionPlus >> deactivateEventTriggering [
 	triggerEventOn := false.
 ]
 
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> getApplicableStepRecords [
-	^ self class StepRecords select: [ :stepRecord_ | stepRecord_ isApplicableOn: interruptedContext] 
-]
-
 { #category : #initialization }
 DebugSessionPlus >> initialize [
 	triggerEventOn := true.
+	canBeTerminated := true.
 	super initialize.
 ]
 
@@ -127,8 +124,6 @@ DebugSessionPlus >> stepInto: aContext [
 { #category : #'debugging actions' }
 DebugSessionPlus >> stepOver: aContext [
 	| newContext |
-	stepRecord add: (RegisteredStep new stepCommand: #stepOver; sourceAstNode: aContext sourceNodeExecuted; yourself).
-	
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self interruptedProcess isTerminating ifTrue: [ SteppingATerminatingProcess signal ].
 
@@ -146,25 +141,8 @@ DebugSessionPlus >> stepOver: aContext [
 	triggerEventOn ifTrue: [self triggerEvent: #stepOver]
 ]
 
-{ #category : #accessing }
-DebugSessionPlus >> stepRecord [
-	^ stepRecord
-]
-
-{ #category : #accessing }
-DebugSessionPlus >> stepRecord: anObject [
-	stepRecord := anObject
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> stepSkip [
-	StepSkip executeOnDebugSession: self.
-]
-
 { #category : #'debugging actions' }
 DebugSessionPlus >> stepThrough: aContext [
-	stepRecord add: (RegisteredStep new stepCommand: #stepThrough; sourceAstNode: aContext sourceNodeExecuted; yourself).
-	
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self interruptedProcess isTerminating ifTrue: [ SteppingATerminatingProcess signal ].
 	
@@ -180,28 +158,7 @@ DebugSessionPlus >> stepThrough: aContext [
 	triggerEventOn ifTrue: [self triggerEvent: #stepThrough]
 ]
 
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> stepToNextDoIteration [
-	StepToNextDoIteration executeOnDebugSession: self onContext: self interruptedContext.
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> stepToNextDoIteration: aContext [
-	StepToNextDoIteration executeOnDebugSession: self onContext: aContext.
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> stepUntilAboutToSignalException [
-	StepUntilAboutToSignalException executeOnDebugSession: self onContext: self interruptedContext.
-]
-
-{ #category : #'as yet unclassified' }
-DebugSessionPlus >> stepUntilAboutToSignalException: aContext [
-	StepUntilAboutToSignalException executeOnDebugSession: self onContext: aContext.
-]
-
 { #category : #'debugging actions' }
 DebugSessionPlus >> terminate [
-	self stepRecord isEmpty ifFalse: [self class StepRecords add: self stepRecord].
-	^ super terminate.
+	canBeTerminated ifTrue: [ ^ super terminate ].
 ]

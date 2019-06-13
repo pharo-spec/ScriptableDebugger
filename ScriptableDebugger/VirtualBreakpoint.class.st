@@ -19,6 +19,12 @@ VirtualBreakpoint class >> all [
 	^ all
 ]
 
+{ #category : #actions }
+VirtualBreakpoint class >> clearAll [
+	<script>
+	all := nil
+]
+
 { #category : #'instance creation' }
 VirtualBreakpoint class >> newOnNode: aNode [
 	"Used by ScriptableDebugger. Should be removed in favour of newOnNode:setBy: if the latter stays"

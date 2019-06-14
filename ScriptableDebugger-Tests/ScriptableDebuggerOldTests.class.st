@@ -1,5 +1,5 @@
 Class {
-	#name : #ScriptableDebugger2Tests,
+	#name : #ScriptableDebuggerOldTests,
 	#superclass : #TestCase,
 	#instVars : [
 		'scdbg'
@@ -8,31 +8,31 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-ScriptableDebugger2Tests >> helperToSetBreakpointsOn [
+ScriptableDebuggerOldTests >> helperToSetBreakpointsOn [
 	self asString.
 	self isClass.
 ]
 
 { #category : #tests }
-ScriptableDebugger2Tests >> runCaseManaged [
+ScriptableDebuggerOldTests >> runCaseManaged [
 	"This prevents the TestExecutionEnvironment from trying to kill processes created during the test. Without it, it adds on:do: contexts on the process, and this somehow makes the process answers true to isTerminating, triggering the protection against stepping terminating processes from DebugSessionPlus>>stepInto:
 	It is not necessary to terminate processes created by ScriptableDebugger because these processes are not scheduled."
 	^ self runCase
 ]
 
 { #category : #halting }
-ScriptableDebugger2Tests >> sendHalt [
+ScriptableDebuggerOldTests >> sendHalt [
 	self halt.
 ]
 
 { #category : #running }
-ScriptableDebugger2Tests >> setUp [
+ScriptableDebuggerOldTests >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	scdbg := nil
 ]
 
 { #category : #'exec example - sumXPoint' }
-ScriptableDebugger2Tests >> sumXPoint_v1 [
+ScriptableDebuggerOldTests >> sumXPoint_v1 [
 	|p xSum|
 	p := Point x: 1 y: 1.
 	xSum := { p. Point x: 2 y: 2. Point x: 3 y: 3.} inject: 0 into: [ :sum :point | sum + point x ].
@@ -40,7 +40,7 @@ ScriptableDebugger2Tests >> sumXPoint_v1 [
 ]
 
 { #category : #'exec example - sumXPoint' }
-ScriptableDebugger2Tests >> sumXPoint_v2 [
+ScriptableDebuggerOldTests >> sumXPoint_v2 [
 	|p xSum|
 	p := Point x: 1 y: 1.
 	xSum := { p. Point x: 2 y: 2. Point x: 4 y: 4.} inject: 0 into: [ :sum :point | sum + point x ].
@@ -48,19 +48,19 @@ ScriptableDebugger2Tests >> sumXPoint_v2 [
 ]
 
 { #category : #tests }
-ScriptableDebugger2Tests >> testAssignmentValue [
+ScriptableDebuggerOldTests >> testAssignmentValue [
 	scdbg := ScriptableDebuggerOld debug: [ |a| a := 2 ].
 	self assert: (scdbg assignmentValue) equals: 2.
 ]
 
 { #category : #tests }
-ScriptableDebugger2Tests >> testAssignmentVariableName [
+ScriptableDebuggerOldTests >> testAssignmentVariableName [
 	scdbg := ScriptableDebuggerOld debug: [ |a| a := 2 ].
 	self assert: (scdbg assignmentVariableName) equals: #a.
 ]
 
 { #category : #tests }
-ScriptableDebugger2Tests >> testContinue [
+ScriptableDebuggerOldTests >> testContinue [
 	|a|
 	scdbg := ScriptableDebuggerOld debug: [ a:=0. self sendHalt. a:=1. self sendHalt. ].
 	scdbg continue.
@@ -71,7 +71,7 @@ ScriptableDebugger2Tests >> testContinue [
 ]
 
 { #category : #'as yet unclassified' }
-ScriptableDebugger2Tests >> testSetBreakpoints [
+ScriptableDebuggerOldTests >> testSetBreakpoints [
 "Not a real test"
 	| node1 node2 |
 	scdbg := ScriptableDebuggerOld debug: [ self helperToSetBreakpointsOn ].
@@ -85,7 +85,7 @@ ScriptableDebugger2Tests >> testSetBreakpoints [
 ]
 
 { #category : #tests }
-ScriptableDebugger2Tests >> testSkipWith [
+ScriptableDebuggerOldTests >> testSkipWith [
 	"Skips the #new message send, pushing 5 instead. Then step once to fo the assignment to 'a'. After this, 'a' should be worth 5"
 	scdbg := ScriptableDebuggerOld debug: [ |a| a := Point new. ].
 	scdbg skipWith: 5.
@@ -96,7 +96,7 @@ ScriptableDebugger2Tests >> testSkipWith [
 ]
 
 { #category : #tests }
-ScriptableDebugger2Tests >> testTemporaryVariables [
+ScriptableDebuggerOldTests >> testTemporaryVariables [
 
 	scdbg := ScriptableDebuggerOld debug: [ |a| a := 5. ].
 	self assert: (scdbg context: scdbg currentContext hasTemporaryNamed: #a).
@@ -109,7 +109,7 @@ ScriptableDebugger2Tests >> testTemporaryVariables [
 ]
 
 { #category : #'bug example - transformStack' }
-ScriptableDebugger2Tests >> transformStack_v1 [
+ScriptableDebuggerOldTests >> transformStack_v1 [
 
 	| data d |
 	"transformation: char -> string"
@@ -127,7 +127,7 @@ ScriptableDebugger2Tests >> transformStack_v1 [
 ]
 
 { #category : #'bug example - transformStack' }
-ScriptableDebugger2Tests >> transformStack_v2 [
+ScriptableDebuggerOldTests >> transformStack_v2 [
 	"Adding that Integers should be transformed into characters"
 	| data d |
 	"transformation: int -> char -> string"
@@ -145,14 +145,14 @@ ScriptableDebugger2Tests >> transformStack_v2 [
 ]
 
 { #category : #'bug example - transformStack' }
-ScriptableDebugger2Tests >> transformTopDataOnce_v1: data [
+ScriptableDebuggerOldTests >> transformTopDataOnce_v1: data [
 	| d |
 	"(data top isInteger) ifTrue: [ d := data pop. data push: d asCharacterDigit ]."
 	(data top isCharacter) ifTrue: [ d := data pop. data push: d asString ].
 ]
 
 { #category : #'bug example - transformStack' }
-ScriptableDebugger2Tests >> transformTopDataOnce_v2: data [
+ScriptableDebuggerOldTests >> transformTopDataOnce_v2: data [
 	| d |
 	(data top isInteger) ifTrue: [ d := data pop. data push: d asCharacterDigit ].
 	(data top isCharacter) ifTrue: [ d := data pop. data push: d asString ].

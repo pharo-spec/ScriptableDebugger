@@ -26,10 +26,9 @@ Class {
 }
 
 { #category : #start }
-ScriptableDebugger class >> attachTo: aDebugSessionPlus [
-	"Returns a new instance of ScriptableDebugger attached to aDebugSessionPlus"
-	(aDebugSessionPlus class == DebugSessionPlus) ifFalse: [ Error signal: 'ScriptableDebugger can only attach to instances of DebugSessionPlus' ].
-	^ self new attachTo: aDebugSessionPlus.
+ScriptableDebugger class >> attachTo: aDebugSession [
+	"Returns a new instance of ScriptableDebugger attached to aDebugSession"
+	^ self new attachTo: aDebugSession.
 
 ]
 
@@ -74,10 +73,11 @@ ScriptableDebugger >> assignmentVariableName [
 ]
 
 { #category : #start }
-ScriptableDebugger >> attachTo: aDebugSessionPlus [
-	"Attaches this scriptable debugger to an already existing instance of DebugSessionPlus"
-	process := aDebugSessionPlus interruptedProcess.
-	debugSession := aDebugSessionPlus.
+ScriptableDebugger >> attachTo: aDebugSession [
+	"Attaches this scriptable debugger to an already existing instance of DebugSession or DebugSessionPlus"
+	debugSession := aDebugSession.
+	aDebugSession isDebugSessionPlus ifFalse: [ debugSession := DebugSessionPlus forDebugSession: aDebugSession ] .
+	process := debugSession interruptedProcess.
 	debugSession deactivateEventTriggering.
 	^ self
 ]
@@ -148,11 +148,11 @@ ScriptableDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 
 { #category : #start }
 ScriptableDebugger >> debug: aBlock [
-	| context |
 	process := aBlock newProcess name: 'ScrptblDbgExec'.
-	debugSession := DebugSessionPlus new
+	debugSession := DebugSessionPlus newWithName: 'ScrptblDbgDebugSession' forProcess: process. 
+"	debugSession := DebugSessionPlus new
 		name: 'ScrptblDbgDebugSession';
-		process: process context: process suspendedContext.
+		process: process context: process suspendedContext."
 	debugSession deactivateEventTriggering.
 	debugSession stepInto; stepInto.
 	^ self

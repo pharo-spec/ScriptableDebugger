@@ -1,15 +1,15 @@
 Class {
-	#name : #Clazz2,
-	#superclass : #ScenarioSetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument,
+	#name : #Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument,
+	#superclass : #Object,
 	#category : #'ScriptableDebugger-Tests'
 }
 
 { #category : #run }
-Clazz2 class >> runScenario [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument class >> runScenario [
 	"When ran, this code sets breakpoints on the methods that call the method openFile: with argument 'myFile.txt'. Do not forget to remove the breakpoints manually after running this method."
 	<script>
 	| scdbg |
-	scdbg := ScriptableDebuggerOld debug: [ Clazz2 new stepA ].
+	scdbg := ScriptableDebuggerOld debug: [ self class new stepA ].
 	[scdbg isExecutionFinished ] whileFalse: [ 
 		((scdbg currentSelector = #openFile:) and:
 		[(scdbg currentContext arguments at: 1) = 'myFile.txt'])
@@ -19,11 +19,11 @@ Clazz2 class >> runScenario [
 ]
 
 { #category : #run }
-Clazz2 class >> runScenario2 [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument class >> runScenario2 [
 	"An alternative version of runScenario"
 	<script>
 	| scdbg |
-	scdbg := ScriptableDebuggerOld debug: [ Clazz2 new stepA ].
+	scdbg := ScriptableDebuggerOld debug: [ self class new stepA ].
 	scdbg runExecutionWhilePlacingBreakpointsWhen: [
 		((scdbg currentNode isMessage) and:
 		[ scdbg currentNode selector = #openFile: ]) and:
@@ -32,12 +32,12 @@ Clazz2 class >> runScenario2 [
 ]
 
 { #category : #'file support' }
-Clazz2 >> openFile: aString [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument >> openFile: aString [
 	^ self
 ]
 
 { #category : #'as yet unclassified' }
-Clazz2 >> stepA [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument >> stepA [
 	self stepB: 'myFile.txt'.
 	self stepB: 'hello.txt'.
 	self stepC.
@@ -45,16 +45,16 @@ Clazz2 >> stepA [
 ]
 
 { #category : #'as yet unclassified' }
-Clazz2 >> stepB: aString [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument >> stepB: aString [
 	self openFile: aString
 ]
 
 { #category : #'as yet unclassified' }
-Clazz2 >> stepC [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument >> stepC [
 	^ self
 ]
 
 { #category : #'as yet unclassified' }
-Clazz2 >> stepD [
+Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument >> stepD [
 	self openFile: 'myFile.txt'
 ]

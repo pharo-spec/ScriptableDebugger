@@ -13,6 +13,18 @@ Class {
 	#category : #ScriptableDebugger
 }
 
+{ #category : #'instance creation' }
+DebugSessionPlus class >> forDebugSession: aDebugSession [
+	"Creates a DebugSessionPlus on the same execution as aDebugSession"
+	^ self newWithName: aDebugSession name forProcess: aDebugSession interruptedProcess.
+	
+]
+
+{ #category : #'instance creation' }
+DebugSessionPlus class >> newWithName: aString forProcess: aProcess [
+	^ self new name: aString; process: aProcess context: aProcess suspendedContext; yourself.
+]
+
 { #category : #initialization }
 DebugSessionPlus >> activateEventTriggering [
 	triggerEventOn := true.
@@ -44,6 +56,11 @@ DebugSessionPlus >> initialize [
 	triggerEventOn := true.
 	canBeTerminated := true.
 	super initialize.
+]
+
+{ #category : #testing }
+DebugSessionPlus >> isDebugSessionPlus [
+	^ true
 ]
 
 { #category : #initialization }

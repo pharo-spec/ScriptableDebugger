@@ -104,16 +104,18 @@ ScriptableDebugger >> contextIsAboutToSignalException: aContext [
 
 { #category : #stepping }
 ScriptableDebugger >> continue [
-	"Steps the execution until:
+	"Steps the execution until it:
 	- is about to signal a Halt exception. In this case return #halt.
 	- is about to signal a Break exception. In this case return #breakpoint.
-	- has reached a virtual breakpoint. In this case return the virtual breakpoint."
+	- has reached a virtual breakpoint. In this case return the virtual breakpoint.
+	- has finished. In this case return nil."
 	| signalMessageNode exceptionClassBeingSignalled stepHook |
 	stepHook := [ VirtualBreakpoint all detect: [ :vbrkpt | vbrkpt hitTest: self currentNode] ifFound: [ :vbrkpt | self removeStepHook: stepHook. ^vbrkpt ]].
 	self addStepHook: stepHook.
-	[ self contextIsAboutToSignalException: self context ] whileFalse: [ self step ].
+	[ (self isExecutionFinished) or: [ self contextIsAboutToSignalException: self context]] whileFalse: [ self step ].
+	self isExecutionFinished ifTrue: [ ^nil ].
 	signalMessageNode := self currentNode.
-	exceptionClassBeingSignalled := self currentContext at: ((self valueStackSizeOfContext: self currentContext) - signalMessageNode arguments size).
+	exceptionClassBeingSignalled := self context at: ((self context size) - signalMessageNode arguments size).
 	(exceptionClassBeingSignalled == Halt) ifTrue: [ 
 		"Encountered a Halt (typically signalled by a 'self halt')"
 		self skip.

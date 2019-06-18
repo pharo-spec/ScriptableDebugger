@@ -89,6 +89,13 @@ ScriptableDebuggerTests >> helperMethod2 [
 ]
 
 { #category : #tests }
+ScriptableDebuggerTests >> helperMethod20 [
+	| a |
+	a := 5.
+	^ Point x: 5 y: '3' asInteger.
+]
+
+{ #category : #tests }
 ScriptableDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
@@ -222,6 +229,26 @@ ScriptableDebuggerTests >> testContinue [
 	scdbg continue.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testContinueUntilTheEnd [
+	"Test the #continue method when no breakpoint/halt is set. It should step the execution until the end and NOT freeze the image"
+	| scdbg semaphore |
+	"VVV Setup code for the timeout"
+	semaphore := Semaphore new.
+	[
+	"^^^ Setup code for the timeout"
+	
+	scdbg := ScriptableDebugger debug: [ self helperMethod20 ].
+	scdbg continue.
+	self assert: scdbg isExecutionFinished.
+	
+	"VVV Code for the timeout"
+	semaphore signal
+	] fork.
+	semaphore wait: 5 seconds onCompletion: [ 'success' ] onTimeout: [ self assert: false description: 'Test timed out' ].
+	"^^^ Setup code for the timeout"
 ]
 
 { #category : #tests }

@@ -151,12 +151,9 @@ ScriptableDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 { #category : #start }
 ScriptableDebugger >> debug: aBlock [
 	process := aBlock newProcess name: 'ScrptblDbgExec'.
-	debugSession := DebugSessionPlus newWithName: 'ScrptblDbgDebugSession' forProcess: process. 
-"	debugSession := DebugSessionPlus new
-		name: 'ScrptblDbgDebugSession';
-		process: process context: process suspendedContext."
-	debugSession deactivateEventTriggering.
-	debugSession stepInto; stepInto.
+	debugSession := DebugSessionPlus newWithName: 'ScrptblDbgDebugSession' forProcess: process.
+		debugSession deactivateEventTriggering.
+	[self selector = #newProcess] whileTrue: [ self step ]. "So that the process leaves BlockClosure>>#newProcess and enters the block for which a process was created"
 	^ self
 ]
 

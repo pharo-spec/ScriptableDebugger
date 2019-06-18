@@ -332,7 +332,8 @@ ScriptableDebuggerTests >> testOnceBreakpoint [
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
-	self should: [ scdbg continue ] raise: SteppingATerminatingProcess.
+	scdbg continue.
+	self assert: scdbg isExecutionFinished.
 ]
 
 { #category : #tests }
@@ -356,7 +357,8 @@ ScriptableDebuggerTests >> testRemoveBreakpoint [
 	breakpoint := scdbg setBreakpoint.
 	breakpoint remove.
 	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
-	self should: [scdbg continue] raise: SteppingATerminatingProcess.
+	scdbg continue.
+	self assert: scdbg isExecutionFinished.
 ]
 
 { #category : #tests }

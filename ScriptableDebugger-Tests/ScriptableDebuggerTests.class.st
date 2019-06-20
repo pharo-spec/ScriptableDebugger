@@ -144,11 +144,9 @@ ScriptableDebuggerTests >> helperMethod9 [
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #running }
+{ #category : #tests }
 ScriptableDebuggerTests >> runCaseManaged [
-	"This prevents the TestExecutionEnvironment from trying to kill processes created during the test. Without it, it adds on:do: contexts on the process, and this somehow makes the process answers true to isTerminating, triggering the protection against stepping terminating processes from DebugSessionPlus>>stepInto:
-	It is not necessary to terminate processes created by ScriptableDebugger because these processes are not scheduled."
-	^ self runCase.
+	^ self runCase
 ]
 
 { #category : #running }
@@ -442,6 +440,15 @@ ScriptableDebuggerTests >> testStepUntil [
 	scdbg := ScriptableDebugger debug: [ [i = 0] whileFalse: [i := i - 1]].
 	scdbg stepUntil: [ i = 12 ].
 	self assert: i equals: 12.
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testSteppingAnExecutionSignalingExceptions [
+	| scdbg |
+	scdbg := ScriptableDebugger debug: [ 1/0. 2/0. 3/0. ].
+	self should: [ 
+		scdbg stepOver; stepOver; stepOver.
+	] raise: UnhandledExceptionSignalledByADebuggedExecution.
 ]
 
 { #category : #tests }

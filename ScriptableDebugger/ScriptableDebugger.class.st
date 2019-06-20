@@ -150,10 +150,12 @@ ScriptableDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 
 { #category : #start }
 ScriptableDebugger >> debug: aBlock [
-	process := aBlock newProcess name: 'ScrptblDbgExec'.
-	debugSession := DebugSessionPlus newWithName: 'ScrptblDbgDebugSession' forProcess: process.
+	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
+	"process on: Exception do: [:ex | DebuggedExecutionSignalledAnException signalWithException: ex. ex resume ]."
+	debugSession := DebugSessionPlus newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
 		debugSession deactivateEventTriggering.
-	[self selector = #newProcess] whileTrue: [ self step ]. "So that the process leaves BlockClosure>>#newProcess and enters the block for which a process was created"
+	[ self selector = #newProcess] whileFalse: [ self step]. "Step the process to get out of the on:do: context added at the bottom of its stack"
+	[self selector = #newProcess] whileTrue: [ self step ]. "Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
 	^ self
 ]
 
@@ -300,6 +302,13 @@ ScriptableDebugger >> stack [
 { #category : #stepping }
 ScriptableDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
+	| unhandledException |
+	((self currentNode isMessage) and: [(self messageSelector = #unhandledErrorDefaultAction:) and: [ self messageReceiver isKindOf: UIManager ]]) ifTrue: [ 
+	"The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
+	"Signalling an exception **in the scriptable debugger's process** to inform the user of this"
+		unhandledException := self messageArguments at: 1.
+		UnhandledExceptionSignalledByADebuggedExecution signalWithException: unhandledException.
+	].
 	debugSession stepInto.
 	stepHooks do: [ :aBlock | aBlock value ].
 ]

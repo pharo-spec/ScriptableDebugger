@@ -96,6 +96,16 @@ ScriptableDebuggerTests >> helperMethod20 [
 ]
 
 { #category : #tests }
+ScriptableDebuggerTests >> helperMethod21 [
+	self helperMethod22
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> helperMethod22 [
+	^ Point new
+]
+
+{ #category : #tests }
 ScriptableDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
@@ -431,6 +441,18 @@ ScriptableDebuggerTests >> testStepOver [
 	scdbg := ScriptableDebugger debug: [ self helperMethod14 ].
 	scdbg stepOver.
 	self assert: scdbg currentNode isBlock.
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testStepOverReturnNode [
+	|scdbg|
+	scdbg := ScriptableDebugger debug: [ self helperMethod21 ].
+	scdbg step; step.
+	scdbg stepOver.
+	self shouldnt: [scdbg stepOver] raise: SteppingATerminatingProcess.
+	self assert: scdbg selector equals: #helperMethod21.
+	self assert: scdbg currentNode isMethod.
+"	self assert: scdbg currentNode isBlock."
 ]
 
 { #category : #tests }

@@ -1,5 +1,5 @@
 Class {
 	#name : #SteppingATerminatingProcess,
 	#superclass : #Error,
-	#category : #ScriptableDebugger
+	#category : #Sindarin
 }

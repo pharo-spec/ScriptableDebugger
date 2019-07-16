@@ -10,7 +10,7 @@ Class {
 		'triggerEventOn',
 		'canBeTerminated'
 	],
-	#category : #ScriptableDebugger
+	#category : #Sindarin
 }
 
 { #category : #'instance creation' }

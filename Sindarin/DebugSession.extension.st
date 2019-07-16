@@ -1,6 +1,6 @@
 Extension { #name : #DebugSession }
 
-{ #category : #'*ScriptableDebugger' }
+{ #category : #'*Sindarin' }
 DebugSession >> isSindarinDebugSession [
 	^ false
 ]

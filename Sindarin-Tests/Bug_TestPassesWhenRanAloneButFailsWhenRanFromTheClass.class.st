@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'breakpointsBeforeTest'
 	],
-	#category : #'ScriptableDebugger-Tests'
+	#category : #'Sindarin-Tests'
 }
 
 { #category : #tests }
@@ -38,7 +38,7 @@ Bug_TestPassesWhenRanAloneButFailsWhenRanFromTheClass >> tearDown [
 { #category : #tests }
 Bug_TestPassesWhenRanAloneButFailsWhenRanFromTheClass >> testStep [
 	| node scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod13 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod13 ].
 	scdbg step.
 	self halt.
 	node := scdbg currentNode.

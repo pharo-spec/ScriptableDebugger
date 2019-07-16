@@ -76,7 +76,7 @@ ScriptableDebugger >> assignmentVariableName [
 ScriptableDebugger >> attachTo: aDebugSession [
 	"Attaches this scriptable debugger to an already existing instance of DebugSession or DebugSessionPlus"
 	debugSession := aDebugSession.
-	aDebugSession isDebugSessionPlus ifFalse: [ debugSession := DebugSessionPlus forDebugSession: aDebugSession ] .
+	aDebugSession isSindarinDebugSession ifFalse: [ debugSession := SindarinDebugSession forDebugSession: aDebugSession ] .
 	process := debugSession interruptedProcess.
 	debugSession deactivateEventTriggering.
 	^ self
@@ -152,7 +152,7 @@ ScriptableDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 ScriptableDebugger >> debug: aBlock [
 	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
 	"process on: Exception do: [:ex | DebuggedExecutionSignalledAnException signalWithException: ex. ex resume ]."
-	debugSession := DebugSessionPlus newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
+	debugSession := SindarinDebugSession newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
 		debugSession deactivateEventTriggering.
 	[ self selector = #newProcess] whileFalse: [ self step]. "Step the process to get out of the on:do: context added at the bottom of its stack"
 	[self selector = #newProcess] whileTrue: [ self step ]. "Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"

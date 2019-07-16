@@ -30,7 +30,7 @@ Class {
 { #category : #start }
 ScriptableDebuggerOld class >> attachTo: aDebugSessionPlus [
 	"Returns a new instance of ScriptableDebugger attached to aDebugSessionPlus"
-	(aDebugSessionPlus class == DebugSessionPlus) ifFalse: [ Error signal: 'ScriptableDebugger can only attach to instances of DebugSessionPlus' ].
+	(aDebugSessionPlus class == SindarinDebugSession) ifFalse: [ Error signal: 'ScriptableDebugger can only attach to instances of DebugSessionPlus' ].
 	^ self new attachTo: aDebugSessionPlus.
 
 ]
@@ -229,7 +229,7 @@ ScriptableDebuggerOld >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 ScriptableDebuggerOld >> debug: aBlock [
 	| context |
 	process := aBlock newProcess name: 'ScrptblDbgExec'.
-	debugSession := DebugSessionPlus new
+	debugSession := SindarinDebugSession new
 		name: 'ScrptblDbgDebugSession';
 		process: process context: process suspendedContext.
 	debugSession deactivateEventTriggering.

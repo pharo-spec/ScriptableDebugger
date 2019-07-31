@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'breakpointsBeforeTest'
 	],
-	#category : #'ScriptableDebugger-Tests'
+	#category : #'Sindarin-Tests'
 }
 
 { #category : #tests }
@@ -175,7 +175,7 @@ ScriptableDebuggerTests >> tearDown [
 { #category : #tests }
 ScriptableDebuggerTests >> testAddStepHook [
 	| stepCounter stepHook scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod11 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod11 ].
 	stepCounter := 0.
 	stepHook := [ stepCounter := stepCounter + 1 ].
 	scdbg addStepHook: stepHook.
@@ -192,7 +192,7 @@ ScriptableDebuggerTests >> testAddStepHook [
 ScriptableDebuggerTests >> testArguments [
 	| p scdbg |
 	p := Point new.
-	scdbg := ScriptableDebugger debug: [ self helperMethod18: 1 with: p ].
+	scdbg := SindarinDebugger debug: [ self helperMethod18: 1 with: p ].
 	scdbg step.
 	self assert: scdbg arguments size equals: 2.
 	self assert: (scdbg arguments at: 1) equals: 1.
@@ -203,7 +203,7 @@ ScriptableDebuggerTests >> testArguments [
 { #category : #tests }
 ScriptableDebuggerTests >> testAssignmentValue [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	scdbg step.
 	self assert: scdbg assignmentValue equals: 5.
 ]
@@ -211,7 +211,7 @@ ScriptableDebuggerTests >> testAssignmentValue [
 { #category : #tests }
 ScriptableDebuggerTests >> testAssignmentVariableName [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod3 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod3 ].
 	scdbg step.
 	self assert: scdbg assignmentVariableName equals: #a.
 ]
@@ -219,7 +219,7 @@ ScriptableDebuggerTests >> testAssignmentVariableName [
 { #category : #tests }
 ScriptableDebuggerTests >> testContext [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod15 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod15 ].
 	self assert: scdbg context equals: scdbg debugSession interruptedContext.
 	scdbg step.
 	self assert: scdbg context equals: scdbg debugSession interruptedContext.
@@ -228,12 +228,12 @@ ScriptableDebuggerTests >> testContext [
 { #category : #tests }
 ScriptableDebuggerTests >> testContinue [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
 	scdbg setBreakpoint.
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
@@ -248,7 +248,7 @@ ScriptableDebuggerTests >> testContinueUntilTheEnd [
 	[
 	"^^^ Setup code for the timeout"
 	
-	scdbg := ScriptableDebugger debug: [ self helperMethod20 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod20 ].
 	scdbg continue.
 	self assert: scdbg isExecutionFinished.
 	
@@ -262,7 +262,7 @@ ScriptableDebuggerTests >> testContinueUntilTheEnd [
 { #category : #tests }
 ScriptableDebuggerTests >> testCurrentNode [
 	| node scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	node := scdbg currentNode.
 	self assert: node isMessage.
 	self assert: node selector equals: #helperMethod1.
@@ -279,7 +279,7 @@ ScriptableDebuggerTests >> testCurrentNode [
 { #category : #tests }
 ScriptableDebuggerTests >> testIsExecutionFinished [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod16 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod16 ].
 	self assert: scdbg isExecutionFinished not.
 	scdbg stepOver; step; step; stepOver; step; stepOver; step.
 	"Reached `self isActiveProcess` in Process>>#terminate"
@@ -289,7 +289,7 @@ ScriptableDebuggerTests >> testIsExecutionFinished [
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageArguments [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod4 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod4 ].
 	scdbg step; step.
 	self assert: scdbg messageArguments isEmpty.
 	scdbg stepOver.
@@ -300,7 +300,7 @@ ScriptableDebuggerTests >> testMessageArguments [
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageReceiver [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod5 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod5 ].
 	self assert: scdbg messageReceiver equals: self.
 	scdbg step; step.
 	self assert: scdbg messageReceiver equals: '3'.
@@ -309,7 +309,7 @@ ScriptableDebuggerTests >> testMessageReceiver [
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageSelector [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod6 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod6 ].
 	self assert: scdbg messageSelector equals: #helperMethod6.
 	scdbg step; step.
 	self assert: scdbg messageSelector equals: #asInteger.
@@ -320,7 +320,7 @@ ScriptableDebuggerTests >> testMessageSelector [
 { #category : #tests }
 ScriptableDebuggerTests >> testMethod [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod7 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod7 ].
 	self assert: scdbg method equals: ScriptableDebuggerTests>>#testMethod.
 	scdbg step.
 	self assert: scdbg method equals: ScriptableDebuggerTests>>#helperMethod7.
@@ -331,15 +331,15 @@ ScriptableDebuggerTests >> testMethod [
 { #category : #tests }
 ScriptableDebuggerTests >> testOnceBreakpoint [
 	| breakpoint scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
 	breakpoint := scdbg setBreakpoint.
 	breakpoint once.
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
 	self assert: scdbg isExecutionFinished.
 ]
@@ -347,7 +347,7 @@ ScriptableDebuggerTests >> testOnceBreakpoint [
 { #category : #tests }
 ScriptableDebuggerTests >> testReceiver [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod8 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod8 ].
 	self assert: scdbg receiver equals: self.
 	scdbg step.
 	self assert: scdbg receiver equals: self.
@@ -358,13 +358,13 @@ ScriptableDebuggerTests >> testReceiver [
 { #category : #tests }
 ScriptableDebuggerTests >> testRemoveBreakpoint [
 	| breakpoint scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
 	breakpoint := scdbg setBreakpoint.
 	breakpoint remove.
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
 	self assert: scdbg isExecutionFinished.
 ]
@@ -372,7 +372,7 @@ ScriptableDebuggerTests >> testRemoveBreakpoint [
 { #category : #tests }
 ScriptableDebuggerTests >> testSelector [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod9 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod9 ].
 	self assert: scdbg selector equals: #testSelector.
 	scdbg step.
 	self assert: scdbg selector equals: #helperMethod9.
@@ -389,7 +389,7 @@ ScriptableDebuggerTests >> testSetBreakpoint [
 ScriptableDebuggerTests >> testSkip [
 	|a p scdbg |
 	a := 1.
-	scdbg := ScriptableDebugger debug: [ a := 2. p := Point x: 2 y: 3].
+	scdbg := SindarinDebugger debug: [ a := 2. p := Point x: 2 y: 3].
 	scdbg skip.
 	self assert: a equals: 1.
 	scdbg skip.
@@ -401,7 +401,7 @@ ScriptableDebuggerTests >> testSkip [
 ScriptableDebuggerTests >> testSkipWith [
 	|a p scdbg |
 	a := 1.
-	scdbg := ScriptableDebugger debug: [ a := 2. p := Point x: 2 y: 3].
+	scdbg := SindarinDebugger debug: [ a := 2. p := Point x: 2 y: 3].
 	scdbg skipWith: 3.
 	self assert: a equals: 1.
 	scdbg skipWith: 5.
@@ -413,7 +413,7 @@ ScriptableDebuggerTests >> testSkipWith [
 ScriptableDebuggerTests >> testStack [
 	| context1 context2 storeContextBlock scdbg |
 	storeContextBlock := [ :thisCtx | context2 := thisCtx ].
-	scdbg := ScriptableDebugger debug: [ context1 := thisContext. self helperMethod17: storeContextBlock ].
+	scdbg := SindarinDebugger debug: [ context1 := thisContext. self helperMethod17: storeContextBlock ].
 	scdbg step.
 	self assert: scdbg stack first equals: context1.
 	scdbg step; stepOver.
@@ -424,7 +424,7 @@ ScriptableDebuggerTests >> testStack [
 { #category : #tests }
 ScriptableDebuggerTests >> testStep [
 	| node scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod13 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod13 ].
 	scdbg step.
 	node := scdbg currentNode.
 	self assert: node isAssignment.
@@ -438,7 +438,7 @@ ScriptableDebuggerTests >> testStep [
 { #category : #tests }
 ScriptableDebuggerTests >> testStepOver [
 	|scdbg|
-	scdbg := ScriptableDebugger debug: [ self helperMethod14 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod14 ].
 	scdbg stepOver.
 	self assert: scdbg currentNode isBlock.
 ]
@@ -446,7 +446,7 @@ ScriptableDebuggerTests >> testStepOver [
 { #category : #tests }
 ScriptableDebuggerTests >> testStepOverReturnNode [
 	|scdbg|
-	scdbg := ScriptableDebugger debug: [ self helperMethod21 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod21 ].
 	scdbg step; step.
 	scdbg stepOver.
 	self shouldnt: [scdbg stepOver] raise: SteppingATerminatingProcess.
@@ -459,7 +459,7 @@ ScriptableDebuggerTests >> testStepOverReturnNode [
 ScriptableDebuggerTests >> testStepUntil [
 	| i scdbg |
 	i := 20.
-	scdbg := ScriptableDebugger debug: [ [i = 0] whileFalse: [i := i - 1]].
+	scdbg := SindarinDebugger debug: [ [i = 0] whileFalse: [i := i - 1]].
 	scdbg stepUntil: [ i = 12 ].
 	self assert: i equals: 12.
 ]
@@ -467,7 +467,7 @@ ScriptableDebuggerTests >> testStepUntil [
 { #category : #tests }
 ScriptableDebuggerTests >> testSteppingAnExecutionSignalingExceptions [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ 1/0. 2/0. 3/0. ].
+	scdbg := SindarinDebugger debug: [ 1/0. 2/0. 3/0. ].
 	self should: [ 
 		scdbg stepOver; stepOver; stepOver.
 	] raise: UnhandledExceptionSignalledByADebuggedExecution.
@@ -476,7 +476,7 @@ ScriptableDebuggerTests >> testSteppingAnExecutionSignalingExceptions [
 { #category : #tests }
 ScriptableDebuggerTests >> testTemporaries [
 	| scdbg |
-	scdbg := ScriptableDebugger debug: [ self helperMethod10 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod10 ].
 	self assert: scdbg temporaries size equals: 1.
 	scdbg step.
 	self assert: scdbg temporaries size equals: 1.
@@ -490,13 +490,13 @@ ScriptableDebuggerTests >> testTemporaries [
 ScriptableDebuggerTests >> testWhenHitBreakpoint [
 	| breakpoint toggle scdbg |
 	toggle := false.
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
 	breakpoint := scdbg setBreakpoint.
 	breakpoint whenHit: [ toggle := true ].
-	scdbg := ScriptableDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
 	self assert: toggle.
 ]

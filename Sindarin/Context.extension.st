@@ -1,6 +1,6 @@
 Extension { #name : #Context }
 
-{ #category : #'*ScriptableDebugger' }
+{ #category : #'*Sindarin' }
 Context >> temporaries [
 	"Returns the temporary variables of this context."
 	| dictionary |

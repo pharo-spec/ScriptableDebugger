@@ -3,11 +3,11 @@ When executed, this script steps the execution until it is about to signal an ex
 "
 Class {
 	#name : #StepUntilAboutToSignalExceptionDbgScript,
-	#superclass : #DebuggerScript,
+	#superclass : #SindarinScript,
 	#instVars : [
 		'scdbg'
 	],
-	#category : #ScriptableDebugger
+	#category : #Sindarin
 }
 
 { #category : #accessing }

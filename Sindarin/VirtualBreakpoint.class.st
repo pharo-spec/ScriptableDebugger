@@ -10,7 +10,7 @@ Class {
 	#classVars : [
 		'all'
 	],
-	#category : #ScriptableDebugger
+	#category : #Sindarin
 }
 
 { #category : #'instance creation' }

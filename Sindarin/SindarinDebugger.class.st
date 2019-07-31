@@ -15,81 +15,81 @@ Virtual breakpoints were introduced because due to technical limitations, normal
 - stepHooks: OrderedCollection<Block>. A list of blocks to be evaluated after each step of the debugged execution
 "
 Class {
-	#name : #ScriptableDebugger,
+	#name : #SindarinDebugger,
 	#superclass : #Object,
 	#instVars : [
 		'process',
 		'debugSession',
 		'stepHooks'
 	],
-	#category : #ScriptableDebugger
+	#category : #Sindarin
 }
 
 { #category : #start }
-ScriptableDebugger class >> attachTo: aDebugSession [
+SindarinDebugger class >> attachTo: aDebugSession [
 	"Returns a new instance of ScriptableDebugger attached to aDebugSession"
 	^ self new attachTo: aDebugSession.
 
 ]
 
 { #category : #start }
-ScriptableDebugger class >> debug: aBlock [
+SindarinDebugger class >> debug: aBlock [
 	"Creates an execution of aBlock and returns an instance of ScriptableDebugger attached to this execution"
 	^ self new debug: aBlock
 
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
+SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
 	"Does not work for the GT debugger"
 	debugSession activateEventTriggering.
 	self refreshAttachedGraphicalDebugger.
 ]
 
 { #category : #'step hook' }
-ScriptableDebugger >> addStepHook: aBlock [
+SindarinDebugger >> addStepHook: aBlock [
 	"Adds aBlock to the list of step hooks. Step hooks are executed after each step of the execution"
 	stepHooks add: aBlock
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> arguments [
+SindarinDebugger >> arguments [
 	"Returns the arguments of the current stack-frame."
 	^ self context arguments
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> assignmentValue [
+SindarinDebugger >> assignmentValue [
 	"Returns the value about to be assigned, if the current node is an assignment node."
 	(self currentNode isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
 	^ self context at: self currentContextStackSize.
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> assignmentVariableName [
+SindarinDebugger >> assignmentVariableName [
 	"Returns the variable name about to be assigned to, if the current node is an assignment node."
 	(self currentNode isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
 	^ self currentNode variable name.
 ]
 
 { #category : #start }
-ScriptableDebugger >> attachTo: aDebugSession [
+SindarinDebugger >> attachTo: aDebugSession [
 	"Attaches this scriptable debugger to an already existing instance of DebugSession or DebugSessionPlus"
 	debugSession := aDebugSession.
-	aDebugSession isDebugSessionPlus ifFalse: [ debugSession := DebugSessionPlus forDebugSession: aDebugSession ] .
+	aDebugSession isSindarinDebugSession ifFalse: [ debugSession := SindarinDebugSession forDebugSession: aDebugSession ] .
 	process := debugSession interruptedProcess.
 	debugSession deactivateEventTriggering.
 	^ self
 ]
 
 { #category : #stackAccess }
-ScriptableDebugger >> context [
+SindarinDebugger >> context [
 	"Returns a reification of the current stack-frame."
 	^ debugSession interruptedContext.
 ]
 
 { #category : #private }
-ScriptableDebugger >> contextIsAboutToSignalException: aContext [
+SindarinDebugger >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 	| node |
 	node := aContext method sourceNodeForPC: aContext pc.
@@ -103,7 +103,7 @@ ScriptableDebugger >> contextIsAboutToSignalException: aContext [
 ]
 
 { #category : #stepping }
-ScriptableDebugger >> continue [
+SindarinDebugger >> continue [
 	"Steps the execution until it:
 	- is about to signal a Halt exception. In this case return #halt.
 	- is about to signal a Break exception. In this case return #breakpoint.
@@ -132,27 +132,27 @@ ScriptableDebugger >> continue [
 ]
 
 { #category : #private }
-ScriptableDebugger >> currentContextStackSize [
+SindarinDebugger >> currentContextStackSize [
 	^ self context basicSize.
 ]
 
 { #category : #astAndAstMapping }
-ScriptableDebugger >> currentNode [
+SindarinDebugger >> currentNode [
 	"Returns the AST node about to be executed by the top context of the execution"
 	^ self context method sourceNodeForPC: self context pc.
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
+SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 	"Does not work for the GT debugger"
 	debugSession deactivateEventTriggering.
 ]
 
 { #category : #start }
-ScriptableDebugger >> debug: aBlock [
+SindarinDebugger >> debug: aBlock [
 	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
 	"process on: Exception do: [:ex | DebuggedExecutionSignalledAnException signalWithException: ex. ex resume ]."
-	debugSession := DebugSessionPlus newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
+	debugSession := SindarinDebugSession newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
 		debugSession deactivateEventTriggering.
 	[ self selector = #newProcess] whileFalse: [ self step]. "Step the process to get out of the on:do: context added at the bottom of its stack"
 	[self selector = #newProcess] whileTrue: [ self step ]. "Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
@@ -160,24 +160,24 @@ ScriptableDebugger >> debug: aBlock [
 ]
 
 { #category : #accessing }
-ScriptableDebugger >> debugSession [
+SindarinDebugger >> debugSession [
 	"Returns the DebugSession representing the execution this ScriptableDebugger is debugging"
 	^ debugSession 
 ]
 
 { #category : #initialization }
-ScriptableDebugger >> initialize [
+SindarinDebugger >> initialize [
 	stepHooks := OrderedCollection new.
 ]
 
 { #category : #stackAccess }
-ScriptableDebugger >> isExecutionFinished [
+SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 	^ process isTerminating
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> messageArguments [
+SindarinDebugger >> messageArguments [
 	"Returns the arguments of the message about to be sent, if the current node is a message node."
 	| argumentNumber arguments i |
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
@@ -192,63 +192,63 @@ ScriptableDebugger >> messageArguments [
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> messageReceiver [
+SindarinDebugger >> messageReceiver [
 	"Returns the receiver of the message about to be sent, if the current node is a message node."
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	^ self context at: (self currentContextStackSize) - (self currentNode arguments size).
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> messageSelector [
+SindarinDebugger >> messageSelector [
 	"Returns the selector of the message about to be sent, if the current node is a message node."
 	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
 	^ self currentNode selector.
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> method [
+SindarinDebugger >> method [
 	"Returns the method of the current stack-frame."
 	^ self context method
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger >> openInGraphicalDebugger [
+SindarinDebugger >> openInGraphicalDebugger [
 	debugSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
 	GTGenericStackDebugger openOn: debugSession withFullView: true.
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> receiver [
+SindarinDebugger >> receiver [
 	"Returns the receiver of the current stack-frame."
 	^ self context receiver
 ]
 
 { #category : #'graphical debugger' }
-ScriptableDebugger >> refreshAttachedGraphicalDebugger [
+SindarinDebugger >> refreshAttachedGraphicalDebugger [
 	"Does not work for the GT debugger"
 	debugSession refreshAttachedDebugger.
 ]
 
 { #category : #'step hook' }
-ScriptableDebugger >> removeStepHook: aBlock [
+SindarinDebugger >> removeStepHook: aBlock [
 	"Remove aBlock from the list of step hooks"
 	stepHooks remove: aBlock
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> selector [
+SindarinDebugger >> selector [
 	"Returns the selector of the current stack-frame."
 	^ self context selector
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger >> setBreakpoint [
+SindarinDebugger >> setBreakpoint [
 	"Sets a breakpoint on the current node, returns an object reifying the breakpoint."
 	^ self setBreakpointOn: self currentNode.
 ]
 
 { #category : #breakpoints }
-ScriptableDebugger >> setBreakpointOn: target [
+SindarinDebugger >> setBreakpointOn: target [
 	"Sets a breakpoint on target (a node or a compiled method), returns an object reifying the breakpoint."
 	| astTarget|
 	astTarget := target.
@@ -257,7 +257,7 @@ ScriptableDebugger >> setBreakpointOn: target [
 ]
 
 { #category : #private }
-ScriptableDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
+SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
 	| unhandledException |
 	((self currentNode isMessage) and: [(self messageSelector = #unhandledErrorDefaultAction:) and: [ self messageReceiver isKindOf: UIManager ]]) ifTrue: [ 
 	"The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
@@ -268,13 +268,13 @@ ScriptableDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
 ]
 
 { #category : #stepping }
-ScriptableDebugger >> skip [
+SindarinDebugger >> skip [
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
 	self skipWith: nil.
 ]
 
 { #category : #stepping }
-ScriptableDebugger >> skipWith: replacementValue [
+SindarinDebugger >> skipWith: replacementValue [
 	"If it is a message-send or assignment, skips the execution of the current instruction, and puts the replacementValue on the execution stack."
 	"If the current node is a message send or assignment"
 	((self currentNode isMessage not) and: [ self currentNode isAssignment not]) ifTrue: [ ^false ].
@@ -305,13 +305,13 @@ ScriptableDebugger >> skipWith: replacementValue [
 ]
 
 { #category : #stackAccess }
-ScriptableDebugger >> stack [
+SindarinDebugger >> stack [
 	"Returns a list of context objects representing the current call stack."
 	^ debugSession stack
 ]
 
 { #category : #stepping }
-ScriptableDebugger >> step [
+SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
 	self signalExceptionIfDebuggedExecutionHasSignalledException.
 	debugSession stepInto.
@@ -319,7 +319,7 @@ ScriptableDebugger >> step [
 ]
 
 { #category : #stepping }
-ScriptableDebugger >> stepOver [
+SindarinDebugger >> stepOver [
 	|startContext|
 	startContext := self context.
 	self step.
@@ -327,13 +327,13 @@ ScriptableDebugger >> stepOver [
 ]
 
 { #category : #stepping }
-ScriptableDebugger >> stepUntil: aBlock [
+SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 	aBlock whileFalse: [ self step ]
 ]
 
 { #category : #stackAccessHelpers }
-ScriptableDebugger >> temporaries [
+SindarinDebugger >> temporaries [
 	"Returns the temporary variables of the current stack-frame."
 	^ self context temporaries.
 ]

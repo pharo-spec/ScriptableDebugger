@@ -18,7 +18,7 @@ Class {
 		'stack',
 		'expected'
 	],
-	#category : #'ScriptableDebugger-Tests'
+	#category : #'Sindarin-Tests'
 }
 
 { #category : #running }

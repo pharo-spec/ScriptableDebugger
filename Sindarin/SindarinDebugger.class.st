@@ -75,8 +75,11 @@ SindarinDebugger >> assignmentVariableName [
 { #category : #start }
 SindarinDebugger >> attachTo: aDebugSession [
 	"Attaches this scriptable debugger to an already existing instance of DebugSession or DebugSessionPlus"
+
 	debugSession := aDebugSession.
-	aDebugSession isSindarinDebugSession ifFalse: [ debugSession := SindarinDebugSession forDebugSession: aDebugSession ] .
+	aDebugSession isSindarinDebugSession
+		ifFalse:
+			[ debugSession := SindarinDebugSession forDebugSession: aDebugSession ].
 	process := debugSession interruptedProcess.
 	debugSession deactivateEventTriggering.
 	^ self
@@ -139,7 +142,8 @@ SindarinDebugger >> currentContextStackSize [
 { #category : #astAndAstMapping }
 SindarinDebugger >> currentNode [
 	"Returns the AST node about to be executed by the top context of the execution"
-	^ self context method sourceNodeForPC: self context pc.
+
+	^ self context method sourceNodeForPC: self context pc
 ]
 
 { #category : #'graphical debugger' }
@@ -273,35 +277,46 @@ SindarinDebugger >> skip [
 	self skipWith: nil.
 ]
 
+{ #category : #private }
+SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
+	self context pop.
+	"Pop the value to be assigned"
+	"Push the replacement value on the context's value stack, to simulate that the assignment happened and had value nil"
+	self context push: replacementValue.
+	"Increase the pc to go over the assignment"
+	self context pc: self context pc + 2.
+	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
+	self debugSession
+		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
+]
+
+{ #category : #private }
+SindarinDebugger >> skipMessageNodeWith: replacementValue [
+	self currentNode arguments do: [ :arg | self context pop ].	"Pop the arguments of the message send from the context's value stack"
+	"Pop the receiver from the context's value stack"
+	self context pop.
+	"Push the replacement value on the context's value stack, to simulate that the message send happened and returned nil"
+	self context push: replacementValue.
+	"Increase the pc to go over the message send"
+	self context pc: self context pc + 1.
+	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
+	self debugSession
+		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
+]
+
 { #category : #stepping }
 SindarinDebugger >> skipWith: replacementValue [
 	"If it is a message-send or assignment, skips the execution of the current instruction, and puts the replacementValue on the execution stack."
+
 	"If the current node is a message send or assignment"
-	((self currentNode isMessage not) and: [ self currentNode isAssignment not]) ifTrue: [ ^false ].
-	self currentNode isMessage ifTrue: [
-		"Pop the arguments of the message send from the context's value stack"
-		self currentNode arguments do: [ :arg | self context pop ].
-		"Pop the receiver from the context's value stack"
-		self context pop.
-		"Push the replacement value on the context's value stack, to simulate that the message send happened and returned nil"
-		self context push: replacementValue.
-		"Increase the pc to go over the message send"
-		self context pc: self context pc + 1.
-		"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-		self debugSession stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess.
-		^ self.
-	].
-	self currentNode isAssignment ifTrue: [
-		"Pop the value to be assigned"
-		self context pop.
-		"Push the replacement value on the context's value stack, to simulate that the assignment happened and had value nil"
-		self context push: replacementValue.
-		"Increase the pc to go over the assignment"
-		self context pc: self context pc + 2.
-		"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-		self debugSession stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess.
-		^ self.
-	].
+
+	(self currentNode isMessage not
+		and: [ self currentNode isAssignment not ])
+		ifTrue: [ ^ self ].
+	self currentNode isMessage
+		ifTrue: [ ^ self skipMessageNodeWith: replacementValue ].
+	self currentNode isAssignment
+		ifTrue: [ ^	self skipAssignmentNodeWith: replacementValue ]
 ]
 
 { #category : #stackAccess }

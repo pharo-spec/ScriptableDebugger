@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'var'
 	],
-	#category : #'Sindarin-Tests'
+	#category : #'Sindarin-Experiments'
 }
 
 { #category : #'as yet unclassified' }

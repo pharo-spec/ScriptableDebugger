@@ -18,7 +18,7 @@ Class {
 		'stack',
 		'expected'
 	],
-	#category : #'Sindarin-Tests'
+	#category : #'Sindarin-Experiments'
 }
 
 { #category : #running }

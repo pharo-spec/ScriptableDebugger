@@ -11,5 +11,6 @@ BaselineOfSindarin >> baseline: spec [
 		for: #common
 		do: [ spec
 				package: 'Sindarin';
-				package: 'Sindarin-Tests' ]
+				package: 'Sindarin-Tests';
+				package: 'Sindarin-Experiments' ]
 ]

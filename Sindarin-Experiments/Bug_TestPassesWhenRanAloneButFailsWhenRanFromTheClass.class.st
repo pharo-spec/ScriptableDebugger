@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'breakpointsBeforeTest'
 	],
-	#category : #'Sindarin-Tests'
+	#category : #'Sindarin-Experiments'
 }
 
 { #category : #tests }

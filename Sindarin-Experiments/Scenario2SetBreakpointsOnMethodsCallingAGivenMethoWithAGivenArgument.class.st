@@ -1,7 +1,7 @@
 Class {
 	#name : #Scenario2SetBreakpointsOnMethodsCallingAGivenMethoWithAGivenArgument,
 	#superclass : #Object,
-	#category : #'Sindarin-Tests'
+	#category : #'Sindarin-Experiments'
 }
 
 { #category : #'file support' }

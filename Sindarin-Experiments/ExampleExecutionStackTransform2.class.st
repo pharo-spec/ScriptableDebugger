@@ -1,7 +1,7 @@
 Class {
 	#name : #ExampleExecutionStackTransform2,
 	#superclass : #ExampleExecutionStackTransform1,
-	#category : #'Sindarin-Tests'
+	#category : #'Sindarin-Experiments'
 }
 
 { #category : #running }

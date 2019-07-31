@@ -118,26 +118,32 @@ SindarinDebugger >> continue [
 	- is about to signal a Break exception. In this case return #breakpoint.
 	- has reached a virtual breakpoint. In this case return the virtual breakpoint.
 	- has finished. In this case return nil."
+
 	| signalMessageNode exceptionClassBeingSignalled stepHook |
-	stepHook := [ VirtualBreakpoint all detect: [ :vbrkpt | vbrkpt hitTest: self currentNode] ifFound: [ :vbrkpt | self removeStepHook: stepHook. ^vbrkpt ]].
+	stepHook := [ VirtualBreakpoint all
+		detect: [ :vbrkpt | vbrkpt hitTest: self currentNode ]
+		ifFound: [ :vbrkpt | 
+			self removeStepHook: stepHook.
+			^ vbrkpt ] ].
 	self addStepHook: stepHook.
-	[ (self isExecutionFinished) or: [ self contextIsAboutToSignalException: self context]] whileFalse: [ self step ].
-	self isExecutionFinished ifTrue: [ ^nil ].
+	[ self isExecutionFinished
+		or: [ self contextIsAboutToSignalException: self context ] ]
+		whileFalse: [ self step ].
+	self isExecutionFinished
+		ifTrue: [ ^ nil ].
 	signalMessageNode := self currentNode.
-	exceptionClassBeingSignalled := self context at: ((self context size) - signalMessageNode arguments size).
-	(exceptionClassBeingSignalled == Halt) ifTrue: [ 
-		"Encountered a Halt (typically signalled by a 'self halt')"
-		self skip.
-		self removeStepHook: stepHook.
-		^ #halt.
-	].
-	(exceptionClassBeingSignalled == Break) ifTrue: [ 
-		"Encountered a Break (i.e. a breakpoint)"
-		self skip.
-		self removeStepHook: stepHook.
-		^ #breakpoint.
-	].
-	
+	exceptionClassBeingSignalled := self context
+		at: self context size - signalMessageNode arguments size.
+	exceptionClassBeingSignalled == Halt
+		ifTrue: [ "Encountered a Halt (typically signalled by a 'self halt')"
+			self skip.
+			self removeStepHook: stepHook.
+			^ #halt ].
+	exceptionClassBeingSignalled == Break
+		ifTrue: [ "Encountered a Break (i.e. a breakpoint)"
+			self skip.
+			self removeStepHook: stepHook.
+			^ #breakpoint ]
 ]
 
 { #category : #private }

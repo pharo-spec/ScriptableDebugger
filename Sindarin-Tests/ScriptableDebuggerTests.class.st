@@ -2,7 +2,8 @@ Class {
 	#name : #ScriptableDebuggerTests,
 	#superclass : #TestCase,
 	#instVars : [
-		'breakpointsBeforeTest'
+		'breakpointsBeforeTest',
+		'installedMetalinkBreakpoints'
 	],
 	#category : #'Sindarin-Tests'
 }
@@ -106,6 +107,27 @@ ScriptableDebuggerTests >> helperMethod22 [
 ]
 
 { #category : #tests }
+ScriptableDebuggerTests >> helperMethod23 [
+	<haltOrBreakpointForTesting>
+	| a |
+	a := 5.
+	Point x: 5 y: '3' asInteger.
+	self halt.
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> helperMethod24 [
+	Point new.
+	self helperMethod25.
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> helperMethod25 [
+	<haltOrBreakpointForTesting>
+	Point x: 1 y: 2.
+]
+
+{ #category : #tests }
 ScriptableDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
@@ -161,15 +183,19 @@ ScriptableDebuggerTests >> runCaseManaged [
 
 { #category : #running }
 ScriptableDebuggerTests >> setUp [
-	"Hooks that subclasses may override to define the fixture of test."
+	super setUp.
+	
 	breakpointsBeforeTest := VirtualBreakpoint all.
 	VirtualBreakpoint all removeAll.
+	installedMetalinkBreakpoints := OrderedCollection new.
 ]
 
 { #category : #running }
 ScriptableDebuggerTests >> tearDown [
 	VirtualBreakpoint all removeAll.
 	breakpointsBeforeTest do: [ :brkpt | VirtualBreakpoint all add: brkpt ].
+	installedMetalinkBreakpoints do: [ :each | each remove ].
+	super tearDown.
 ]
 
 { #category : #tests }
@@ -227,30 +253,59 @@ ScriptableDebuggerTests >> testContext [
 
 { #category : #tests }
 ScriptableDebuggerTests >> testContinue [
-	| scdbg |
+	| scdbg vBreakpoint continueResult |
 	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg step; step.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
-	scdbg setBreakpoint.
+	vBreakpoint := scdbg setBreakpoint.
 	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg continue.
+	continueResult := scdbg continue.
 	self assert: scdbg currentNode isMessage.
 	self assert: scdbg currentNode selector equals: #asInteger.
+	self assert: continueResult isVirtualBreakpoint.
+	self assert: continueResult virtualBreakpoint identicalTo: vBreakpoint.
+	
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testContinueBreakpoint [
+	| scdbg continueResult breakpoint |
+	breakpoint := Breakpoint new node: (self class >>#helperMethod25) ast; always.
+	installedMetalinkBreakpoints add: breakpoint.
+	breakpoint install.
+	scdbg := SindarinDebugger debug: [ self helperMethod24 ].
+	continueResult := scdbg continue.
+	"self assert: scdbg currentNode isMethod.
+	self assert: scdbg currentNode selector equals: #now."
+	self assert: continueResult isBreak.
+	
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testContinueHalt [
+	| scdbg continueResult |
+	scdbg := SindarinDebugger debug: [ self helperMethod23 ].
+	continueResult := scdbg continue.
+	self assert: scdbg currentNode isMethod.
+	self assert: scdbg currentNode selector equals: #now.
+	self assert: continueResult isHalt.
+	
 ]
 
 { #category : #tests }
 ScriptableDebuggerTests >> testContinueUntilTheEnd [
 	"Test the #continue method when no breakpoint/halt is set. It should step the execution until the end and NOT freeze the image"
-	| scdbg semaphore |
+	| scdbg semaphore continueResult |
 	"VVV Setup code for the timeout"
 	semaphore := Semaphore new.
 	[
 	"^^^ Setup code for the timeout"
 	
 	scdbg := SindarinDebugger debug: [ self helperMethod20 ].
-	scdbg continue.
+	continueResult := scdbg continue.
 	self assert: scdbg isExecutionFinished.
+	self assert: continueResult isExecutionFinished.
 	
 	"VVV Code for the timeout"
 	semaphore signal

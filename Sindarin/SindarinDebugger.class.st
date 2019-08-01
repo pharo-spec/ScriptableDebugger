@@ -113,24 +113,27 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 
 { #category : #stepping }
 SindarinDebugger >> continue [
-	"Steps the execution until it:
-	- is about to signal a Halt exception. In this case return #halt.
-	- is about to signal a Break exception. In this case return #breakpoint.
-	- has reached a virtual breakpoint. In this case return the virtual breakpoint.
-	- has finished. In this case return nil."
+	"Steps the execution until it stops for some reason.
+	Return an object representing why the execution stopped.
+	List of the reasons why an execution could stop, along with the class of the return object in each case.
+	- it is about to signal a Halt exception. Return an instance of ExecutionStop_Halt.
+	- it is about to signal a Break exception. Return an instance of ExecutionStop_Break.
+	- it has reached a virtual breakpoint. Return an instance of ExecutionStop_VirtualBreakpoint.
+	- it has finished (the execution is complete). Return an instance of ExecutionStop_ExecutionFinished.
+	"
 
 	| signalMessageNode exceptionClassBeingSignalled stepHook |
 	stepHook := [ VirtualBreakpoint all
 		detect: [ :vbrkpt | vbrkpt hitTest: self currentNode ]
 		ifFound: [ :vbrkpt | 
 			self removeStepHook: stepHook.
-			^ vbrkpt ] ].
+			^ ExecutionStop_VirtualBreakpoint new virtualBreakpoint: vbrkpt; yourself ] ].
 	self addStepHook: stepHook.
 	[ self isExecutionFinished
 		or: [ self contextIsAboutToSignalException: self context ] ]
 		whileFalse: [ self step ].
 	self isExecutionFinished
-		ifTrue: [ ^ nil ].
+		ifTrue: [ ^ ExecutionStop_ExecutionFinished new ].
 	signalMessageNode := self currentNode.
 	exceptionClassBeingSignalled := self context
 		at: self context size - signalMessageNode arguments size.
@@ -138,12 +141,12 @@ SindarinDebugger >> continue [
 		ifTrue: [ "Encountered a Halt (typically signalled by a 'self halt')"
 			self skip.
 			self removeStepHook: stepHook.
-			^ #halt ].
+			^ ExecutionStop_Halt new ].
 	exceptionClassBeingSignalled == Break
 		ifTrue: [ "Encountered a Break (i.e. a breakpoint)"
 			self skip.
 			self removeStepHook: stepHook.
-			^ #breakpoint ]
+			^ ExecutionStop_Break new ]
 ]
 
 { #category : #private }

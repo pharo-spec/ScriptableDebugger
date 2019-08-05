@@ -13,7 +13,7 @@ SindarinContext >> method [
 { #category : #'operand-stack' }
 SindarinContext >> operandStackAt: anInteger [
 	"index (Integer) -> (Object)
-	Return element number @index of the operand stack of @self.
+	Return element number @index of the operand stack of @self. Elements are counted from the bottom (number 1) to the top of the stack (last number).
 	The operand stack of a context is the stack that is used to store intermediate values during the execution of a method. For example, if the next operation is this assignment: 'a := 2'. The first step is to push 2 on the operand stack, then the assignment itself will pop this value and store it where the value of the 'a' variable is stored."
 	self subclassResponsibility
 ]
@@ -27,8 +27,9 @@ SindarinContext >> operandStackPop [
 
 { #category : #'operand-stack' }
 SindarinContext >> operandStackPush: aValue [
-	"value (Object) -> ()
-	Push @value on the operand stack of @self."
+	"value (Object) -> (Object)
+	Push @value on the operand stack of @self.
+	Return @value."
 	self subclassResponsibility
 ]
 
@@ -55,8 +56,22 @@ SindarinContext >> subclassResponsibility [
 ]
 
 { #category : #accessing }
-SindarinContext >> temporaries [
-	"() -> (Dictionary)
-	Return a dictionary of the temporaries of @self. This dictionary is of the form: <nameOfTheTemp> (ByteSymbol) -> <valueOfTheTemp> (Object). This dictionary contains the arguments and the variables defined between | | of the method @self is an invocation of. Modifying this dictionary does NOT modify @self, but the value objects are the same as those in @self, so modifying them directly does modify the corresponding temporary values from @self."
+SindarinContext >> temporaryNamed: temporaryName [
+	"temporaryName (Symbol) -> (Object)
+	Return the value of the temporary (argument + temporary variable) named @temporaryName of @self if it has one. If no temporary has this name, return nil."
 	self subclassResponsibility
+]
+
+{ #category : #accessing }
+SindarinContext >> temporaryNamed: temporaryName put: newValue [
+	"temporaryName (Symbol) -> newValue (Object) -> ()
+	Change the value of the temporary named @temporaryName of @self into @newValue. If @self does not have this temporary, do nothing."
+	self subclassResponsibility
+]
+
+{ #category : #accessing }
+SindarinContext >> temporaryNames [
+	"() -> (OrderedCollection)
+	Return a list containing the names of all the temporaries of @self (arguments + temporary variables)."
+	self subclassResponsibility.
 ]

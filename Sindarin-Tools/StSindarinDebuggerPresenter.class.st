@@ -56,7 +56,7 @@ StSindarinDebuggerPresenter >> initializeWidgets [
 				ifNotNil: [ | node |
 					node := selection selectedItem currentNode.
 					inspector model: node.
-					inspector setAttributeTable.
+					inspector setAttributeTable. 
 					currentNodeSource text: node source.
 					currentNodeSource behavior: node methodNode methodClass.
 					currentNodeSource setSelection: (node start to: node stop).

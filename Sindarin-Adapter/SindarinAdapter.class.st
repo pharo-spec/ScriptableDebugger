@@ -9,7 +9,7 @@ SindarinAdapter class >> debug: aBlock [
 	^ self new debug: aBlock
 ]
 
-{ #category : #start }
+{ #category : #accessing }
 SindarinAdapter >> context [
 	"() -> (SindarinContext)
 	Current context of the execution"
@@ -23,14 +23,21 @@ SindarinAdapter >> debug: aBlock [
 	self subclassResponsibility
 ]
 
-{ #category : #start }
+{ #category : #accessing }
 SindarinAdapter >> isTerminated [
 	"() -> (Boolean)
 	Returns whether the debuged execution is finished."
 	self subclassResponsibility
 ]
 
-{ #category : #start }
+{ #category : #stepping }
+SindarinAdapter >> skipNodeWith: aValue [
+	"value (Object) -> ()
+	Skip the execution of the current node of the current context. If it should have returned a value, put @value on the operand stack."
+	self subclassResponsibility.
+]
+
+{ #category : #stepping }
 SindarinAdapter >> step [
 	"() -> ()
 	Steps the execution once. This is the smallest step the debugged execution can make.

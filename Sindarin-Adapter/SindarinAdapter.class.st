@@ -18,8 +18,8 @@ SindarinAdapter >> context [
 
 { #category : #start }
 SindarinAdapter >> debug: aBlock [
-	"(BlockClosure) -> (DebugSession)
-	Initialise self (newly created instance) to be a debug session on the execution of the provided block closure. Return self."
+	"(BlockClosure) -> (SindarinAdapter)
+	Initialise @self (newly created instance) to be a debug session on the execution of the provided block closure. Return @self. Note that using a BlockClosure referencing elements that are not accessible globally (like self, variables...) will prevent the DASTInterpreter from running it properly (because it converts the BlockClosure into source code and parse it to get the AST nodes it actually executes)"
 	self subclassResponsibility
 ]
 

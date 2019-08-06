@@ -10,6 +10,13 @@ SindarinContext >> method [
 	self subclassResponsibility
 ]
 
+{ #category : #accessing }
+SindarinContext >> node [
+	"() -> (RBProgramNode)
+	Return the ast node that this context is about to execute"
+	self subclassResponsibility
+]
+
 { #category : #'operand-stack' }
 SindarinContext >> operandStackAt: anInteger [
 	"index (Integer) -> (Object)
@@ -58,7 +65,7 @@ SindarinContext >> subclassResponsibility [
 { #category : #accessing }
 SindarinContext >> temporaryNamed: temporaryName [
 	"temporaryName (Symbol) -> (Object)
-	Return the value of the temporary (argument + temporary variable) named @temporaryName of @self if it has one. If no temporary has this name, return nil."
+	Return the value of the temporary (argument + temporary variable) named @temporaryName of @self if it has one. If no temporary has this name, return nil. If the returned object is modified, these modifications must impact the value of the temporary in the execution."
 	self subclassResponsibility
 ]
 
@@ -71,7 +78,7 @@ SindarinContext >> temporaryNamed: temporaryName put: newValue [
 
 { #category : #accessing }
 SindarinContext >> temporaryNames [
-	"() -> (OrderedCollection)
+	"() -> (OrderedCollection<Symbol>)
 	Return a list containing the names of all the temporaries of @self (arguments + temporary variables)."
 	self subclassResponsibility.
 ]

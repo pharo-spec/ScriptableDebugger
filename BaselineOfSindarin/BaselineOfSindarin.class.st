@@ -10,13 +10,9 @@ BaselineOfSindarin >> baseline: spec [
 	spec
 		for: #common
 		do: [
-			spec
-				baseline: 'NewTools'
-				with: [ spec repository: 'github://pharo-spec/NewTools' ].
 			
 			spec
 				package: 'Sindarin';
 				package: 'Sindarin-Tests';
-				package: 'Sindarin-Experiments';
-				package: 'Sindarin-Tools' ]
+				package: 'Sindarin-Experiments' ]
 ]

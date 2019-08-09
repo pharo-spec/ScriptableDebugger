@@ -14,7 +14,6 @@ dbg currentNode inspect.
 ```
 
 ## Install
-*This baseline will load [NewTools](https://github.com/pharo-spec/NewTools)*
 ```Smalltalk
 Metacello new
     baseline: 'Sindarin';

@@ -12,5 +12,6 @@ BaselineOfSindarin >> baseline: spec [
 		do: [ spec
 				package: 'Sindarin';
 				package: 'Sindarin-Tests';
-				package: 'Sindarin-Experiments' ]
+				package: 'Sindarin-Experiments';
+				package: 'Sindarin-Tools' ]
 ]

@@ -17,6 +17,6 @@ dbg currentNode inspect.
 ```Smalltalk
 Metacello new
     baseline: 'Sindarin';
-    repository: 'github://dupriezt/ScriptableDebugger:Sindarin';
+    repository: 'github://dupriezt/ScriptableDebugger';
     load.
 ```

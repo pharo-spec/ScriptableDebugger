@@ -28,7 +28,7 @@ SindarinDebugSession class >> newWithName: aString forProcess: aProcess [
 { #category : #initialization }
 SindarinDebugSession >> activateEventTriggering [
 	triggerEventOn := true.
-	self refreshAttachedDebugger.
+	"self refreshAttachedDebugger."
 ]
 
 { #category : #accessing }
@@ -62,7 +62,7 @@ SindarinDebugSession >> isSindarinDebugSession [
 SindarinDebugSession >> refreshAttachedDebugger [
 	"The following lines are to force the debugger to update itself based on its debugSession"
 	self triggerEvent: #contextChanged.
-	self triggerEvent: #stepInto
+	"self triggerEvent: #stepInto" "Since SpecDebugger's #updateContextChanged eventually calls the same #updateStep method that its #updateStepInto method does, there is no point in causing a double refresh by also triggering the #stepInto event"
 ]
 
 { #category : #'debugging actions' }

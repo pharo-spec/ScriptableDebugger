@@ -79,7 +79,7 @@ SindarinDebugger >> attachTo: aDebugSession [
 	debugSession := aDebugSession.
 	aDebugSession isSindarinDebugSession
 		ifFalse:
-			[ debugSession := SindarinDebugSession forDebugSession: aDebugSession ].
+			[ debugSession := SindarinDebugSession forDebugSession: aDebugSession.].
 	process := debugSession interruptedProcess.
 	debugSession deactivateEventTriggering.
 	^ self
@@ -346,11 +346,31 @@ SindarinDebugger >> step [
 ]
 
 { #category : #stepping }
+SindarinDebugger >> step: anInt [
+	"Call the #step method @anInt times"
+	anInt timesRepeat: [ self step ].
+]
+
+{ #category : #stepping }
 SindarinDebugger >> stepOver [
 	|startContext|
 	startContext := self context.
 	self step.
 	[ (self context == startContext) or: [ (startContext sender isNil) or: [startContext hasSender: self context] ] ] whileFalse: [ self step.].
+]
+
+{ #category : #stepping }
+SindarinDebugger >> stepOver: anInt [
+	"Call the #stepOver method @anInt times"
+	anInt timesRepeat: [ self stepOver ]
+]
+
+{ #category : #stepping }
+SindarinDebugger >> stepThrough [
+	"Hacked for demonstration purposes to have a stepThrough"
+	self signalExceptionIfDebuggedExecutionHasSignalledException.
+	debugSession stepThrough.
+	stepHooks do: [ :aBlock | aBlock value ].
 ]
 
 { #category : #stepping }

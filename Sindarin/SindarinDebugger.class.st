@@ -227,10 +227,23 @@ SindarinDebugger >> method [
 	^ self context method
 ]
 
+{ #category : #astAndAstMapping }
+SindarinDebugger >> node [
+	"Returns the AST node about to be executed by the top context of the execution"
+
+	^ self currentNode
+]
+
 { #category : #'graphical debugger' }
 SindarinDebugger >> openInGraphicalDebugger [
 	debugSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
 	GTGenericStackDebugger openOn: debugSession withFullView: true.
+]
+
+{ #category : #stepping }
+SindarinDebugger >> proceed [
+	"alias of #continue"
+	^ self continue
 ]
 
 { #category : #stackAccessHelpers }

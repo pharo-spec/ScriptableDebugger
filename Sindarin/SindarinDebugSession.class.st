@@ -95,3 +95,8 @@ SindarinDebugSession >> triggerEvent: anEventSelector [
 	triggerEventOn
 		ifTrue: [ ^ super triggerEvent: anEventSelector ]
 ]
+
+{ #category : #accessing }
+SindarinDebugSession >> triggerEventOn [
+	^ triggerEventOn
+]

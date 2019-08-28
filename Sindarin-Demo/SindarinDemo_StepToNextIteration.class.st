@@ -1,16 +1,16 @@
 Class {
-	#name : #'SindarinDemo_AutoStepLibraryCode',
+	#name : #'SindarinDemo_StepToNextIteration',
 	#superclass : #Object,
 	#category : #'Sindarin-Demo'
 }
 
 { #category : #accessing }
-SindarinDemo_AutoStepLibraryCode >> start [
+SindarinDemo_StepToNextIteration >> start [
 	self sum
 ]
 
 { #category : #accessing }
-SindarinDemo_AutoStepLibraryCode >> sum [
+SindarinDemo_StepToNextIteration >> sum [
 	| count |
 	self halt.
 	count := 0.

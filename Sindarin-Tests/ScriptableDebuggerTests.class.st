@@ -2,7 +2,8 @@ Class {
 	#name : #ScriptableDebuggerTests,
 	#superclass : #TestCase,
 	#instVars : [
-		'breakpointsBeforeTest'
+		'breakpointsBeforeTest',
+		'testObjectPoint'
 	],
 	#category : #'Sindarin-Tests'
 }
@@ -106,6 +107,13 @@ ScriptableDebuggerTests >> helperMethod22 [
 ]
 
 { #category : #tests }
+ScriptableDebuggerTests >> helperMethod23 [
+	testObjectPoint sign.
+	testObjectPoint extent: (Point x:3 y: 4).
+	Point new.
+]
+
+{ #category : #tests }
 ScriptableDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
@@ -164,6 +172,7 @@ ScriptableDebuggerTests >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	breakpointsBeforeTest := VirtualBreakpoint all.
 	VirtualBreakpoint all removeAll.
+	testObjectPoint := Point x: 1 y: 2.
 ]
 
 { #category : #running }
@@ -292,12 +301,13 @@ ScriptableDebuggerTests >> testMessageReceiver [
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageSelector [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod6 ].
-	self assert: scdbg messageSelector equals: #helperMethod6.
-	scdbg step; step.
-	self assert: scdbg messageSelector equals: #asInteger.
-	scdbg stepOver.
-	self assert: scdbg messageSelector equals: #x:y:.
+	scdbg := SindarinDebugger debug: [ self helperMethod23 ].
+	scdbg step. "Step to <testObjectPoint sign.> call"
+	self assert: (scdbg message: #sign to: testObjectPoint).
+	scdbg stepOver; stepOver. "Step to <testObjectPoint extent: ...> call"
+	self assert: (scdbg message: #extent: to: testObjectPoint).
+	self assert: (scdbg message: #bogus to: testObjectPoint) not. "Should return false with wrong selector but correct receiver"
+	self assert: (scdbg message: #extent: to: Point new) not. "Shoudl return false with correct selector but wrong receiver"
 ]
 
 { #category : #tests }

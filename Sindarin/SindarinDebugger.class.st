@@ -60,15 +60,15 @@ SindarinDebugger >> arguments [
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentValue [
-	"Returns the value about to be assigned, if the current node is an assignment node."
-	(self node isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
+	"Returns the value about to be assigned, if the current node is an assignment node. Otherwise, returns nil"
+	(self node isAssignment) ifFalse: [ ^ nil. "Error signal: 'Not about to perform a assignment'" ].
 	^ self context at: self currentContextStackSize.
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentVariableName [
-	"Returns the variable name about to be assigned to, if the current node is an assignment node."
-	(self node isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
+	"Returns the variable name about to be assigned to, if the current node is an assignment node. Otherwise, returns nil"
+	(self node isAssignment) ifFalse: [ ^ nil. "Error signal: 'Not about to perform a assignment'" ].
 	^ self node variable name.
 ]
 
@@ -183,6 +183,18 @@ SindarinDebugger >> initialize [
 SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 	^ process isTerminating
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> message: aSelector to: anObject [
+	"Returns whether the execution is about to send a message of selector @aSelector to anObject"
+	| node |
+	node := self node.
+	node isMessage ifFalse: [ ^ false ].
+	node selector = aSelector ifFalse: [ ^ false ].
+	(self messageReceiver == anObject) ifFalse: [ ^ false ].
+	^ true
+
 ]
 
 { #category : #stackAccessHelpers }

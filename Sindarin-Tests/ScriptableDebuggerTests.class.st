@@ -114,6 +114,13 @@ ScriptableDebuggerTests >> helperMethod23 [
 ]
 
 { #category : #tests }
+ScriptableDebuggerTests >> helperMethod24 [
+	| p |
+	p := Point new.
+	p sign.
+]
+
+{ #category : #tests }
 ScriptableDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
@@ -301,6 +308,17 @@ ScriptableDebuggerTests >> testMessageReceiver [
 { #category : #tests }
 ScriptableDebuggerTests >> testMessageSelector [
 	| scdbg |
+	scdbg := SindarinDebugger debug: [ self helperMethod6 ].
+	self assert: scdbg messageSelector equals: #helperMethod6.
+	scdbg step; step.
+	self assert: scdbg messageSelector equals: #asInteger.
+	scdbg stepOver.
+	self assert: scdbg messageSelector equals: #x:y:.
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testMessageTo [
+	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod23 ].
 	scdbg step. "Step to <testObjectPoint sign.> call"
 	self assert: (scdbg message: #sign to: testObjectPoint).
@@ -308,6 +326,17 @@ ScriptableDebuggerTests >> testMessageSelector [
 	self assert: (scdbg message: #extent: to: testObjectPoint).
 	self assert: (scdbg message: #bogus to: testObjectPoint) not. "Should return false with wrong selector but correct receiver"
 	self assert: (scdbg message: #extent: to: Point new) not. "Shoudl return false with correct selector but wrong receiver"
+]
+
+{ #category : #tests }
+ScriptableDebuggerTests >> testMessageToInstanceOf [
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self helperMethod24 ].
+	scdbg step; stepOver: 2. "Step to <p sign> call"
+	self assert: (scdbg message: #sign toInstanceOf: Point).
+	self assert: (scdbg message: #sign toInstanceOf: Object).
+	self assert: (scdbg message: #sign toInstanceOf: Rectangle) not.
+	self assert: (scdbg message: #bogus toInstanceOf: Point) not.
 ]
 
 { #category : #tests }

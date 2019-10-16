@@ -187,12 +187,24 @@ SindarinDebugger >> isExecutionFinished [
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> message: aSelector to: anObject [
-	"Returns whether the execution is about to send a message of selector @aSelector to anObject"
+	"Returns whether the execution is about to send a message of selector @aSelector to @anObject"
 	| node |
 	node := self node.
 	node isMessage ifFalse: [ ^ false ].
 	node selector = aSelector ifFalse: [ ^ false ].
 	(self messageReceiver == anObject) ifFalse: [ ^ false ].
+	^ true
+
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> message: aSelector toInstanceOf: aClass [
+	"Returns whether the execution is about to send a message of selector @aSelector to an instance of class @aClass"
+	| node |
+	node := self node.
+	node isMessage ifFalse: [ ^ false ].
+	node selector = aSelector ifFalse: [ ^ false ].
+	(self messageReceiver isKindOf:  aClass) ifFalse: [ ^ false ].
 	^ true
 
 ]

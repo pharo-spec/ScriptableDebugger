@@ -41,11 +41,11 @@ Bug_TestPassesWhenRanAloneButFailsWhenRanFromTheClass >> testStep [
 	scdbg := SindarinDebugger debug: [ self helperMethod13 ].
 	scdbg step.
 	self halt.
-	node := scdbg currentNode.
+	node := scdbg node.
 	self assert: node isAssignment.
 	self assert: node variable name equals: #a.
 	scdbg step.
-	node := scdbg currentNode.
+	node := scdbg node.
 	self assert: node isMessage.
 	self assert: node selector equals: #asInteger.
 ]

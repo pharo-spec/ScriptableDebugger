@@ -61,15 +61,15 @@ SindarinDebugger >> arguments [
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentValue [
 	"Returns the value about to be assigned, if the current node is an assignment node."
-	(self currentNode isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
+	(self node isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
 	^ self context at: self currentContextStackSize.
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentVariableName [
 	"Returns the variable name about to be assigned to, if the current node is an assignment node."
-	(self currentNode isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
-	^ self currentNode variable name.
+	(self node isAssignment) ifFalse: [ Error signal: 'Not about to perform a assignment' ].
+	^ self node variable name.
 ]
 
 { #category : #start }
@@ -121,7 +121,7 @@ SindarinDebugger >> continue [
 
 	| signalMessageNode exceptionClassBeingSignalled stepHook |
 	stepHook := [ VirtualBreakpoint all
-		detect: [ :vbrkpt | vbrkpt hitTest: self currentNode ]
+		detect: [ :vbrkpt | vbrkpt hitTest: self node ]
 		ifFound: [ :vbrkpt | 
 			self removeStepHook: stepHook.
 			^ vbrkpt ] ].
@@ -131,7 +131,7 @@ SindarinDebugger >> continue [
 		whileFalse: [ self step ].
 	self isExecutionFinished
 		ifTrue: [ ^ nil ].
-	signalMessageNode := self currentNode.
+	signalMessageNode := self node.
 	exceptionClassBeingSignalled := self context
 		at: self context size - signalMessageNode arguments size.
 	exceptionClassBeingSignalled == Halt
@@ -149,13 +149,6 @@ SindarinDebugger >> continue [
 { #category : #private }
 SindarinDebugger >> currentContextStackSize [
 	^ self context basicSize.
-]
-
-{ #category : #astAndAstMapping }
-SindarinDebugger >> currentNode [
-	"Returns the AST node about to be executed by the top context of the execution"
-
-	^ self context method sourceNodeForPC: self context pc
 ]
 
 { #category : #'graphical debugger' }
@@ -196,8 +189,8 @@ SindarinDebugger >> isExecutionFinished [
 SindarinDebugger >> messageArguments [
 	"Returns the arguments of the message about to be sent, if the current node is a message node."
 	| argumentNumber arguments i |
-	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
-	argumentNumber := self currentNode arguments size.
+	(self node isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
+	argumentNumber := self node arguments size.
 	arguments := OrderedCollection new.
 	i := 0.
 	[i = argumentNumber] whileFalse: [ 
@@ -210,15 +203,15 @@ SindarinDebugger >> messageArguments [
 { #category : #stackAccessHelpers }
 SindarinDebugger >> messageReceiver [
 	"Returns the receiver of the message about to be sent, if the current node is a message node."
-	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
-	^ self context at: (self currentContextStackSize) - (self currentNode arguments size).
+	(self node isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
+	^ self context at: (self currentContextStackSize) - (self node arguments size).
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> messageSelector [
 	"Returns the selector of the message about to be sent, if the current node is a message node."
-	(self currentNode isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
-	^ self currentNode selector.
+	(self node isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
+	^ self node selector.
 ]
 
 { #category : #stackAccessHelpers }
@@ -231,7 +224,7 @@ SindarinDebugger >> method [
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
 
-	^ self currentNode
+	^ self context method sourceNodeForPC: self context pc
 ]
 
 { #category : #'graphical debugger' }
@@ -273,7 +266,7 @@ SindarinDebugger >> selector [
 { #category : #breakpoints }
 SindarinDebugger >> setBreakpoint [
 	"Sets a breakpoint on the current node, returns an object reifying the breakpoint."
-	^ self setBreakpointOn: self currentNode.
+	^ self setBreakpointOn: self node.
 ]
 
 { #category : #breakpoints }
@@ -288,7 +281,7 @@ SindarinDebugger >> setBreakpointOn: target [
 { #category : #private }
 SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
 	| unhandledException |
-	((self currentNode isMessage) and: [(self messageSelector = #unhandledErrorDefaultAction:) and: [ self messageReceiver isKindOf: UIManager ]]) ifTrue: [ 
+	((self node isMessage) and: [(self messageSelector = #unhandledErrorDefaultAction:) and: [ self messageReceiver isKindOf: UIManager ]]) ifTrue: [ 
 	"The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
 	"Signalling an exception **in the scriptable debugger's process** to inform the user of this"
 		unhandledException := self messageArguments at: 1.
@@ -317,7 +310,7 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 
 { #category : #private }
 SindarinDebugger >> skipMessageNodeWith: replacementValue [
-	self currentNode arguments do: [ :arg | self context pop ].	"Pop the arguments of the message send from the context's value stack"
+	self node arguments do: [ :arg | self context pop ].	"Pop the arguments of the message send from the context's value stack"
 	"Pop the receiver from the context's value stack"
 	self context pop.
 	"Push the replacement value on the context's value stack, to simulate that the message send happened and returned nil"
@@ -335,12 +328,12 @@ SindarinDebugger >> skipWith: replacementValue [
 
 	"If the current node is a message send or assignment"
 
-	(self currentNode isMessage not
-		and: [ self currentNode isAssignment not ])
+	(self node isMessage not
+		and: [ self node isAssignment not ])
 		ifTrue: [ ^ self ].
-	self currentNode isMessage
+	self node isMessage
 		ifTrue: [ ^ self skipMessageNodeWith: replacementValue ].
-	self currentNode isAssignment
+	self node isAssignment
 		ifTrue: [ ^	self skipAssignmentNodeWith: replacementValue ]
 ]
 

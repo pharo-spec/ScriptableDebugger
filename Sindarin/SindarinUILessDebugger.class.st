@@ -16,7 +16,8 @@ SindarinUILessDebugger class >> openOn: aDebugSession withFullView: aBool andNot
 	The contract is that if a debugger calls #keepAlive:, it should also call #stopKeepingAlive: on @aDebugSession when it closes (passing itself as argument again).
 	The debug session will automatically not be kept alive by this debugger anymore if this debugger gets garbage collected (and DebugSession will only hold a weak reference to this debugger, so it will not prevent its garbage collection)"
 	aDebugSession keepAlive: self.
-	Smalltalk tools inspector openOn: (SindarinDebugger attachTo: aDebugSession)
+	Smalltalk tools inspector openOn: (SindarinDebugger attachTo: aDebugSession).
+	"BAD: this debugger should call #stopKeepingAlive: on aDebugSession when it is close. Unfortunately, since it's just an inspector, I do not know how to make something happen when the inspector window closes"
 ]
 
 { #category : #'debugger declaration' }

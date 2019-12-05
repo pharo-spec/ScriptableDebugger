@@ -33,6 +33,19 @@ SindarinBytecodeToASTCache >> bcToASTMap [
 	^ bcToASTMap
 ]
 
+{ #category : #private }
+SindarinBytecodeToASTCache >> fillMissingBCOffsetsWithLastBCOffsetNodes [
+	| sortedBCOffsets |
+	sortedBCOffsets := bcToASTMap keys asSortedCollection.
+	1 to: sortedBCOffsets size - 1 do: [ :index | 
+		| bcAtIndex bcAtNextIndex |
+		bcAtIndex := sortedBCOffsets at: index.
+		bcAtNextIndex := sortedBCOffsets at: index + 1.
+		bcAtIndex < bcAtNextIndex ifTrue: [ 
+			bcAtIndex to: bcAtNextIndex - 1 do: [ :i | 
+			bcToASTMap at: i put: (bcToASTMap at: bcAtIndex) ] ] ]
+]
+
 { #category : #accessing }
 SindarinBytecodeToASTCache >> firstBcOffset [
 	^ firstBcOffset
@@ -44,16 +57,15 @@ SindarinBytecodeToASTCache >> generateForCompiledMethod: compiledMethod [
 	methodNode := compiledMethod ast.
 	methodIR := methodNode ir.
 	bcToASTMap := Dictionary new.
-	firstBcOffset := methodIR startSequence withAllSuccessors first first
-		                 bytecodeOffset.
+	firstBcOffset := compiledMethod initialPC.
 	currentBcOffset := firstBcOffset.
 	methodIR startSequence withAllSuccessors do: [ :seq | 
 		seq do: [ :ir | 
 			ir ifNotNil: [ 
-				currentBcOffset to: ir bytecodeOffset do: [ :i | 
-				bcToASTMap at: i put: ir sourceNode ].
+				bcToASTMap at: ir bytecodeOffset ifAbsentPut: [ ir sourceNode ].
 				currentBcOffset := ir bytecodeOffset + 1 ] ] ].
-	lastBcOffset := currentBcOffset - 1
+	lastBcOffset := currentBcOffset - 1.
+	self fillMissingBCOffsetsWithLastBCOffsetNodes
 ]
 
 { #category : #accessing }

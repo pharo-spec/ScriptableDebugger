@@ -12,7 +12,7 @@ Class {
 SindarinBytecodeToASTCacheTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	super setUp.	
-	compiledMethod := ScriptableDebuggerTests >> #helperMethod23.
+	compiledMethod := ScriptableDebuggerTests >> #helperMethod12.
 	cache := SindarinBytecodeToASTCache generateForCompiledMethod: compiledMethod
 ]
 
@@ -61,12 +61,13 @@ SindarinBytecodeToASTCacheTest >> testLowerThanFirstBCOffsetAccessTest [
 SindarinBytecodeToASTCacheTest >> testNodeForBCOffsetRangeTest [
 	"As we associate each node to each possible bytecode offset that can refer to it,
 	we have to check that associations are consistent between a range and a node"
+
 	| pcRange |
-	pcRange := 47 to: 48.
+	pcRange := 0 to: cache lastBcOffset.
 	pcRange do: [ :pc | 
 		self
-			testCacheInInterval: pcRange
-			equalsNode: (compiledMethod sourceNodeForPC: pc) ]
+			assert: (cache nodeForPC: pc)
+			identicalTo: (compiledMethod sourceNodeForPC: pc) ]
 ]
 
 { #category : #tests }

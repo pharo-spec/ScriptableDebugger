@@ -59,6 +59,8 @@ SindarinBytecodeToASTCacheTest >> testLowerThanFirstBCOffsetAccessTest [
 
 { #category : #tests }
 SindarinBytecodeToASTCacheTest >> testNodeForBCOffsetRangeTest [
+	"As we associate each node to each possible bytecode offset that can refer to it,
+	we have to check that associations are consistent between a range and a node"
 	| pcRange |
 	pcRange := 47 to: 48.
 	pcRange do: [ :pc | 

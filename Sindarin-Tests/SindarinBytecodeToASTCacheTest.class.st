@@ -1,5 +1,5 @@
 Class {
-	#name : #SindarinBytecodeToASTCacheTestd,
+	#name : #SindarinBytecodeToASTCacheTest,
 	#superclass : #TestCase,
 	#instVars : [
 		'cache',
@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : #running }
-SindarinBytecodeToASTCacheTestd >> setUp [
+SindarinBytecodeToASTCacheTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	super setUp.	
 	compiledMethod := ScriptableDebuggerTests >> #helperMethod23.
@@ -17,23 +17,23 @@ SindarinBytecodeToASTCacheTestd >> setUp [
 ]
 
 { #category : #helpers }
-SindarinBytecodeToASTCacheTestd >> testCacheInInterval: interval equalsNode: aNode [
+SindarinBytecodeToASTCacheTest >> testCacheInInterval: interval equalsNode: aNode [
 	interval do: [ :i | 
 		self assert: (cache nodeForPC: i) identicalTo: aNode ]
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testCachedMethodNode [
+SindarinBytecodeToASTCacheTest >> testCachedMethodNode [
 	self assert: cache methodNode identicalTo: compiledMethod ast
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testFirstBCOffsetTest [
+SindarinBytecodeToASTCacheTest >> testFirstBCOffsetTest [
 	self assert: cache firstBcOffset equals: compiledMethod initialPC
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testHigherThanLastBCOffsetAccessTest [
+SindarinBytecodeToASTCacheTest >> testHigherThanLastBCOffsetAccessTest [
 	| pc |
 	pc := cache lastBcOffset + 5.
 	self
@@ -42,7 +42,7 @@ SindarinBytecodeToASTCacheTestd >> testHigherThanLastBCOffsetAccessTest [
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testLastBCOffsetTest [
+SindarinBytecodeToASTCacheTest >> testLastBCOffsetTest [
 	self
 		assert: cache lastBcOffset
 		equals:
@@ -51,14 +51,14 @@ SindarinBytecodeToASTCacheTestd >> testLastBCOffsetTest [
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testLowerThanFirstBCOffsetAccessTest [
+SindarinBytecodeToASTCacheTest >> testLowerThanFirstBCOffsetAccessTest [
 	self
 		testCacheInInterval: (0 to: cache firstBcOffset - 1)
 		equalsNode: compiledMethod ast
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testNodeForBCOffsetRangeTest [
+SindarinBytecodeToASTCacheTest >> testNodeForBCOffsetRangeTest [
 	| pcRange |
 	pcRange := 47 to: 48.
 	pcRange do: [ :pc | 
@@ -68,7 +68,7 @@ SindarinBytecodeToASTCacheTestd >> testNodeForBCOffsetRangeTest [
 ]
 
 { #category : #tests }
-SindarinBytecodeToASTCacheTestd >> testNodeForBCOffsetTest [
+SindarinBytecodeToASTCacheTest >> testNodeForBCOffsetTest [
 	| pc |
 	pc := 51.
 	self

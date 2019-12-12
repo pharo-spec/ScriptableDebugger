@@ -20,7 +20,9 @@ Class {
 	#instVars : [
 		'process',
 		'debugSession',
-		'stepHooks'
+		'stepHooks',
+		'nodeMapForMethod',
+		'debugStarted'
 	],
 	#category : #Sindarin
 }
@@ -96,7 +98,7 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 
 	| node |
-	node := aContext method sourceNodeForPC: aContext pc.
+	node := (self nodeMapForMethod: aContext method) nodeForPC: aContext pc.
 	node isMessage
 		ifFalse: [ ^ false ].
 	node selector = #signal
@@ -165,6 +167,7 @@ SindarinDebugger >> debug: aBlock [
 		debugSession deactivateEventTriggering.
 	[ self selector = #newProcess] whileFalse: [ self step]. "Step the process to get out of the on:do: context added at the bottom of its stack"
 	[self selector = #newProcess] whileTrue: [ self step ]. "Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
+	debugStarted := true.
 	^ self
 ]
 
@@ -177,6 +180,7 @@ SindarinDebugger >> debugSession [
 { #category : #initialization }
 SindarinDebugger >> initialize [
 	stepHooks := OrderedCollection new.
+	debugStarted := false
 ]
 
 { #category : #stackAccess }
@@ -248,7 +252,29 @@ SindarinDebugger >> method [
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
 
-	^ self context method sourceNodeForPC: self context pc
+	debugStarted ifFalse: [ 
+		"Until the debug session is started, node is returned using the unoptimized version"
+		"Sindarin starts by executing controlled steps to exit the caller code (e.g. tests)
+		before entering the actual debugged code, and we do not want to cache nodes for the 
+		caller code."
+		^ self context method sourceNodeForPC: self context pc ].
+	"Once the hand is given to the tool or user, we start caching nodes for better performance"
+	^ self nodeMap nodeForPC: self context pc
+]
+
+{ #category : #astAndAstMapping }
+SindarinDebugger >> nodeMap [
+	^self nodeMapForMethod: self context method 
+]
+
+{ #category : #astAndAstMapping }
+SindarinDebugger >> nodeMapForMethod: aCompiledMethod [
+	nodeMapForMethod ifNil: [ nodeMapForMethod := Dictionary new ].
+	^ (nodeMapForMethod
+		   at: aCompiledMethod methodClass name
+		   ifAbsentPut: [ Dictionary new ])
+		  at: aCompiledMethod selector
+		  ifAbsentPut: [ SindarinBytecodeToASTCache generateForCompiledMethod: aCompiledMethod ]
 ]
 
 { #category : #'graphical debugger' }

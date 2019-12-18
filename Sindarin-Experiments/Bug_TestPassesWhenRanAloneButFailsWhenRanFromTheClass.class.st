@@ -37,6 +37,7 @@ Bug_TestPassesWhenRanAloneButFailsWhenRanFromTheClass >> tearDown [
 
 { #category : #tests }
 Bug_TestPassesWhenRanAloneButFailsWhenRanFromTheClass >> testStep [
+	<haltOrBreakpointForTesting>
 	| node scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod13 ].
 	scdbg step.
@@ -47,5 +48,5 @@ Bug_TestPassesWhenRanAloneButFailsWhenRanFromTheClass >> testStep [
 	scdbg step.
 	node := scdbg node.
 	self assert: node isMessage.
-	self assert: node selector equals: #asInteger.
+	self assert: node selector equals: #asInteger
 ]

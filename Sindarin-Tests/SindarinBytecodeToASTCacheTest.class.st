@@ -12,7 +12,7 @@ Class {
 SindarinBytecodeToASTCacheTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	super setUp.	
-	compiledMethod := ScriptableDebuggerTests >> #helperMethod12.
+	compiledMethod := SindarinDebuggerTests >> #helperMethod12.
 	cache := SindarinBytecodeToASTCache generateForCompiledMethod: compiledMethod
 ]
 

@@ -19,10 +19,10 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'process',
-		'debugSession',
 		'stepHooks',
 		'nodeMapForMethod',
-		'debugStarted'
+		'debugStarted',
+		'sindarinSession'
 	],
 	#category : #Sindarin
 }
@@ -43,8 +43,7 @@ SindarinDebugger class >> debug: aBlock [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
-	"Does not work for the GT debugger"
-	debugSession activateEventTriggering.
+	sindarinSession activateEventTriggering.
 	self refreshAttachedGraphicalDebugger.
 ]
 
@@ -76,18 +75,19 @@ SindarinDebugger >> assignmentVariableName [
 
 { #category : #start }
 SindarinDebugger >> attachTo: aDebugSession [
-	"Attaches this scriptable debugger to an already existing instance of DebugSession or DebugSessionPlus"
+	"Attaches this scriptable debugger to an already existing instance of DebugSession or SindarinDebugSession"
 
-	debugSession := aDebugSession asSindarinDebugSession.
-	process := debugSession interruptedProcess.
-	debugSession deactivateEventTriggering.
+	sindarinSession := aDebugSession asSindarinDebugSession.
+	process := sindarinSession interruptedProcess.
+	sindarinSession deactivateEventTriggering.
 	^ self
 ]
 
 { #category : #stackAccess }
 SindarinDebugger >> context [
 	"Returns a reification of the current stack-frame."
-	^ debugSession interruptedContext.
+
+	^ self debugSession interruptedContext
 ]
 
 { #category : #private }
@@ -152,26 +152,28 @@ SindarinDebugger >> currentContextStackSize [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
-	"Does not work for the GT debugger"
-	debugSession deactivateEventTriggering.
+	sindarinSession deactivateEventTriggering
 ]
 
 { #category : #start }
 SindarinDebugger >> debug: aBlock [
-	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
+	process := aBlock newProcess
+		name: 'ExecutionDebuggedByScriptableDebugger'.
 	"process on: Exception do: [:ex | DebuggedExecutionSignalledAnException signalWithException: ex. ex resume ]."
-	debugSession := SindarinDebugSession newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
-		debugSession deactivateEventTriggering.
-	[ self selector = #newProcess] whileFalse: [ self step]. "Step the process to get out of the on:do: context added at the bottom of its stack"
-	[self selector = #newProcess] whileTrue: [ self step ]. "Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
-	debugStarted := true.
-	^ self
+	sindarinSession := SindarinDebugSession
+		newWithName: 'ScriptableDebuggerDebugSession'
+		forProcess: process.
+	sindarinSession deactivateEventTriggering.
+	[ self selector = #newProcess ] whileFalse: [ self step ].	"Step the process to get out of the on:do: context added at the bottom of its stack"
+	[ self selector = #newProcess ] whileTrue: [ self step ].	"Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
+	debugStarted := true
 ]
 
 { #category : #accessing }
 SindarinDebugger >> debugSession [
 	"Returns the DebugSession representing the execution this ScriptableDebugger is debugging"
-	^ debugSession 
+
+	^ sindarinSession debugSession
 ]
 
 { #category : #initialization }
@@ -276,8 +278,8 @@ SindarinDebugger >> nodeMapForMethod: aCompiledMethod [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> openInGraphicalDebugger [
-	debugSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
-	GTGenericStackDebugger openOn: debugSession withFullView: true.
+	sindarinSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
+	GTGenericStackDebugger openOn: sindarinSession withFullView: true.
 ]
 
 { #category : #stepping }
@@ -294,8 +296,7 @@ SindarinDebugger >> receiver [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> refreshAttachedGraphicalDebugger [
-	"Does not work for the GT debugger"
-	debugSession refreshAttachedDebugger.
+	sindarinSession refreshAttachedDebugger.
 ]
 
 { #category : #'step hook' }
@@ -387,15 +388,16 @@ SindarinDebugger >> skipWith: replacementValue [
 { #category : #stackAccess }
 SindarinDebugger >> stack [
 	"Returns a list of context objects representing the current call stack."
-	^ debugSession stack
+	^ self debugSession stack
 ]
 
 { #category : #stepping }
 SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
+
 	self signalExceptionIfDebuggedExecutionHasSignalledException.
-	debugSession stepInto.
-	stepHooks do: [ :aBlock | aBlock value ].
+	self debugSession stepInto.
+	stepHooks do: [ :aBlock | aBlock value ]
 ]
 
 { #category : #stepping }
@@ -421,9 +423,10 @@ SindarinDebugger >> stepOver: anInt [
 { #category : #stepping }
 SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
+
 	self signalExceptionIfDebuggedExecutionHasSignalledException.
-	debugSession stepThrough.
-	stepHooks do: [ :aBlock | aBlock value ].
+	self debugSession stepThrough.
+	stepHooks do: [ :aBlock | aBlock value ]
 ]
 
 { #category : #stepping }

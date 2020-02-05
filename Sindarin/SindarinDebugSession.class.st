@@ -94,7 +94,8 @@ SindarinDebugSession >> stepOver: aContext [
 
 { #category : #'debugging actions' }
 SindarinDebugSession >> terminate [
-	canBeTerminated ifTrue: [ ^ self debugSession terminate ].
+	canBeTerminated
+		ifTrue: [ ^ self debugSession terminate ]
 ]
 
 { #category : #'debugging actions' }

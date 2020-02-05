@@ -78,7 +78,7 @@ SindarinDebugger >> attachTo: aDebugSession [
 	"Attaches this scriptable debugger to an already existing instance of DebugSession or SindarinDebugSession"
 
 	sindarinSession := aDebugSession asSindarinDebugSession.
-	process := sindarinSession interruptedProcess.
+	process := aDebugSession interruptedProcess.
 	sindarinSession deactivateEventTriggering.
 	^ self
 ]

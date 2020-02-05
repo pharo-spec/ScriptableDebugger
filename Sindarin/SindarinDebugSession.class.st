@@ -5,7 +5,7 @@ StepRecords: LinkedList[StepRecord]
 "
 Class {
 	#name : #SindarinDebugSession,
-	#superclass : #DebugSession,
+	#superclass : #Object,
 	#instVars : [
 		'triggerEventOn',
 		'canBeTerminated',
@@ -25,6 +25,7 @@ SindarinDebugSession class >> newWithName: aString forProcess: aProcess [
 { #category : #initialization }
 SindarinDebugSession >> activateEventTriggering [
 	triggerEventOn := true.
+	self flag: 'Why not refreshing?'.
 	"self refreshAttachedDebugger."
 ]
 
@@ -65,16 +66,10 @@ SindarinDebugSession >> initialize [
 	canBeTerminated := true
 ]
 
-{ #category : #testing }
-SindarinDebugSession >> isSindarinDebugSession [
-	^ true
-]
-
 { #category : #initialization }
 SindarinDebugSession >> refreshAttachedDebugger [
-	"The following lines are to force the debugger to update itself based on its debugSession"
-	self triggerEvent: #contextChanged.
-	"self triggerEvent: #stepInto" "Since SpecDebugger's #updateContextChanged eventually calls the same #updateStep method that its #updateStepInto method does, there is no point in causing a double refresh by also triggering the #stepInto event"
+	"The following lines are to force possible debuggers observing the same debug session to update themselves based"
+	self debugSession triggerEvent: #contextChanged
 ]
 
 { #category : #'debugging actions' }
@@ -82,9 +77,9 @@ SindarinDebugSession >> stepInto: aContext [
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self flag: 'Why the image gets locked? Please investigate.'.
 
-	self interruptedProcess isTerminating
+	self debugSession interruptedProcess isTerminating
 		ifTrue: [ SteppingATerminatingProcess signal ].
-	^ super stepInto: aContext
+	^ self debugSession stepInto: aContext
 ]
 
 { #category : #'debugging actions' }
@@ -92,23 +87,18 @@ SindarinDebugSession >> stepOver: aContext [
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self flag: 'Why the image gets locked? Please investigate.'.
 	
-	self interruptedProcess isTerminating
+	self debugSession interruptedProcess isTerminating
 		ifTrue: [ SteppingATerminatingProcess signal ].
-	^ super stepOver: aContext
+	^ self debugSession stepOver: aContext
 ]
 
 { #category : #'debugging actions' }
 SindarinDebugSession >> terminate [
-	canBeTerminated ifTrue: [ ^ super terminate ].
+	canBeTerminated ifTrue: [ ^ self debugSession terminate ].
 ]
 
 { #category : #'debugging actions' }
 SindarinDebugSession >> triggerEvent: anEventSelector [
 	triggerEventOn
-		ifTrue: [ ^ super triggerEvent: anEventSelector ]
-]
-
-{ #category : #accessing }
-SindarinDebugSession >> triggerEventOn [
-	^ triggerEventOn
+		ifTrue: [ ^ self debugSession triggerEvent: anEventSelector ]
 ]

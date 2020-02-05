@@ -19,10 +19,10 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'process',
-		'debugSession',
 		'stepHooks',
 		'nodeMapForMethod',
-		'debugStarted'
+		'debugStarted',
+		'sindarinSession'
 	],
 	#category : #Sindarin
 }
@@ -43,54 +43,56 @@ SindarinDebugger class >> debug: aBlock [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
-	"Does not work for the GT debugger"
-	debugSession activateEventTriggering.
-	self refreshAttachedGraphicalDebugger.
+	sindarinSession activateEventTriggering.
+	self refreshAttachedGraphicalDebugger
 ]
 
 { #category : #'step hook' }
 SindarinDebugger >> addStepHook: aBlock [
 	"Adds aBlock to the list of step hooks. Step hooks are executed after each step of the execution"
+
 	stepHooks add: aBlock
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> arguments [
 	"Returns the arguments of the current stack-frame."
+
 	^ self context arguments
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentValue [
 	"Returns the value about to be assigned, if the current node is an assignment node. Otherwise, returns nil"
-	(self node isAssignment) ifFalse: [ ^ nil. "Error signal: 'Not about to perform a assignment'" ].
-	^ self context at: self currentContextStackSize.
+
+	self node isAssignment
+		ifFalse: [ ^ nil	"Error signal: 'Not about to perform a assignment'" ].
+	^ self context at: self currentContextStackSize
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentVariableName [
 	"Returns the variable name about to be assigned to, if the current node is an assignment node. Otherwise, returns nil"
-	(self node isAssignment) ifFalse: [ ^ nil. "Error signal: 'Not about to perform a assignment'" ].
-	^ self node variable name.
+
+	self node isAssignment
+		ifFalse: [ ^ nil	"Error signal: 'Not about to perform a assignment'" ].
+	^ self node variable name
 ]
 
 { #category : #start }
 SindarinDebugger >> attachTo: aDebugSession [
-	"Attaches this scriptable debugger to an already existing instance of DebugSession or DebugSessionPlus"
+	"Attaches this scriptable debugger to an already existing instance of DebugSession or SindarinDebugSession"
 
-	debugSession := aDebugSession.
-	aDebugSession isSindarinDebugSession
-		ifFalse:
-			[ debugSession := SindarinDebugSession forDebugSession: aDebugSession.].
-	process := debugSession interruptedProcess.
-	debugSession deactivateEventTriggering.
-	^ self
+	sindarinSession := aDebugSession asSindarinDebugSession.
+	process := aDebugSession interruptedProcess.
+	sindarinSession deactivateEventTriggering
 ]
 
 { #category : #stackAccess }
 SindarinDebugger >> context [
 	"Returns a reification of the current stack-frame."
-	^ debugSession interruptedContext.
+
+	^ self debugSession interruptedContext
 ]
 
 { #category : #private }
@@ -122,6 +124,7 @@ SindarinDebugger >> continue [
 	- has finished. In this case return nil."
 
 	| signalMessageNode exceptionClassBeingSignalled stepHook |
+	self flag: 'Sorry, this is shit :)'.
 	stepHook := [ VirtualBreakpoint all
 		detect: [ :vbrkpt | vbrkpt hitTest: self node ]
 		ifFound: [ :vbrkpt | 
@@ -150,31 +153,34 @@ SindarinDebugger >> continue [
 
 { #category : #private }
 SindarinDebugger >> currentContextStackSize [
-	^ self context basicSize.
+	^ self context basicSize
 ]
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
-	"Does not work for the GT debugger"
-	debugSession deactivateEventTriggering.
+	sindarinSession deactivateEventTriggering
 ]
 
 { #category : #start }
 SindarinDebugger >> debug: aBlock [
-	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
+	process := aBlock newProcess
+		name: 'ExecutionDebuggedByScriptableDebugger'.
+
 	"process on: Exception do: [:ex | DebuggedExecutionSignalledAnException signalWithException: ex. ex resume ]."
-	debugSession := SindarinDebugSession newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
-		debugSession deactivateEventTriggering.
-	[ self selector = #newProcess] whileFalse: [ self step]. "Step the process to get out of the on:do: context added at the bottom of its stack"
-	[self selector = #newProcess] whileTrue: [ self step ]. "Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
-	debugStarted := true.
-	^ self
+	sindarinSession := SindarinDebugSession
+		newWithName: 'ScriptableDebuggerDebugSession'
+		forProcess: process.
+	sindarinSession deactivateEventTriggering.
+	[ self selector = #newProcess ] whileFalse: [ self step ].	"Step the process to get out of the on:do: context added at the bottom of its stack"
+	[ self selector = #newProcess ] whileTrue: [ self step ].	"Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
+	debugStarted := true
 ]
 
 { #category : #accessing }
 SindarinDebugger >> debugSession [
 	"Returns the DebugSession representing the execution this ScriptableDebugger is debugging"
-	^ debugSession 
+
+	^ sindarinSession debugSession
 ]
 
 { #category : #initialization }
@@ -186,65 +192,82 @@ SindarinDebugger >> initialize [
 { #category : #stackAccess }
 SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
+
 	^ process isTerminating
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> message: aSelector to: anObject [
 	"Returns whether the execution is about to send a message of selector @aSelector to @anObject"
+
 	| node |
 	node := self node.
-	node isMessage ifFalse: [ ^ false ].
-	node selector = aSelector ifFalse: [ ^ false ].
-	(self messageReceiver == anObject) ifFalse: [ ^ false ].
+	node isMessage
+		ifFalse: [ ^ false ].
+	node selector = aSelector
+		ifFalse: [ ^ false ].
+	self messageReceiver == anObject
+		ifFalse: [ ^ false ].
 	^ true
-
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> message: aSelector toInstanceOf: aClass [
 	"Returns whether the execution is about to send a message of selector @aSelector to an instance of class @aClass"
+
 	| node |
 	node := self node.
-	node isMessage ifFalse: [ ^ false ].
-	node selector = aSelector ifFalse: [ ^ false ].
-	(self messageReceiver isKindOf:  aClass) ifFalse: [ ^ false ].
+	node isMessage
+		ifFalse: [ ^ false ].
+	node selector = aSelector
+		ifFalse: [ ^ false ].
+	(self messageReceiver isKindOf: aClass)
+		ifFalse: [ ^ false ].
 	^ true
-
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> messageArguments [
 	"Returns the arguments of the message about to be sent, if the current node is a message node."
+
 	| argumentNumber arguments i |
-	(self node isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
+	self node isMessage
+		ifFalse: [ Error signal: 'Not about to send a message' ].
 	argumentNumber := self node arguments size.
 	arguments := OrderedCollection new.
 	i := 0.
-	[i = argumentNumber] whileFalse: [ 
-		arguments add: (self context at: self currentContextStackSize - argumentNumber + i + 1).
-		i := i + 1.
-	].
-	^ arguments.
+	[ i = argumentNumber ]
+		whileFalse: [ arguments
+				add:
+					(self context
+						at: self currentContextStackSize - argumentNumber + i + 1).
+			i := i + 1 ].
+	^ arguments
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> messageReceiver [
 	"Returns the receiver of the message about to be sent, if the current node is a message node."
-	(self node isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
-	^ self context at: (self currentContextStackSize) - (self node arguments size).
+
+	self node isMessage
+		ifFalse: [ Error signal: 'Not about to send a message' ].
+	^ self context
+		at: self currentContextStackSize - self node arguments size
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> messageSelector [
 	"Returns the selector of the message about to be sent, if the current node is a message node."
-	(self node isMessage) ifFalse: [ Error signal: 'Not about to send a message' ].
-	^ self node selector.
+
+	self node isMessage
+		ifFalse: [ Error signal: 'Not about to send a message' ].
+	^ self node selector
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> method [
 	"Returns the method of the current stack-frame."
+
 	^ self context method
 ]
 
@@ -252,97 +275,110 @@ SindarinDebugger >> method [
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
 
-	debugStarted ifFalse: [ 
-		"Until the debug session is started, node is returned using the unoptimized version"
-		"Sindarin starts by executing controlled steps to exit the caller code (e.g. tests)
+	debugStarted
+		ifFalse:
+			[ "Until the debug session is started, node is returned using the unoptimized version" "Sindarin starts by executing controlled steps to exit the caller code (e.g. tests)
 		before entering the actual debugged code, and we do not want to cache nodes for the 
-		caller code."
-		^ self context method sourceNodeForPC: self context pc ].
+		caller code." ^ self context method sourceNodeForPC: self context pc ].
 	"Once the hand is given to the tool or user, we start caching nodes for better performance"
 	^ self nodeMap nodeForPC: self context pc
 ]
 
 { #category : #astAndAstMapping }
 SindarinDebugger >> nodeMap [
-	^self nodeMapForMethod: self context method 
+	^ self nodeMapForMethod: self context method
 ]
 
 { #category : #astAndAstMapping }
 SindarinDebugger >> nodeMapForMethod: aCompiledMethod [
 	nodeMapForMethod ifNil: [ nodeMapForMethod := Dictionary new ].
 	^ (nodeMapForMethod
-		   at: aCompiledMethod methodClass name
-		   ifAbsentPut: [ Dictionary new ])
-		  at: aCompiledMethod selector
-		  ifAbsentPut: [ SindarinBytecodeToASTCache generateForCompiledMethod: aCompiledMethod ]
+		at: aCompiledMethod methodClass name
+		ifAbsentPut: [ Dictionary new ])
+		at: aCompiledMethod selector
+		ifAbsentPut: [ SindarinBytecodeToASTCache
+				generateForCompiledMethod: aCompiledMethod ]
 ]
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> openInGraphicalDebugger [
-	debugSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
-	GTGenericStackDebugger openOn: debugSession withFullView: true.
+	sindarinSession canBeTerminated: false.	"Prevents the graphical debugger from terminating the debug session when it's closed."
+	self
+		flag:
+			'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
 { #category : #stepping }
 SindarinDebugger >> proceed [
 	"alias of #continue"
+
 	^ self continue
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> receiver [
 	"Returns the receiver of the current stack-frame."
+
 	^ self context receiver
 ]
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> refreshAttachedGraphicalDebugger [
-	"Does not work for the GT debugger"
-	debugSession refreshAttachedDebugger.
+	sindarinSession refreshAttachedDebugger
 ]
 
 { #category : #'step hook' }
 SindarinDebugger >> removeStepHook: aBlock [
 	"Remove aBlock from the list of step hooks"
+
 	stepHooks remove: aBlock
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> selector [
 	"Returns the selector of the current stack-frame."
+
 	^ self context selector
 ]
 
 { #category : #breakpoints }
 SindarinDebugger >> setBreakpoint [
 	"Sets a breakpoint on the current node, returns an object reifying the breakpoint."
-	^ self setBreakpointOn: self node.
+
+	^ self setBreakpointOn: self node
 ]
 
 { #category : #breakpoints }
 SindarinDebugger >> setBreakpointOn: target [
 	"Sets a breakpoint on target (a node or a compiled method), returns an object reifying the breakpoint."
-	| astTarget|
+
+	| astTarget |
 	astTarget := target.
-	(target isKindOf: CompiledMethod) ifTrue: [ astTarget := target ast ].
-	^ VirtualBreakpoint newOnNode: astTarget setBy: self.
+	(target isKindOf: CompiledMethod)
+		ifTrue: [ astTarget := target ast ].
+	^ VirtualBreakpoint newOnNode: astTarget setBy: self
 ]
 
 { #category : #private }
 SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
 	| unhandledException |
-	((self node isMessage) and: [(self messageSelector = #unhandledErrorDefaultAction:) and: [ self messageReceiver isKindOf: UIManager ]]) ifTrue: [ 
-	"The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
-	"Signalling an exception **in the scriptable debugger's process** to inform the user of this"
-		unhandledException := self messageArguments at: 1.
-		UnhandledExceptionSignalledByADebuggedExecution signalWithException: unhandledException.
-	].
+	self flag: 'Could we not simplify this?'.
+	(self node isMessage
+		and: [ self messageSelector = #unhandledErrorDefaultAction:
+				and: [ self messageReceiver isKindOf: UIManager ] ])
+		ifTrue:
+			[ "The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
+			"Signalling an exception **in the scriptable debugger's process** to inform the user of this"
+			unhandledException := self messageArguments at: 1.
+			UnhandledExceptionSignalledByADebuggedExecution
+				signalWithException: unhandledException ]
 ]
 
 { #category : #stepping }
 SindarinDebugger >> skip [
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-	self skipWith: nil.
+
+	self skipWith: nil
 ]
 
 { #category : #private }
@@ -390,53 +426,63 @@ SindarinDebugger >> skipWith: replacementValue [
 { #category : #stackAccess }
 SindarinDebugger >> stack [
 	"Returns a list of context objects representing the current call stack."
-	^ debugSession stack
+
+	^ self debugSession stack
 ]
 
 { #category : #stepping }
 SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
+
 	self signalExceptionIfDebuggedExecutionHasSignalledException.
-	debugSession stepInto.
-	stepHooks do: [ :aBlock | aBlock value ].
+	self debugSession stepInto.
+	stepHooks do: [ :aBlock | aBlock value ]
 ]
 
 { #category : #stepping }
 SindarinDebugger >> step: anInt [
 	"Call the #step method @anInt times"
-	anInt timesRepeat: [ self step ].
+
+	anInt timesRepeat: [ self step ]
 ]
 
 { #category : #stepping }
 SindarinDebugger >> stepOver [
-	|startContext|
+	| startContext |
 	startContext := self context.
 	self step.
-	[ (self context == startContext) or: [ (startContext sender isNil) or: [startContext hasSender: self context] ] ] whileFalse: [ self step.].
+	[ self context == startContext
+		or: [ startContext sender isNil
+				or: [ startContext hasSender: self context ] ] ]
+		whileFalse: [ self step ]
 ]
 
 { #category : #stepping }
 SindarinDebugger >> stepOver: anInt [
 	"Call the #stepOver method @anInt times"
+
 	anInt timesRepeat: [ self stepOver ]
 ]
 
 { #category : #stepping }
 SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
+
 	self signalExceptionIfDebuggedExecutionHasSignalledException.
-	debugSession stepThrough.
-	stepHooks do: [ :aBlock | aBlock value ].
+	self debugSession stepThrough.
+	stepHooks do: [ :aBlock | aBlock value ]
 ]
 
 { #category : #stepping }
 SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
+
 	aBlock whileFalse: [ self step ]
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> temporaries [
 	"Returns the temporary variables of the current stack-frame."
-	^ self context temporaries.
+
+	^ self context temporaries
 ]

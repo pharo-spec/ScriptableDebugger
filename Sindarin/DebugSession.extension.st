@@ -1,6 +1,6 @@
 Extension { #name : #DebugSession }
 
 { #category : #'*Sindarin' }
-DebugSession >> isSindarinDebugSession [
-	^ false
+DebugSession >> asSindarinDebugSession [
+	^ SindarinDebugSession new debugSession: self
 ]

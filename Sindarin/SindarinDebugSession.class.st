@@ -8,27 +8,29 @@ Class {
 	#superclass : #DebugSession,
 	#instVars : [
 		'triggerEventOn',
-		'canBeTerminated'
+		'canBeTerminated',
+		'debugSession'
 	],
 	#category : #Sindarin
 }
 
 { #category : #'instance creation' }
-SindarinDebugSession class >> forDebugSession: aDebugSession [
-	"Creates a DebugSessionPlus on the same execution as aDebugSession"
-	^ self newWithName: aDebugSession name forProcess: aDebugSession interruptedProcess.
-	
-]
-
-{ #category : #'instance creation' }
 SindarinDebugSession class >> newWithName: aString forProcess: aProcess [
-	^ self new name: aString; process: aProcess context: aProcess suspendedContext; yourself.
+	^ DebugSession new
+		name: aString;
+		process: aProcess context: aProcess suspendedContext;
+		asSindarinDebugSession
 ]
 
 { #category : #initialization }
 SindarinDebugSession >> activateEventTriggering [
 	triggerEventOn := true.
 	"self refreshAttachedDebugger."
+]
+
+{ #category : #converting }
+SindarinDebugSession >> asSindarinDebugSession [
+	^ self
 ]
 
 { #category : #accessing }
@@ -44,6 +46,16 @@ SindarinDebugSession >> canBeTerminated: anObject [
 { #category : #initialization }
 SindarinDebugSession >> deactivateEventTriggering [
 	triggerEventOn := false.
+]
+
+{ #category : #accessing }
+SindarinDebugSession >> debugSession [
+	^ debugSession
+]
+
+{ #category : #accessing }
+SindarinDebugSession >> debugSession: anObject [
+	debugSession := anObject
 ]
 
 { #category : #initialization }

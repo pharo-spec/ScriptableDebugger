@@ -308,6 +308,11 @@ SindarinDebugger >> openInGraphicalDebugger [
 			'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
+{ #category : #accessing }
+SindarinDebugger >> pc [
+	^ self context pc
+]
+
 { #category : #stepping }
 SindarinDebugger >> proceed [
 	"alias of #continue"
@@ -485,4 +490,14 @@ SindarinDebugger >> temporaries [
 	"Returns the temporary variables of the current stack-frame."
 
 	^ self context temporaries
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> temporaryNamed: aSymbol [
+	^self temporaries at: aSymbol
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> topStack [
+	^self context top
 ]

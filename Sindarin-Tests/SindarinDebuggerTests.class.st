@@ -559,6 +559,26 @@ SindarinDebuggerTests >> testTemporaries [
 ]
 
 { #category : #tests }
+SindarinDebuggerTests >> testTemporaryNamed [
+	| dbg |
+	dbg := SindarinDebugger debug: [ self helperMethod10 ].
+	dbg step.
+	self assert: dbg temporaries size equals: 1.
+	self assert: (dbg temporaryNamed: #a) equals: nil.
+	dbg step.
+	self assert: (dbg temporaryNamed: #a) equals: 5
+]
+
+{ #category : #tests }
+SindarinDebuggerTests >> testTopStack [
+	| a dbg |
+	a := 1.
+	dbg := SindarinDebugger debug: [ a := 2 ].
+	dbg step.
+	self assert: dbg topStack equals: 2
+]
+
+{ #category : #tests }
 SindarinDebuggerTests >> testWhenHitBreakpoint [
 	| breakpoint toggle scdbg |
 	toggle := false.

@@ -8,21 +8,21 @@ Class {
 	#category : #'Sindarin-Tests'
 }
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod1 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod10 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod11 [
 	| a |
 	a := 5.
@@ -31,145 +31,145 @@ SindarinDebuggerTests >> helperMethod11 [
 	^ 3
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod12 [
 	| i |
 	i := 5.
 	[ i=0 ] whileFalse: [ i := i - 1 ].
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod13 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod14 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod15 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod16 [
 	^ 1+1.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod17: storeContextBlock [
 	storeContextBlock value: thisContext.
 	Point x:5 y: 7.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod18: anArg with: anotherArg [
 	Point x: 5 y: 7.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod19 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod2 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod20 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod21 [
 	self helperMethod22
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod22 [
 	^ Point new
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod23 [
 	testObjectPoint sign.
 	testObjectPoint extent: (Point x:3 y: 4).
 	Point new.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod24 [
 	| p |
 	p := Point new.
 	p sign.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod4 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod5 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod6 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod7 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod8 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod9 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #running }
 SindarinDebuggerTests >> runCaseManaged [
 	^ self runCase
 ]

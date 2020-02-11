@@ -401,6 +401,17 @@ SindarinDebuggerTests >> testOnceBreakpoint [
 ]
 
 { #category : #tests }
+SindarinDebuggerTests >> testPc [
+	| dbg |
+	dbg := SindarinDebugger
+		debug: [ | a p |
+			a := 2.
+			p := Point x: 2 y: 3 ].
+	dbg step; step; step.
+	self assert: dbg pc equals: dbg context pc
+]
+
+{ #category : #tests }
 SindarinDebuggerTests >> testReceiver [
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod8 ].

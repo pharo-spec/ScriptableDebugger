@@ -85,7 +85,13 @@ SindarinDebugger >> attachTo: aDebugSession [
 
 	sindarinSession := aDebugSession asSindarinDebugSession.
 	process := aDebugSession interruptedProcess.
-	sindarinSession deactivateEventTriggering
+	sindarinSession deactivateEventTriggering.
+	debugStarted := true
+]
+
+{ #category : #astAndAstMapping }
+SindarinDebugger >> bestNodeFor: anInterval [
+	^self node methodNode bestNodeFor: anInterval
 ]
 
 { #category : #stackAccess }
@@ -414,10 +420,18 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 ]
 
 { #category : #stepping }
-SindarinDebugger >> skipToPC: aPC [
-	"Skips execution until program counter reaches aPC - 1."
+SindarinDebugger >> skipToPC: aProgramNode [
+	"Skips execution until program counter reaches aProgramNode."
+	[ self node == aProgramNode ] whileFalse: [ self skip ]
+]
 
-	[self pc < aPC] whileTrue: [ self skip ]
+{ #category : #stepping }
+SindarinDebugger >> skipToPC: aProgramNode skipToNextNode: skipTargetNode [
+	"Skips execution until program counter reaches aProgramNode."
+
+	[ self node == aProgramNode ] whileFalse: [ self skip ].
+	aProgramNode isReturn	ifTrue: [ ^ self ].
+	skipTargetNode ifTrue: [ self skip ]
 ]
 
 { #category : #stepping }

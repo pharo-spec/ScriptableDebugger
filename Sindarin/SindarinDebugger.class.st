@@ -414,6 +414,13 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 ]
 
 { #category : #stepping }
+SindarinDebugger >> skipToPC: aPC [
+	"Skips execution until program counter reaches aPC - 1."
+
+	[self pc < aPC] whileTrue: [ self skip ]
+]
+
+{ #category : #stepping }
 SindarinDebugger >> skipWith: replacementValue [
 	"If it is a message-send or assignment, skips the execution of the current instruction, and puts the replacementValue on the execution stack."
 

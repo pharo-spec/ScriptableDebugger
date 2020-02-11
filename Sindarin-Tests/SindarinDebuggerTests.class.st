@@ -11,6 +11,7 @@ Class {
 { #category : #helpers }
 SindarinDebuggerTests >> helperMethod1 [
 	| a |
+	a := 1.
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
@@ -453,6 +454,28 @@ SindarinDebuggerTests >> testSkip [
 	scdbg skip.
 	scdbg step.
 	self assert: p equals: nil
+]
+
+{ #category : #tests }
+SindarinDebuggerTests >> testSkipToPC [
+	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	dbg step; stepOver; stepOver.
+	realExecPC := dbg pc.
+	realExecNode := dbg node.
+	realValueOfA := (dbg temporaryNamed: #a).
+	realExecTopStack := dbg topStack.
+	
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	
+	dbg step; stepOver; skipToPC: realExecPC. 
+	self assert: dbg pc equals: realExecPC.
+	self assert: dbg node equals: realExecNode.
+	self assert: realValueOfA equals: 5.
+	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: dbg topStack equals: realExecTopStack
 ]
 
 { #category : #tests }

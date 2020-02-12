@@ -121,7 +121,7 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 	^ false
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping -  auto' }
 SindarinDebugger >> continue [
 	"Steps the execution until it:
 	- is about to signal a Halt exception. In this case return #halt.
@@ -319,7 +319,7 @@ SindarinDebugger >> pc [
 	^ self context pc
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping -  auto' }
 SindarinDebugger >> proceed [
 	"alias of #continue"
 
@@ -385,14 +385,14 @@ SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
 				signalWithException: unhandledException ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
 
 	self skipWith: nil
 ]
 
-{ #category : #private }
+{ #category : #'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 	self context pop.
 	"Pop the value to be assigned"
@@ -405,7 +405,7 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
 ]
 
-{ #category : #private }
+{ #category : #'stepping -  skip' }
 SindarinDebugger >> skipMessageNodeWith: replacementValue [
 	self node arguments do: [ :arg | self context pop ].	"Pop the arguments of the message send from the context's value stack"
 	"Pop the receiver from the context's value stack"
@@ -419,7 +419,7 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping -  skip' }
 SindarinDebugger >> skipToPC: aProgramNode [
 	"Skips execution until program counter reaches aProgramNode."
 	[ self node == aProgramNode ] whileFalse: [ self skip ]
@@ -434,7 +434,7 @@ SindarinDebugger >> skipToPC: aProgramNode skipToNextNode: skipTargetNode [
 	skipTargetNode ifTrue: [ self skip ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping -  skip' }
 SindarinDebugger >> skipWith: replacementValue [
 	"If it is a message-send or assignment, skips the execution of the current instruction, and puts the replacementValue on the execution stack."
 
@@ -456,7 +456,7 @@ SindarinDebugger >> stack [
 	^ self debugSession stack
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping - steps' }
 SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
 
@@ -465,14 +465,14 @@ SindarinDebugger >> step [
 	stepHooks do: [ :aBlock | aBlock value ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping - steps' }
 SindarinDebugger >> step: anInt [
 	"Call the #step method @anInt times"
 
 	anInt timesRepeat: [ self step ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping - steps' }
 SindarinDebugger >> stepOver [
 	| startContext |
 	startContext := self context.
@@ -483,14 +483,14 @@ SindarinDebugger >> stepOver [
 		whileFalse: [ self step ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping - steps' }
 SindarinDebugger >> stepOver: anInt [
 	"Call the #stepOver method @anInt times"
 
 	anInt timesRepeat: [ self stepOver ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping - steps' }
 SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
 
@@ -499,7 +499,7 @@ SindarinDebugger >> stepThrough [
 	stepHooks do: [ :aBlock | aBlock value ]
 ]
 
-{ #category : #stepping }
+{ #category : #'stepping - steps' }
 SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 

@@ -453,7 +453,7 @@ SindarinDebuggerTests >> testSetBreakpoint [
 	self testContinue
 ]
 
-{ #category : #tests }
+{ #category : #'tests - skipping' }
 SindarinDebuggerTests >> testSkip [
 	| a p scdbg |
 	a := 1.
@@ -467,7 +467,7 @@ SindarinDebuggerTests >> testSkip [
 	self assert: p equals: nil
 ]
 
-{ #category : #tests }
+{ #category : #'tests - skipping' }
 SindarinDebuggerTests >> testSkipToPC [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
 	dbg := SindarinDebugger
@@ -489,7 +489,7 @@ SindarinDebuggerTests >> testSkipToPC [
 	self assert: dbg topStack equals: realExecTopStack
 ]
 
-{ #category : #tests }
+{ #category : #'tests - skipping' }
 SindarinDebuggerTests >> testSkipWith [
 	| a p scdbg |
 	a := 1.

@@ -420,13 +420,29 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 ]
 
 { #category : #'stepping -  skip' }
+SindarinDebugger >> skipThroughNode: aProgramNode [
+	"Skips execution until program counter reaches aProgramNode.
+	Also skip the target node."
+
+	self skipUpToNode: aProgramNode skipTargetNode: true
+]
+
+{ #category : #'stepping -  skip' }
 SindarinDebugger >> skipToPC: aProgramNode [
 	"Skips execution until program counter reaches aProgramNode."
 	[ self node == aProgramNode ] whileFalse: [ self skip ]
 ]
 
-{ #category : #stepping }
-SindarinDebugger >> skipToPC: aProgramNode skipToNextNode: skipTargetNode [
+{ #category : #'stepping -  skip' }
+SindarinDebugger >> skipUpToNode: aProgramNode [
+	"Skips execution until program counter reaches aProgramNode.
+	Does not skip the target node."
+
+	self skipUpToNode: aProgramNode skipTargetNode: false
+]
+
+{ #category : #'stepping -  skip' }
+SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
 	"Skips execution until program counter reaches aProgramNode."
 
 	[ self node == aProgramNode ] whileFalse: [ self skip ].

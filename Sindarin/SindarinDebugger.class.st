@@ -428,9 +428,9 @@ SindarinDebugger >> skipThroughNode: aProgramNode [
 ]
 
 { #category : #'stepping -  skip' }
-SindarinDebugger >> skipToPC: aProgramNode [
-	"Skips execution until program counter reaches aProgramNode."
-	[ self node == aProgramNode ] whileFalse: [ self skip ]
+SindarinDebugger >> skipToPC: aPC [
+	"Skips execution until program counter reaches aPC."
+	[ self pc >= aPC ] whileFalse: [ self skip ]
 ]
 
 { #category : #'stepping -  skip' }

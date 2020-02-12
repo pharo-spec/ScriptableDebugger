@@ -477,10 +477,10 @@ SindarinDebuggerTests >> testSkipToPC [
 	realExecNode := dbg node.
 	realValueOfA := (dbg temporaryNamed: #a).
 	realExecTopStack := dbg topStack.
-	
+
 	dbg := SindarinDebugger
 		debug: [ self helperMethod1  ].
-	
+
 	dbg step; stepOver; skipToPC: realExecPC. 
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node equals: realExecNode.

@@ -468,6 +468,32 @@ SindarinDebuggerTests >> testSkip [
 ]
 
 { #category : #'tests - skipping' }
+SindarinDebuggerTests >> testSkipThroughNode [
+	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	dbg step; stepOver; stepOver.	
+	targetExecNode := dbg node.
+	realValueOfA := (dbg temporaryNamed: #a).	
+	dbg stepOver.
+	nodeAfterSkipThrough := dbg node.
+	realExecTopStack := dbg topStack.
+	realExecPC := dbg pc.
+	
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	
+	dbg step; stepOver; skipThroughNode: targetExecNode.
+		
+	self assert: dbg pc equals: realExecPC.
+	self assert: dbg node identicalTo: nodeAfterSkipThrough.
+	self assert: realValueOfA equals: 5.
+	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: realExecTopStack equals: 3.
+	self assert: dbg topStack equals: nil
+]
+
+{ #category : #'tests - skipping' }
 SindarinDebuggerTests >> testSkipToPC [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
 	dbg := SindarinDebugger
@@ -484,6 +510,28 @@ SindarinDebuggerTests >> testSkipToPC [
 	dbg step; stepOver; skipToPC: realExecPC. 
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node equals: realExecNode.
+	self assert: realValueOfA equals: 5.
+	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: dbg topStack equals: realExecTopStack
+]
+
+{ #category : #'tests - skipping' }
+SindarinDebuggerTests >> testSkipUpToNode [
+	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	dbg step; stepOver; stepOver.
+	realExecPC := dbg pc.
+	realExecNode := dbg node.
+	realValueOfA := (dbg temporaryNamed: #a).
+	realExecTopStack := dbg topStack.
+	
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	
+	dbg step; stepOver; skipUpToNode: realExecNode. 
+	self assert: dbg pc equals: realExecPC.
+	self assert: dbg node identicalTo: realExecNode.
 	self assert: realValueOfA equals: 5.
 	self assert: (dbg temporaryNamed: #a) equals: 1.
 	self assert: dbg topStack equals: realExecTopStack
@@ -625,4 +673,22 @@ SindarinDebuggerTests >> testWhenHitBreakpoint [
 	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
 	scdbg continue.
 	self assert: toggle
+]
+
+{ #category : #'tests - skipping' }
+SindarinDebuggerTests >> testskipUpToNodeSkipTargetNode [
+	"The tested method takes two params: 
+		- the node up to which we want to skip execution
+		- a boolean telling if we want to skip through the node or give back control to users before that node.
+	Variations of these two params are tested by testSkipUpToNode and testSkipThroughNode.
+	The following just test the remaining aspect of that API, that is we do not skip through a return node."
+	| dbg returnNode |	
+
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+		
+	returnNode := (self class >> #helperMethod1) ast statements last.
+	dbg step; skipThroughNode: returnNode.
+	self assert: dbg node equals: returnNode.
+	self assert: dbg topStack equals: nil
 ]

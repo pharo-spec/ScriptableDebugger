@@ -85,7 +85,13 @@ SindarinDebugger >> attachTo: aDebugSession [
 
 	sindarinSession := aDebugSession asSindarinDebugSession.
 	process := aDebugSession interruptedProcess.
-	sindarinSession deactivateEventTriggering
+	sindarinSession deactivateEventTriggering.
+	debugStarted := true
+]
+
+{ #category : #astAndAstMapping }
+SindarinDebugger >> bestNodeFor: anInterval [
+	^self node methodNode bestNodeFor: anInterval
 ]
 
 { #category : #stackAccess }
@@ -308,6 +314,11 @@ SindarinDebugger >> openInGraphicalDebugger [
 			'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
+{ #category : #accessing }
+SindarinDebugger >> pc [
+	^ self context pc
+]
+
 { #category : #stepping }
 SindarinDebugger >> proceed [
 	"alias of #continue"
@@ -409,6 +420,21 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 ]
 
 { #category : #stepping }
+SindarinDebugger >> skipToPC: aProgramNode [
+	"Skips execution until program counter reaches aProgramNode."
+	[ self node == aProgramNode ] whileFalse: [ self skip ]
+]
+
+{ #category : #stepping }
+SindarinDebugger >> skipToPC: aProgramNode skipToNextNode: skipTargetNode [
+	"Skips execution until program counter reaches aProgramNode."
+
+	[ self node == aProgramNode ] whileFalse: [ self skip ].
+	aProgramNode isReturn	ifTrue: [ ^ self ].
+	skipTargetNode ifTrue: [ self skip ]
+]
+
+{ #category : #stepping }
 SindarinDebugger >> skipWith: replacementValue [
 	"If it is a message-send or assignment, skips the execution of the current instruction, and puts the replacementValue on the execution stack."
 
@@ -485,4 +511,14 @@ SindarinDebugger >> temporaries [
 	"Returns the temporary variables of the current stack-frame."
 
 	^ self context temporaries
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> temporaryNamed: aSymbol [
+	^self temporaries at: aSymbol
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> topStack [
+	^self context top
 ]

@@ -8,21 +8,22 @@ Class {
 	#category : #'Sindarin-Tests'
 }
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod1 [
 	| a |
+	a := 1.
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod10 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod11 [
 	| a |
 	a := 5.
@@ -31,145 +32,145 @@ SindarinDebuggerTests >> helperMethod11 [
 	^ 3
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod12 [
 	| i |
 	i := 5.
 	[ i=0 ] whileFalse: [ i := i - 1 ].
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod13 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod14 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod15 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod16 [
 	^ 1+1.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod17: storeContextBlock [
 	storeContextBlock value: thisContext.
 	Point x:5 y: 7.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod18: anArg with: anotherArg [
 	Point x: 5 y: 7.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod19 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod2 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod20 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod21 [
 	self helperMethod22
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod22 [
 	^ Point new
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod23 [
 	testObjectPoint sign.
 	testObjectPoint extent: (Point x:3 y: 4).
 	Point new.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod24 [
 	| p |
 	p := Point new.
 	p sign.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod3 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod4 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod5 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod6 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod7 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod8 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #helpers }
 SindarinDebuggerTests >> helperMethod9 [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger.
 ]
 
-{ #category : #tests }
+{ #category : #running }
 SindarinDebuggerTests >> runCaseManaged [
 	^ self runCase
 ]
@@ -400,6 +401,17 @@ SindarinDebuggerTests >> testOnceBreakpoint [
 ]
 
 { #category : #tests }
+SindarinDebuggerTests >> testPc [
+	| dbg |
+	dbg := SindarinDebugger
+		debug: [ | a p |
+			a := 2.
+			p := Point x: 2 y: 3 ].
+	dbg step; step; step.
+	self assert: dbg pc equals: dbg context pc
+]
+
+{ #category : #tests }
 SindarinDebuggerTests >> testReceiver [
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod8 ].
@@ -453,6 +465,28 @@ SindarinDebuggerTests >> testSkip [
 	scdbg skip.
 	scdbg step.
 	self assert: p equals: nil
+]
+
+{ #category : #tests }
+SindarinDebuggerTests >> testSkipToPC [
+	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	dbg step; stepOver; stepOver.
+	realExecPC := dbg pc.
+	realExecNode := dbg node.
+	realValueOfA := (dbg temporaryNamed: #a).
+	realExecTopStack := dbg topStack.
+	
+	dbg := SindarinDebugger
+		debug: [ self helperMethod1  ].
+	
+	dbg step; stepOver; skipToPC: realExecPC. 
+	self assert: dbg pc equals: realExecPC.
+	self assert: dbg node equals: realExecNode.
+	self assert: realValueOfA equals: 5.
+	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: dbg topStack equals: realExecTopStack
 ]
 
 { #category : #tests }
@@ -556,6 +590,26 @@ SindarinDebuggerTests >> testTemporaries [
 	scdbg step.
 	self assert: scdbg temporaries size equals: 1.
 	self assert: (scdbg temporaries at: #a) equals: 5
+]
+
+{ #category : #tests }
+SindarinDebuggerTests >> testTemporaryNamed [
+	| dbg |
+	dbg := SindarinDebugger debug: [ self helperMethod10 ].
+	dbg step.
+	self assert: dbg temporaries size equals: 1.
+	self assert: (dbg temporaryNamed: #a) equals: nil.
+	dbg step.
+	self assert: (dbg temporaryNamed: #a) equals: 5
+]
+
+{ #category : #tests }
+SindarinDebuggerTests >> testTopStack [
+	| a dbg |
+	a := 1.
+	dbg := SindarinDebugger debug: [ a := 2 ].
+	dbg step.
+	self assert: dbg topStack equals: 2
 ]
 
 { #category : #tests }

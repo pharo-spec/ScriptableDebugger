@@ -163,6 +163,11 @@ SindarinDebugger >> currentContextStackSize [
 	^ self context basicSize
 ]
 
+{ #category : #process }
+SindarinDebugger >> currentProcess [
+	^process
+]
+
 { #category : #'graphical debugger' }
 SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 	sindarinSession deactivateEventTriggering

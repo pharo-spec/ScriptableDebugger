@@ -22,7 +22,8 @@ Class {
 		'stepHooks',
 		'nodeMapForMethod',
 		'debugStarted',
-		'sindarinSession'
+		'sindarinSession',
+		'blockToDebug'
 	],
 	#category : #Sindarin
 }
@@ -169,6 +170,7 @@ SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 
 { #category : #start }
 SindarinDebugger >> debug: aBlock [
+	blockToDebug := aBlock.
 	process := aBlock newProcess
 		name: 'ExecutionDebuggedByScriptableDebugger'.
 
@@ -343,6 +345,13 @@ SindarinDebugger >> removeStepHook: aBlock [
 	"Remove aBlock from the list of step hooks"
 
 	stepHooks remove: aBlock
+]
+
+{ #category : #stackAccess }
+SindarinDebugger >> restart [
+	"Resets this debugger on a new execution of the block passed as argument to the initial call to #debug:"
+	self initialize.
+	self debug: blockToDebug.
 ]
 
 { #category : #stackAccessHelpers }

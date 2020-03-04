@@ -530,6 +530,18 @@ SindarinDebugger >> stepThrough [
 ]
 
 { #category : #'stepping - steps' }
+SindarinDebugger >> stepToMethodEntry [
+	self stepUntil: [ self context willSend ].
+	process step: self context.
+	self debugSession updateContextTo: process suspendedContext
+]
+
+{ #category : #'stepping - steps' }
+SindarinDebugger >> stepToReturn [
+	[ self context willReturn ] whileFalse: [self debugSession stepThrough]
+]
+
+{ #category : #'stepping - steps' }
 SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 

@@ -170,6 +170,23 @@ SindarinDebuggerTests >> helperMethod9 [
 	^ Point x: 5 y: '3' asInteger.
 ]
 
+{ #category : #helpers }
+SindarinDebuggerTests >> helperMethodNonLocalReturn [
+	| block |
+	block := [ ^ 42 ].
+	block value.
+	^ 43
+]
+
+{ #category : #helpers }
+SindarinDebuggerTests >> helperMethodReturn: bool [
+	| a |
+	a := bool.
+	a
+		ifTrue: [ ^ 1 ].
+	^ 2
+]
+
 { #category : #running }
 SindarinDebuggerTests >> runCaseManaged [
 	^ self runCase
@@ -600,6 +617,70 @@ SindarinDebuggerTests >> testStepOverReturnNode [
 	self assert: scdbg node isMethod.
 	self flag: 'Why is the following commented? Should it be tested somehow?'
 "	self assert: scdbg node isBlock."
+]
+
+{ #category : #'tests - step return' }
+SindarinDebuggerTests >> testStepToImplicitReturn [
+	| dbg |
+	dbg := SindarinDebugger debug: [ self helperMethod23 ].
+	dbg stepToMethodEntry.
+	dbg stepToReturn.
+	
+	self assert: dbg node isMethod.
+	dbg step.		
+	self assert: dbg topStack equals: self.
+	
+	
+
+	
+]
+
+{ #category : #'tests - step return' }
+SindarinDebuggerTests >> testStepToMethodEntry [
+	| dbg |
+	dbg := SindarinDebugger debug: [ self helperMethodReturn: true ].
+	dbg stepToMethodEntry.
+		
+	self assert: dbg pc equals: dbg method initialPC.
+	self assert: dbg method identicalTo: (self class >> #helperMethodReturn:).	
+	
+	
+]
+
+{ #category : #'tests - step return' }
+SindarinDebuggerTests >> testStepToNonLocalReturn [
+	| dbg |	
+	dbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	dbg stepToMethodEntry.
+	dbg stepToReturn.
+	
+	self assert: dbg node isReturn.
+	self assert: dbg topStack equals: 42
+	
+	
+
+	
+]
+
+{ #category : #'tests - step return' }
+SindarinDebuggerTests >> testStepToReturn [
+	| dbg |
+	"First return node"
+	dbg := SindarinDebugger debug: [ self helperMethodReturn: true ].
+	dbg stepToMethodEntry.
+	dbg stepToReturn.
+	
+	self assert: dbg node isReturn.
+	self assert: dbg topStack equals: 1.
+	
+	"Second return node"
+	dbg := SindarinDebugger debug: [ self helperMethodReturn: false ].
+	dbg stepToMethodEntry.
+	dbg stepToReturn.
+	
+	self assert: dbg node isReturn.
+	self assert: dbg topStack equals: 2
+	
 ]
 
 { #category : #tests }

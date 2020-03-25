@@ -158,6 +158,11 @@ SindarinDebugger >> continue [
 			^ #breakpoint ]
 ]
 
+{ #category : #acccessing }
+SindarinDebugger >> currentBytecode [
+	^ self context method symbolicBytecodes
+]
+
 { #category : #private }
 SindarinDebugger >> currentContextStackSize [
 	^ self context basicSize
@@ -500,6 +505,16 @@ SindarinDebugger >> step: anInt [
 	"Call the #step method @anInt times"
 
 	anInt timesRepeat: [ self step ]
+]
+
+{ #category : #'stepping - steps' }
+SindarinDebugger >> stepBytecode [
+	"Executes the next bytecode"
+
+	self flag: 'Needs to be tested'.
+	self signalExceptionIfDebuggedExecutionHasSignalledException.
+	process completeStep: self debugSession context.
+	self debugSession updateContextTo: process suspendedContext
 ]
 
 { #category : #'stepping - steps' }

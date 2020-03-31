@@ -207,6 +207,14 @@ SindarinDebugger >> initialize [
 	debugStarted := false
 ]
 
+{ #category : #private }
+SindarinDebugger >> isAboutToSignalException [
+	"Returns whether the debugged execution is about to signal an exception"
+	^ (self node isMessage
+		and: [ self messageSelector = #unhandledErrorDefaultAction:
+				and: [ self messageReceiver isKindOf: UIManager ] ])
+]
+
 { #category : #stackAccess }
 SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
@@ -400,9 +408,7 @@ SindarinDebugger >> setBreakpointOn: target [
 SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
 	| unhandledException |
 	self flag: 'Could we not simplify this?'.
-	(self node isMessage
-		and: [ self messageSelector = #unhandledErrorDefaultAction:
-				and: [ self messageReceiver isKindOf: UIManager ] ])
+	(self isAboutToSignalException)
 		ifTrue:
 			[ "The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
 			"Signalling an exception **in the scriptable debugger's process** to inform the user of this"

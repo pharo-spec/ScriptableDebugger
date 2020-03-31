@@ -303,6 +303,13 @@ SindarinDebugger >> node [
 ]
 
 { #category : #astAndAstMapping }
+SindarinDebugger >> nodeForContext: aContext [
+	"Returns the AST node about to be executed by the top context of the execution"
+
+	^ aContext method sourceNodeForPC: aContext pc
+]
+
+{ #category : #astAndAstMapping }
 SindarinDebugger >> nodeMap [
 	^ self nodeMapForMethod: self context method
 ]

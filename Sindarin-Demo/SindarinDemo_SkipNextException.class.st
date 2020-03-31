@@ -1,3 +1,14 @@
+"
+- Start demo
+dbg := SindarinDebugger debug: [ SindarinDemo_SkipNextException new start ].
+
+-  Demo Script
+[dbg node isMessage and:
+	[(dbg messageSelector = #signal:) and:
+		[Exception allSubclasses includes: dbg messageReceiver]]]
+		whileFalse: [dbg step].
+dbg skip.
+"
 Class {
 	#name : #'SindarinDemo_SkipNextException',
 	#superclass : #Object,

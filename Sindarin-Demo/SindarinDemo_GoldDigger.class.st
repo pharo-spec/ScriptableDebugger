@@ -1,3 +1,11 @@
+"
+Start demo:
+dbg := SindarinDebugger debug: [ SindarinDemo_GoldDigger new start ]
+
+Demo script:
+dbg step: 3; stepOver: 2; step: 3.
+
+"
 Class {
 	#name : #'SindarinDemo_GoldDigger',
 	#superclass : #Object,

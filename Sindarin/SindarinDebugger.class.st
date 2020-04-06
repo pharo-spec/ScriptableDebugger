@@ -201,6 +201,12 @@ SindarinDebugger >> debugSession [
 	^ sindarinSession debugSession
 ]
 
+{ #category : #private }
+SindarinDebugger >> hasSignalledUnhandledException [
+	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
+	^ (self selector = #defaultAction ) and: [ self receiver isKindOf: Exception ]
+]
+
 { #category : #initialization }
 SindarinDebugger >> initialize [
 	stepHooks := OrderedCollection new.
@@ -209,6 +215,7 @@ SindarinDebugger >> initialize [
 
 { #category : #private }
 SindarinDebugger >> isAboutToSignalException [
+	"OLD METHOD. SEE #hasSignalledUnhandledException"
 	"Returns whether the debugged execution is about to signal an exception"
 	^ (self node isMessage
 		and: [ self messageSelector = #unhandledErrorDefaultAction:
@@ -220,6 +227,19 @@ SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ process isTerminating
+]
+
+{ #category : #stackAccessHelpers }
+SindarinDebugger >> message: aSelector [
+	"Returns whether the execution is about to send a message of selector @aSelector to any object"
+
+	| node |
+	node := self node.
+	node isMessage
+		ifFalse: [ ^ false ].
+	node selector = aSelector
+		ifFalse: [ ^ false ].
+	^ true
 ]
 
 { #category : #stackAccessHelpers }
@@ -398,16 +418,29 @@ SindarinDebugger >> setBreakpointOn: target [
 ]
 
 { #category : #private }
-SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledException [
+SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledException [
 	| unhandledException |
-	self flag: 'Could we not simplify this?'.
-	(self isAboutToSignalException)
-		ifTrue:
-			[ "The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
-			"Signalling an exception **in the scriptable debugger's process** to inform the user of this"
-			unhandledException := self messageArguments at: 1.
+	(self hasSignalledUnhandledException)
+		ifTrue: [ 
+			unhandledException := self receiver.
 			UnhandledExceptionSignalledByADebuggedExecution
-				signalWithException: unhandledException ]
+				signalWithException: unhandledException.
+		]
+	
+		"ifTrue:
+			[" "The debugged execution signalled an exception, this exception was not handled and is about to cause a debugger to open."
+			"Signalling an exception **in the scriptable debugger's process** to inform the user of this"
+			"unhandledException := self messageArguments at: 1.
+			UnhandledExceptionSignalledByADebuggedExecution
+				signalWithException: unhandledException ]"
+]
+
+{ #category : #private }
+SindarinDebugger >> signalExceptionIfDebuggedExecutionIsFinished [
+	"Signals an DebuggedExecutionIsFinished exception if the debugged execution is finished"
+	(self isExecutionFinished) ifTrue: [ 
+		DebuggedExecutionIsFinished signal.
+	].
 ]
 
 { #category : #'stepping -  skip' }
@@ -501,7 +534,8 @@ SindarinDebugger >> stack [
 SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
 
-	self signalExceptionIfDebuggedExecutionHasSignalledException.
+	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
+	self signalExceptionIfDebuggedExecutionIsFinished.
 	self debugSession stepInto.
 	stepHooks do: [ :aBlock | aBlock value ]
 ]
@@ -518,7 +552,7 @@ SindarinDebugger >> stepBytecode [
 	"Executes the next bytecode"
 
 	self flag: 'Needs to be tested'.
-	self signalExceptionIfDebuggedExecutionHasSignalledException.
+	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
 	process completeStep: self debugSession context.
 	self debugSession updateContextTo: process suspendedContext
 ]
@@ -545,7 +579,7 @@ SindarinDebugger >> stepOver: anInt [
 SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
 
-	self signalExceptionIfDebuggedExecutionHasSignalledException.
+	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
 	self debugSession stepThrough.
 	stepHooks do: [ :aBlock | aBlock value ]
 ]

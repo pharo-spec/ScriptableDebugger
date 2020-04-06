@@ -1,6 +1,6 @@
 Class {
 	#name : #UnhandledExceptionSignalledByADebuggedExecution,
-	#superclass : #Error,
+	#superclass : #DebuggedExecutionException,
 	#instVars : [
 		'unhandledException'
 	],

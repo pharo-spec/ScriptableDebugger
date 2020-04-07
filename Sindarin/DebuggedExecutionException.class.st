@@ -3,3 +3,8 @@ Class {
 	#superclass : #Error,
 	#category : #Sindarin
 }
+
+{ #category : #testing }
+DebuggedExecutionException >> isExceptionSignalledForDebuggedExecution [
+	^ true
+]

@@ -559,7 +559,7 @@ SindarinDebugger >> stepBatchAndReturnNodeHashAndStackSize [
 	| nodesHashAndStackSize count |
 	count := 0.
 	nodesHashAndStackSize := OrderedCollection new.
-	[ [ count <= 1000] whileTrue: [ count := count + 1. nodesHashAndStackSize add: {self node hash. self stack size}. self step ]] on: DebuggedExecutionException do: [ "when debugged execution is over or signals exception, stop and return the result data" ^ nodesHashAndStackSize ].
+	[ [ count <= 1000] whileTrue: [ count := count + 1. nodesHashAndStackSize add: {self node dictionaryRepresentation hash. self stack size}. self step ]] on: DebuggedExecutionException do: [ "when debugged execution is over or signals exception, stop and return the result data" ^ nodesHashAndStackSize ].
 	^ nodesHashAndStackSize
 	
 ]

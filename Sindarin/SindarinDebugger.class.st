@@ -554,6 +554,15 @@ SindarinDebugger >> step: anInt [
 	anInt timesRepeat: [ self step ]
 ]
 
+{ #category : #'as yet unclassified' }
+SindarinDebugger >> stepAllAndReturnNodeHashAndStackSize [
+	| nodesHashAndStackSize |
+	nodesHashAndStackSize := OrderedCollection new.
+	[ nodesHashAndStackSize add: {self node hash. self stack size}. self step ] on: DebuggedExecutionException do: [ "when debugged execution is over or signals exception, stop and return the result data" ^ nodesHashAndStackSize ].
+	^ nodesHashAndStackSize
+	
+]
+
 { #category : #'stepping - steps' }
 SindarinDebugger >> stepBytecode [
 	"Executes the next bytecode"

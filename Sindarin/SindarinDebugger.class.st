@@ -556,6 +556,7 @@ SindarinDebugger >> step: anInt [
 
 { #category : #'as yet unclassified' }
 SindarinDebugger >> stepBatchAndReturnNodeHashAndStackSize [
+	"For EchoDebugger"
 	| nodesHashAndStackSize count |
 	count := 0.
 	nodesHashAndStackSize := OrderedCollection new.

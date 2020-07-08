@@ -395,7 +395,8 @@ SindarinDebuggerTests >> testNode [
 	node := scdbg node.
 	self assert: node isAssignment.
 	self assert: node variable name equals: #a.
-	scdbg step.
+	scdbg stepOver.
+	scdbg stepOver.
 	node := scdbg node.
 	self assert: node isMessage.
 	self assert: node selector equals: #asInteger

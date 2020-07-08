@@ -376,8 +376,8 @@ SindarinDebuggerTests >> testMessageToInstanceOf [
 { #category : #tests }
 SindarinDebuggerTests >> testMethod [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod7 ].
-	self assert: scdbg method equals: SindarinDebuggerTests>>#testMethod.
+	scdbg := SindarinDebugger debug: [ self helperMethod7 ].	
+	self assert: scdbg method equals: [ self helperMethod7 ] method.
 	scdbg step.
 	self assert: scdbg method equals: SindarinDebuggerTests>>#helperMethod7.
 	scdbg step; step.

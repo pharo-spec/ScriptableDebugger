@@ -603,8 +603,11 @@ SindarinDebuggerTests >> testStep [
 SindarinDebuggerTests >> testStepOver [
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod14 ].
-	scdbg stepOver.
-	self assert: scdbg node isBlock
+	scdbg step. "Enters the call of helperMethod14. Current node should be: a:=5"
+	scdbg stepOver. "After this, current node shoud be: '3' asInteger"
+	scdbg stepOver. "After this, current node should be: Point x:5 y:'3' asInteger"
+	self assert: scdbg node isMessage.
+	self assert: scdbg node selector equals: #x:y:
 ]
 
 { #category : #tests }

@@ -1,11 +1,6 @@
 Extension { #name : #Context }
 
 { #category : #'*Sindarin' }
-Context >> currentNode [
-	^ self method sourceNodeForPC: self pc
-]
-
-{ #category : #'*Sindarin' }
 Context >> temporaries [
 	"Returns the temporary variables of this context."
 	| dictionary |

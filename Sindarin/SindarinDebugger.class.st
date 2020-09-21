@@ -17,6 +17,8 @@ Virtual breakpoints were introduced because due to technical limitations, normal
 Class {
 	#name : #SindarinDebugger,
 	#superclass : #Object,
+	#traits : 'TDebugger',
+	#classTraits : 'TDebugger classTrait',
 	#instVars : [
 		'process',
 		'stepHooks',
@@ -316,7 +318,7 @@ SindarinDebugger >> method [
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
 
-	^ self context method sourceNodeForPC: self context pc
+	^ self context sourceNodeExecuted
 ]
 
 { #category : #astAndAstMapping }

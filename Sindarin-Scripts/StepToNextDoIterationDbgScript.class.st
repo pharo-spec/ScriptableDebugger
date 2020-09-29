@@ -6,11 +6,10 @@ Class {
 	#superclass : #SindarinScript,
 	#instVars : [
 		'startContext',
-		'scdbg',
 		'doContext',
 		'doArgumentBlock'
 	],
-	#category : #Sindarin
+	#category : #'Sindarin-Scripts'
 }
 
 { #category : #example }
@@ -35,13 +34,13 @@ StepToNextDoIterationDbgScript >> context: aContext isForBlock: aBlock [
 { #category : #helper }
 StepToNextDoIterationDbgScript >> contextIsOnStack: aContext [
 	"Returns whether aContext is somewhere on the stack"
-	^ (scdbg context findContextSuchThat: [ :aContexta| aContexta == aContext ]) isNotNil.
+	^ (dbg context findContextSuchThat: [ :aContexta| aContexta == aContext ]) isNotNil.
 ]
 
 { #category : #running }
 StepToNextDoIterationDbgScript >> execute: aScriptableDebugger [
 	| stepHook |
-	scdbg := aScriptableDebugger.
+	dbg := aScriptableDebugger.
 	startContext := aScriptableDebugger context.
 	"doContext is the context for the #do: message send to an instance of Collection (or subclass)"
 	doContext := self findContextForSelector: #do: andClassOrSubclassOf: Collection.
@@ -50,21 +49,21 @@ StepToNextDoIterationDbgScript >> execute: aScriptableDebugger [
 	doArgumentBlock := doContext arguments at: 1.
 	"Add a step hook that will raise a ContextNotOnStack exception if at any point, the doContext is no longer on the stack (this can happens when exceptions are involved)"
 	stepHook := [ (self contextIsOnStack: doContext) ifFalse: [ ContextNotOnStack signal ] ].
-	scdbg addStepHook: stepHook.
+	dbg addStepHook: stepHook.
 	[
 		"case 1: startContext is above or equal to a block context for the do:'s block"
-		(scdbg context findContextSuchThat: [:ctxt | self context: ctxt isForBlock: doArgumentBlock]) ifNotNil: [ 
-			scdbg stepToContext: doContext.
+		(dbg context findContextSuchThat: [:ctxt | self context: ctxt isForBlock: doArgumentBlock]) ifNotNil: [ 
+			dbg stepToContext: doContext.
 			self stepToContextForBlock: doArgumentBlock.
-			scdbg removeStepHook: stepHook.
+			dbg removeStepHook: stepHook.
 			^true. 
 		].
 		"case 2: startContext is above the doContext and there is no block context for doArgumentBlock between them"
 		self stepToContextForBlock: doArgumentBlock.
-		scdbg removeStepHook: stepHook.
+		dbg removeStepHook: stepHook.
 		^ true.
 	] on: ContextNotOnStack do: [
-		scdbg removeStepHook: stepHook.
+		dbg removeStepHook: stepHook.
 		^ self
 	].
 ]
@@ -77,11 +76,11 @@ StepToNextDoIterationDbgScript >> execute: aScriptableDebugger withArgs: anOrder
 { #category : #helper }
 StepToNextDoIterationDbgScript >> findContextForSelector: aSymbol andClassOrSubclassOf: aClass [
 	"Run through the context stack from top to bottom to find a context whose selector is aSymbol and for which the class of its receiver is equal to or a subclass of aClass"
-	^ scdbg context findContextSuchThat: [ :ctxt | (ctxt method selector = aSymbol) and: [ ctxt receiver isKindOf: aClass  ] ]
+	^ dbg context findContextSuchThat: [ :ctxt | (ctxt method selector = aSymbol) and: [ ctxt receiver isKindOf: aClass  ] ]
 ]
 
 { #category : #helper }
 StepToNextDoIterationDbgScript >> stepToContextForBlock: aBlock [
 	"Runs the execution until the current context is a block context for aBlock"
-	[ self context: (scdbg context) isForBlock: aBlock ] whileFalse: [scdbg step].
+	[ self context: (dbg context) isForBlock: aBlock ] whileFalse: [dbg step].
 ]

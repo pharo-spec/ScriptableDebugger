@@ -42,6 +42,22 @@ SindarinDebugger class >> debug: aBlock [
 
 ]
 
+{ #category : #'instance creation' }
+SindarinDebugger class >> debugSession: aDebugSession [
+	|debugger|
+	debugger := self attachTo: aDebugSession.
+	Transcript clear.
+	'Interrupting...' crTrace.
+	1 to: 3 do:[:i|
+		('Step ', i printString) crTrace.
+		' 	 ' crTrace.
+		debugger node crTrace.
+		debugger step		
+	].
+	'Proceeding...' crTrace.
+	aDebugSession resume
+]
+
 { #category : #'graphical debugger' }
 SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
 	sindarinSession activateEventTriggering.
@@ -372,6 +388,11 @@ SindarinDebugger >> restart [
 	"Resets this debugger on a new execution of the block passed as argument to the initial call to #debug:"
 	self initialize.
 	self debug: blockToDebug.
+]
+
+{ #category : #scripts }
+SindarinDebugger >> run: aSindarinScript [
+	aSindarinScript executeWith: self
 ]
 
 { #category : #stackAccessHelpers }

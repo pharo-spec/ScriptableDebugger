@@ -4,10 +4,7 @@ When executed, this script steps the execution until it is about to signal an ex
 Class {
 	#name : #StepUntilAboutToSignalExceptionDbgScript,
 	#superclass : #SindarinScript,
-	#instVars : [
-		'scdbg'
-	],
-	#category : #Sindarin
+	#category : #'Sindarin-Scripts'
 }
 
 { #category : #accessing }
@@ -31,8 +28,8 @@ StepUntilAboutToSignalExceptionDbgScript >> contextIsAboutToSignalException: aCo
 
 { #category : #running }
 StepUntilAboutToSignalExceptionDbgScript >> execute: aScriptableDebugger [
-	scdbg := aScriptableDebugger.
-	[ self contextIsAboutToSignalException: scdbg context ] whileFalse: [ scdbg step ].
+	dbg := aScriptableDebugger.
+	[ self contextIsAboutToSignalException: dbg context ] whileFalse: [ dbg step ].
 ]
 
 { #category : #running }

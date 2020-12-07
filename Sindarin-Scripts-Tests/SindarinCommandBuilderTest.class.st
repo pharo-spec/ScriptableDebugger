@@ -1,7 +1,7 @@
 Class {
 	#name : #SindarinCommandBuilderTest,
 	#superclass : #TestCase,
-	#category : #'Sindarin-Scripts-Tests'
+	#category : #'Sindarin-Scripts-Tests-tests'
 }
 
 { #category : #tests }

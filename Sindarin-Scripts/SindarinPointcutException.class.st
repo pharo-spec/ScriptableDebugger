@@ -15,8 +15,12 @@ Class {
 }
 
 { #category : #debugging }
-SindarinPointcutException class >> debug [
-	^self new debug
+SindarinPointcutException class >> signalWith: aSindarinScript [
+	<debuggerCompleteToSender>
+	|scriptingException|
+	scriptingException := self new.
+	scriptingException script: aSindarinScript.
+	scriptingException signal
 ]
 
 { #category : #handling }
@@ -28,5 +32,18 @@ SindarinPointcutException >> debug [
 
 { #category : #testing }
 SindarinPointcutException >> isHandleableBy: aDebugger [
-	^aDebugger == SindarinDebugger 
+
+	^ aDebugger == SindarinDebugger
+]
+
+{ #category : #accessing }
+SindarinPointcutException >> script [
+
+	^ script
+]
+
+{ #category : #accessing }
+SindarinPointcutException >> script: anObject [
+
+	script := anObject
 ]

@@ -24,6 +24,13 @@ TDebuggerScript >> arguments [
 ]
 
 { #category : #executing }
+TDebuggerScript >> execute [
+
+	<debuggerCompleteToSender>
+	^ SindarinPointcutException signalWith: self
+]
+
+{ #category : #executing }
 TDebuggerScript >> executeWith: aDebugger [
 	^self
 ]

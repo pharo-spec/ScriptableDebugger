@@ -42,3 +42,12 @@ SindarinTDebuggerTest >> testEmptyScriptExecution [
 
 	self assert: (script executeWith: Object new) identicalTo: script
 ]
+
+{ #category : #tests }
+SindarinTDebuggerTest >> testExecuteRaiseScriptingException [
+
+	self should: [ script execute ] raise: SindarinPointcutException.
+	[ script execute ]
+		on: SindarinPointcutException
+		do: [ :e | self assert: e script identicalTo: script ]
+]

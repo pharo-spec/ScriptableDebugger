@@ -8,7 +8,7 @@ Class {
 	#classVars : [
 		'Pointcuts'
 	],
-	#category : #'Sindarin-Pointcuts'
+	#category : #'Sindarin-Scripts'
 }
 
 { #category : #adding }

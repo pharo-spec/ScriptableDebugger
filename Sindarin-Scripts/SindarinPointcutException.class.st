@@ -11,7 +11,7 @@ Class {
 	#instVars : [
 		'script'
 	],
-	#category : #'Sindarin-Pointcuts'
+	#category : #'Sindarin-Scripts'
 }
 
 { #category : #debugging }

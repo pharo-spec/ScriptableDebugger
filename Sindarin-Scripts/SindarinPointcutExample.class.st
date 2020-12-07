@@ -1,7 +1,7 @@
 Class {
 	#name : #SindarinPointcutExample,
 	#superclass : #Object,
-	#category : #'Sindarin-Pointcuts'
+	#category : #'Sindarin-Scripts'
 }
 
 { #category : #'as yet unclassified' }

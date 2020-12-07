@@ -1,5 +1,5 @@
 Class {
-	#name : #TDebuggerScriptTest,
+	#name : #SindarinTDebuggerTest,
 	#superclass : #TestCase,
 	#instVars : [
 		'script'
@@ -8,37 +8,37 @@ Class {
 }
 
 { #category : #running }
-TDebuggerScriptTest >> setUp [
+SindarinTDebuggerTest >> setUp [
 	super setUp.
 	
 	script := SinDummyDebuggerScript new
 ]
 
 { #category : #tests }
-TDebuggerScriptTest >> testDefaultArguments [
+SindarinTDebuggerTest >> testDefaultArguments [
 	self assertEmpty: script class defaultArguments.
 	self assertEmpty: script arguments
 ]
 
 { #category : #tests }
-TDebuggerScriptTest >> testDefaultHooks [
+SindarinTDebuggerTest >> testDefaultHooks [
 	self assertEmpty: script class defaultHooks.
 	self assertEmpty: script hooks
 ]
 
 { #category : #tests }
-TDebuggerScriptTest >> testDefaultPredicates [
+SindarinTDebuggerTest >> testDefaultPredicates [
 	self assertEmpty: script class defaultPredicates.
 	self assertEmpty: script predicates
 ]
 
 { #category : #tests }
-TDebuggerScriptTest >> testDefaultShouldExecute [
+SindarinTDebuggerTest >> testDefaultShouldExecute [
 	self assert: script shouldExecute
 ]
 
 { #category : #tests }
-TDebuggerScriptTest >> testEmptyScriptExecution [
+SindarinTDebuggerTest >> testEmptyScriptExecution [
 
 	self assert: (script executeWith: Object new) identicalTo: script
 ]

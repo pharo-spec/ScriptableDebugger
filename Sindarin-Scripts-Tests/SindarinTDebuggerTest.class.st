@@ -11,7 +11,7 @@ Class {
 SindarinTDebuggerTest >> setUp [
 	super setUp.
 	
-	script := SinDummyDebuggerScript new
+	script := SindarinTestDebuggerScript new
 ]
 
 { #category : #tests }

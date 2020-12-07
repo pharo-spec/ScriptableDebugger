@@ -36,3 +36,9 @@ TDebuggerScriptTest >> testDefaultPredicates [
 TDebuggerScriptTest >> testDefaultShouldExecute [
 	self assert: script shouldExecute
 ]
+
+{ #category : #tests }
+TDebuggerScriptTest >> testEmptyScriptExecution [
+
+	self assert: (script executeWith: Object new) identicalTo: script
+]

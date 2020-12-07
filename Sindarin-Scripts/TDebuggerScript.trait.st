@@ -1,6 +1,6 @@
 Trait {
 	#name : #TDebuggerScript,
-	#category : #'Sindarin-Scripts'
+	#category : #'Sindarin-Scripts-core'
 }
 
 { #category : #executing }

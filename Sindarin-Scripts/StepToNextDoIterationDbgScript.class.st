@@ -9,7 +9,7 @@ Class {
 		'doContext',
 		'doArgumentBlock'
 	],
-	#category : #'Sindarin-Scripts'
+	#category : #'Sindarin-Scripts-examples'
 }
 
 { #category : #example }

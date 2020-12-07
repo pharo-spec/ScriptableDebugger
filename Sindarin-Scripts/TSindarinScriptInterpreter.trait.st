@@ -1,4 +1,4 @@
 Trait {
 	#name : #TSindarinScriptInterpreter,
-	#category : #'Sindarin-Scripts'
+	#category : #'Sindarin-Scripts-core'
 }

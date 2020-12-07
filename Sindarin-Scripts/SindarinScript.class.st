@@ -12,7 +12,7 @@ Class {
 		'dbg',
 		'args'
 	],
-	#category : #'Sindarin-Scripts'
+	#category : #'Sindarin-Scripts-core'
 }
 
 { #category : #accessing }

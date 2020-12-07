@@ -4,7 +4,7 @@ When executed, this script steps the execution until it is about to signal an ex
 Class {
 	#name : #StepUntilAboutToSignalExceptionDbgScript,
 	#superclass : #SindarinScript,
-	#category : #'Sindarin-Scripts'
+	#category : #'Sindarin-Scripts-examples'
 }
 
 { #category : #accessing }

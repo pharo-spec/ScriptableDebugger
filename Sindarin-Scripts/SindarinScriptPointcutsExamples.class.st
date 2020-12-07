@@ -1,15 +1,17 @@
+"
+I provide examples of code to instrument for testing Sindarin scripts pointcuts
+"
 Class {
-	#name : #SindarinPointcutExample,
+	#name : #SindarinScriptPointcutsExamples,
 	#superclass : #Object,
 	#category : #'Sindarin-Scripts-examples'
 }
 
 { #category : #'as yet unclassified' }
-SindarinPointcutExample >> exampleSquared [
+SindarinScriptPointcutsExamples >> exampleSquared [
 	|init square|
 	init := 2.
 	square := init squared.
-	'Resumed.' crTrace.
 	^square squared
 	
 	

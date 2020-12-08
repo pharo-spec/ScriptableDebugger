@@ -44,9 +44,18 @@ SindarinDebugger class >> debug: aBlock [
 
 { #category : #'instance creation' }
 SindarinDebugger class >> debugSession: aDebugSession [
-	|debugger|
+
+	| debugger exception |
 	debugger := self attachTo: aDebugSession.
-	Transcript clear.
+	exception := aDebugSession exception.
+	exception class == SindarinPointcutException ifFalse: [ 
+		aDebugSession resume.
+		^ self ].
+	"Stepping to return to the context requesting the execution of a Sindarin script"
+	debugger step.
+	debugger step.
+	exception script executeWith: debugger
+	"Transcript clear.
 	'Interrupting...' crTrace.
 	1 to: 3 do:[:i|
 		('Step ', i printString) crTrace.
@@ -54,8 +63,7 @@ SindarinDebugger class >> debugSession: aDebugSession [
 		debugger node crTrace.
 		debugger step		
 	].
-	'Proceeding...' crTrace.
-	aDebugSession resume
+	'Proceeding...' crTrace."
 ]
 
 { #category : #'graphical debugger' }
@@ -388,6 +396,12 @@ SindarinDebugger >> restart [
 	"Resets this debugger on a new execution of the block passed as argument to the initial call to #debug:"
 	self initialize.
 	self debug: blockToDebug.
+]
+
+{ #category : #'stepping -  auto' }
+SindarinDebugger >> resume [
+
+	sindarinSession resumeAndClear
 ]
 
 { #category : #scripts }

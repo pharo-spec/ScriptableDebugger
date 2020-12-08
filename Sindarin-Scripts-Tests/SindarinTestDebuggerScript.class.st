@@ -15,9 +15,7 @@ Class {
 { #category : #executing }
 SindarinTestDebuggerScript >> executeWith: aDebugger [
 
-	node inspect.
-	node := aDebugger node.
-	aDebugger resume
+	node := aDebugger node
 ]
 
 { #category : #accessing }

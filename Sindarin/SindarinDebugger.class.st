@@ -47,23 +47,18 @@ SindarinDebugger class >> debugSession: aDebugSession [
 
 	| debugger exception |
 	debugger := self attachTo: aDebugSession.
+	
 	exception := aDebugSession exception.
 	exception class == SindarinPointcutException ifFalse: [ 
-		aDebugSession resume.
+		aDebugSession resume; clear; terminate.
 		^ self ].
+	
 	"Stepping to return to the context requesting the execution of a Sindarin script"
 	debugger step.
 	debugger step.
-	exception script executeWith: debugger
-	"Transcript clear.
-	'Interrupting...' crTrace.
-	1 to: 3 do:[:i|
-		('Step ', i printString) crTrace.
-		' 	 ' crTrace.
-		debugger node crTrace.
-		debugger step		
-	].
-	'Proceeding...' crTrace."
+	exception script executeWith: debugger.
+	aDebugSession resume; clear; terminate
+	
 ]
 
 { #category : #'graphical debugger' }

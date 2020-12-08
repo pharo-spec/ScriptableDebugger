@@ -21,7 +21,7 @@ SindarinPointcutException class >> signalWith: aSindarinScript [
 	| scriptingException |
 	scriptingException := self new.
 	scriptingException script: aSindarinScript.
-	scriptingException debug
+	scriptingException debug 
 ]
 
 { #category : #handling }

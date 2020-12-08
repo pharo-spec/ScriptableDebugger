@@ -7,7 +7,7 @@ When Sindarin debugs me, it executes the debugging script that I reference.
 "
 Class {
 	#name : #SindarinPointcutException,
-	#superclass : #Exception,
+	#superclass : #Halt,
 	#instVars : [
 		'script'
 	],
@@ -16,11 +16,12 @@ Class {
 
 { #category : #debugging }
 SindarinPointcutException class >> signalWith: aSindarinScript [
+
 	<debuggerCompleteToSender>
-	|scriptingException|
+	| scriptingException |
 	scriptingException := self new.
 	scriptingException script: aSindarinScript.
-	scriptingException signal
+	scriptingException debug
 ]
 
 { #category : #handling }

@@ -53,6 +53,18 @@ SindarinTDebuggerTest >> testExecuteRaiseScriptingException [
 ]
 
 { #category : #tests }
+SindarinTDebuggerTest >> testMultipleScriptExecution [
+
+	| example |
+	example := SindarinScriptPointcutsExamples new.
+	example script: script.
+	example exampleSquared.
+	example exampleSquared.
+	self assert: script counter equals: 2.
+	self assert: example result equals: 16
+]
+
+{ #category : #tests }
 SindarinTDebuggerTest >> testScriptExecution [
 
 	| example |
@@ -63,5 +75,6 @@ SindarinTDebuggerTest >> testScriptExecution [
 		assert: script node
 		identicalTo:
 		(example class >> #exampleSquared) ast statements third value
-			receiver
+			receiver.
+	self assert: example result equals: 16
 ]

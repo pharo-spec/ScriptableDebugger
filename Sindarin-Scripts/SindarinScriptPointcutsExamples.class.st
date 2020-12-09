@@ -5,7 +5,8 @@ Class {
 	#name : #SindarinScriptPointcutsExamples,
 	#superclass : #Object,
 	#instVars : [
-		'script'
+		'script',
+		'result'
 	],
 	#category : #'Sindarin-Scripts-examples'
 }
@@ -16,9 +17,15 @@ SindarinScriptPointcutsExamples >> exampleSquared [
 	init := 2.
 	script execute.
 	square := init squared.
-	^square squared
+	result := square squared
 	
 	
+]
+
+{ #category : #accessing }
+SindarinScriptPointcutsExamples >> result [
+
+	^ result
 ]
 
 { #category : #accessing }

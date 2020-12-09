@@ -7,15 +7,28 @@ Class {
 	#traits : 'TDebuggerScript',
 	#classTraits : 'TDebuggerScript classTrait',
 	#instVars : [
-		'node'
+		'node',
+		'counter'
 	],
 	#category : #'Sindarin-Scripts-Tests-utils'
 }
 
+{ #category : #accessing }
+SindarinTestDebuggerScript >> counter [
+
+	^ counter
+]
+
 { #category : #executing }
 SindarinTestDebuggerScript >> executeWith: aDebugger [
 
-	node := aDebugger node
+	node := aDebugger node.
+	counter := counter + 1
+]
+
+{ #category : #executing }
+SindarinTestDebuggerScript >> initialize [ 
+	counter := 0
 ]
 
 { #category : #accessing }

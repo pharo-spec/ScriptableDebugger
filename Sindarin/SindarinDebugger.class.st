@@ -176,7 +176,7 @@ SindarinDebugger >> continue [
 			^ #breakpoint ]
 ]
 
-{ #category : #acccessing }
+{ #category : #accessing }
 SindarinDebugger >> currentBytecode [
 	^ self context method symbolicBytecodes
 ]
@@ -474,6 +474,12 @@ SindarinDebugger >> signalExceptionIfDebuggedExecutionIsFinished [
 	(self isExecutionFinished) ifTrue: [ 
 		DebuggedExecutionIsFinished signal.
 	].
+]
+
+{ #category : #accessing }
+SindarinDebugger >> sindarinSession: aSindarinDebugSession [
+
+	sindarinSession := aSindarinDebugSession
 ]
 
 { #category : #'stepping -  skip' }

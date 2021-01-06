@@ -230,6 +230,27 @@ SindarinDebugger >> initialize [
 ]
 
 { #category : #private }
+SindarinDebugger >> instanceCreationPrimitives [
+	"* 70 */ primitiveNew,
+	/* 71 */ primitiveNewWithArg,
+	/* 79 */ primitiveNewMethod,
+	/* 148 */ primitiveClone,
+	/* 160 */ primitiveAdoptInstance,
+	/* 168 */ primitiveCopyObject"
+	^#(70 71 79 148 160 168)
+]
+
+{ #category : #'execution predicates' }
+SindarinDebugger >> isAboutToInstantiateClass [
+
+	| methodAboutToExecute |
+	self node isMessage ifFalse: [ ^ false ].
+	methodAboutToExecute := self receiver class lookupSelector:
+		                        self node selector.
+	^ self instanceCreationPrimitives includes: methodAboutToExecute primitive
+]
+
+{ #category : #private }
 SindarinDebugger >> isAboutToSignalException [
 	"OLD METHOD. SEE #hasSignalledUnhandledException"
 	"Returns whether the debugged execution is about to signal an exception"

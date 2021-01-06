@@ -247,7 +247,9 @@ SindarinDebugger >> isAboutToInstantiateClass [
 	self node isMessage ifFalse: [ ^ false ].
 	methodAboutToExecute := self receiver class lookupSelector:
 		                        self node selector.
-	^ self instanceCreationPrimitives includes: methodAboutToExecute primitive
+	^ methodAboutToExecute notNil and: [ 
+		  self instanceCreationPrimitives includes:
+			  methodAboutToExecute primitive ]
 ]
 
 { #category : #private }

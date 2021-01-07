@@ -760,7 +760,7 @@ SindarinDebuggerTest >> testStepToReturnWithException [
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
 	
-	self deny: dbg receiver class identicalTo: Exception.
+	self assert: dbg receiver class identicalTo: ZeroDivide.
 	self assert: dbg method equals: (Exception >> #signal)
 ]
 
@@ -773,7 +773,7 @@ SindarinDebuggerTest >> testStepToReturnWithHalt [
 	dbg stepToReturn.
 	
 	self assert: dbg context willReturn.
-	self assert: dbg node parent isReturn.
+	self assert: dbg node isReturn.
 	self assert: dbg topStack equals: 1
 ]
 

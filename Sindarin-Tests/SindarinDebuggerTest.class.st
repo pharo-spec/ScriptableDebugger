@@ -691,6 +691,7 @@ SindarinDebuggerTest >> testStepOverReturnNode [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToImplicitReturn [
 	| dbg |
+	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger debug: [ self helperMethod23 ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
@@ -707,6 +708,7 @@ SindarinDebuggerTest >> testStepToImplicitReturn [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToMethodEntry [
 	| dbg |
+	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger debug: [ self helperMethodReturn: true ].
 	dbg stepToMethodEntry.
 		
@@ -718,7 +720,8 @@ SindarinDebuggerTest >> testStepToMethodEntry [
 
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToNonLocalReturn [
-	| dbg |	
+	| dbg |
+	self skipOnPharoCITestingEnvironment.	
 	dbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
@@ -734,6 +737,7 @@ SindarinDebuggerTest >> testStepToNonLocalReturn [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToReturn [
 	| dbg |
+	self skipOnPharoCITestingEnvironment.
 	"First return node"
 	dbg := SindarinDebugger debug: [ self helperMethodReturn: true ].
 	dbg stepToMethodEntry.
@@ -755,6 +759,7 @@ SindarinDebuggerTest >> testStepToReturn [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToReturnWithException [
 	| dbg |
+	self skipOnPharoCITestingEnvironment.
 	"First return node"
 	dbg := SindarinDebugger debug: [ self helperMethodReturnWithException ].
 	dbg stepToMethodEntry.
@@ -767,6 +772,7 @@ SindarinDebuggerTest >> testStepToReturnWithException [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToReturnWithHalt [
 	| dbg |
+	self skipOnPharoCITestingEnvironment.
 	"First return node"
 	dbg := SindarinDebugger debug: [ self helperMethodReturnWithHalt ].
 	dbg stepToMethodEntry.

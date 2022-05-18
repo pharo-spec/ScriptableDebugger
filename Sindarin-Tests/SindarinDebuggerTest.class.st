@@ -652,9 +652,9 @@ SindarinDebuggerTest >> testSkipWith [
 	a := 1.
 	scdbg := SindarinDebugger
 		debug: [ a := 2.
-			p := Point x: 2 y: 3 ].
+			p := Point x: 2 y: 3  ].
 	scdbg skipWith: 3.
-	self assert: a equals: 1.
+	self assert: a equals: 3.
 	scdbg skipWith: 5.
 	scdbg step.
 	self assert: p equals: 5

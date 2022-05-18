@@ -504,8 +504,7 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 	"Pop the value to be assigned"
 	"Push the replacement value on the context's value stack, to simulate that the assignment happened and had value nil"
 	self context push: replacementValue.
-	"Increase the pc to go over the assignment"
-	self context pc: self context pc + 2.
+	self step.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession
 		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess

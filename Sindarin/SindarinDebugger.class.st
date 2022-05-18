@@ -494,8 +494,21 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-
+	self node isAssignment
+		ifTrue: [ ^ self skipAssignmentNodeCompletely ].
 	self skipWith: nil
+]
+
+{ #category : #'stepping -  skip' }
+SindarinDebugger >> skipAssignmentNodeCompletely [
+
+	self context pop.
+	"Pop the value to be assigned"
+	"Increase the pc to go over the assignment"
+	self context pc: (self context pc) + (self currentBytecode detect: [:each | each offset = self context pc ]) bytes size.
+	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
+	self debugSession stepToFirstInterestingBytecodeIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }

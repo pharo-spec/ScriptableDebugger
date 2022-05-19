@@ -669,7 +669,7 @@ SindarinDebugger >> stepToReturn [
 	oldContext := self context.
 
 	[ 
-	oldContext instructionStream willReturn or: [ 
+	(self context outerMostContext = oldContext and: [ self context instructionStream willReturn]) or: [ 
 		self hasSignalledUnhandledException ] ] whileFalse: [ 
 		self debugSession stepThrough: oldContext ]
 ]

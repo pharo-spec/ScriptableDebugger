@@ -665,9 +665,13 @@ SindarinDebugger >> stepToMethodEntry [
 { #category : #'stepping - steps' }
 SindarinDebugger >> stepToReturn [
 
+	| oldContext |
+	oldContext := self context.
+
 	[ 
-	self context instructionStream willReturn or: [ self hasSignalledUnhandledException ] ] 
-		whileFalse: [ self debugSession stepOver ]
+	oldContext instructionStream willReturn or: [ 
+		self hasSignalledUnhandledException ] ] whileFalse: [ 
+		self debugSession stepThrough: oldContext ]
 ]
 
 { #category : #'stepping - steps' }

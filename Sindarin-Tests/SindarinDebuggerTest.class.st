@@ -804,7 +804,7 @@ SindarinDebuggerTest >> testStepToReturnWithHalt [
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
 	
-	self assert: dbg context willReturn.
+	self assert: dbg context instructionStream willReturn.
 	self assert: dbg node isReturn.
 	self assert: dbg topStack equals: 1
 ]

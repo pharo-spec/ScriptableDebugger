@@ -645,7 +645,7 @@ SindarinDebugger >> stepThrough [
 
 { #category : #'stepping - steps' }
 SindarinDebugger >> stepToMethodEntry [
-	self stepUntil: [ self context willSend ].
+	self stepUntil: [ self context instructionStream willSend ].
 	process step: self context.
 	self debugSession updateContextTo: process suspendedContext
 ]
@@ -654,7 +654,7 @@ SindarinDebugger >> stepToMethodEntry [
 SindarinDebugger >> stepToReturn [
 
 	[ 
-	self context willReturn or: [ self hasSignalledUnhandledException ] ] 
+	self context instructionStream willReturn or: [ self hasSignalledUnhandledException ] ] 
 		whileFalse: [ self debugSession stepOver ]
 ]
 

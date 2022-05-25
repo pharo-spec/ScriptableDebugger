@@ -3,8 +3,7 @@ Class {
 	#superclass : #TestCase,
 	#instVars : [
 		'breakpointsBeforeTest',
-		'testObjectPoint',
-		'instanceBlock'
+		'testObjectPoint'
 	],
 	#category : #'Sindarin-Tests-Base'
 }
@@ -231,33 +230,6 @@ SindarinDebuggerTest >> helperMethodReturnWithHalt [
 	^ a + 1
 ]
 
-{ #category : #'as yet unclassified' }
-SindarinDebuggerTest >> helperMethodWithInst [
-	instanceBlock value.
-	^ 43
-]
-
-{ #category : #'as yet unclassified' }
-SindarinDebuggerTest >> helperMethodWithInstDefinedInContext [
-	instanceBlock := [ 1 + 2. ^ 42 ].
-	instanceBlock value.
-	^ 43
-]
-
-{ #category : #'as yet unclassified' }
-SindarinDebuggerTest >> helperMethodWithTemp [
-	| tempBlock a |
-	tempBlock := [ #(1 2 3) do: [ :number |  a := 1. ^ 42 ] ].
-	tempBlock value.
-	^ 43
-]
-
-{ #category : #accessing }
-SindarinDebuggerTest >> instanceBlock: aBlock [
-
-	instanceBlock := aBlock
-]
-
 { #category : #running }
 SindarinDebuggerTest >> runCaseManaged [
 	^ self runCase
@@ -271,7 +243,6 @@ SindarinDebuggerTest >> setUp [
 	breakpointsBeforeTest := VirtualBreakpoint all.
 	VirtualBreakpoint all removeAll.
 	testObjectPoint := Point x: 1 y: 2.
-	instanceBlock := [ 1 + 2. ^ 42 ].
 ]
 
 { #category : #running }

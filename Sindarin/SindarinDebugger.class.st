@@ -229,7 +229,7 @@ SindarinDebugger >> debugSession [
 { #category : #private }
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
-	^ (self selector = #defaultAction ) and: [ self receiver isKindOf: Exception ]
+	^ (#(#defaultAction #signal) includes: self selector ) and: [ self receiver isKindOf: Exception ]
 ]
 
 { #category : #initialization }
@@ -385,6 +385,18 @@ SindarinDebugger >> openInGraphicalDebugger [
 			'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
+{ #category : #'as yet unclassified' }
+SindarinDebugger >> outerMostContextOf: aContext [
+
+	| currentContext oldContext |
+	currentContext := aContext.
+	oldContext := nil.
+	[currentContext ~= oldContext] whileTrue: [ 
+		oldContext := currentContext.
+		currentContext := currentContext outerMostContext ].
+	^ currentContext
+]
+
 { #category : #accessing }
 SindarinDebugger >> pc [
 	^ self context pc
@@ -457,6 +469,28 @@ SindarinDebugger >> setBreakpointOn: target [
 	(target isKindOf: CompiledMethod)
 		ifTrue: [ astTarget := target ast ].
 	^ VirtualBreakpoint newOnNode: astTarget setBy: self
+]
+
+{ #category : #asserting }
+SindarinDebugger >> shouldStepIntoInMethod: aRBMethodNode [
+
+	| messageNode childrenOfMessageNode |
+	messageNode := self node.
+	messageNode isMessage ifFalse: [ ^ false ].
+	childrenOfMessageNode := messageNode children.
+	childrenOfMessageNode := childrenOfMessageNode
+		                         select: [ :child | 
+			                         child isBlock or: [ 
+				                         child isVariable and: [ 
+					                         (child variableValueInContext:
+						                          self context) isBlock ] ] ]
+		                         thenCollect: [ :child | 
+			                         child isVariable ifTrue: [ 
+				                         (child variableValueInContext:
+					                          self context) startpcOrOuterCode ast ] ].
+	^ childrenOfMessageNode anySatisfy: [ :child | 
+		  (RBBlockDefinitionSearchingVisitor newToSearch: child) visitNode:
+			  aRBMethodNode ]
 ]
 
 { #category : #private }
@@ -665,9 +699,20 @@ SindarinDebugger >> stepToMethodEntry [
 { #category : #'stepping - steps' }
 SindarinDebugger >> stepToReturn [
 
+	| oldContext methodAST |
+	oldContext := self outerMostContextOf: self context.
+	methodAST := self context method ast.
+
 	[ 
+	((self outerMostContextOf: self context) = oldContext and: [ 
+		 self context instructionStream willReturn ]) or: [ 
+		self hasSignalledUnhandledException ] ] whileFalse: [ 
+		(self shouldStepIntoInMethod: methodAST)
+			ifTrue: [ self debugSession stepInto ]
+			ifFalse: [ self debugSession stepOver ] ]
+	"[ 
 	self context instructionStream willReturn or: [ self hasSignalledUnhandledException ] ] 
-		whileFalse: [ self debugSession stepOver ]
+		whileFalse: [ self debugSession stepOver ]"
 ]
 
 { #category : #'stepping - steps' }

@@ -704,6 +704,47 @@ SindarinDebuggerTest >> testSkipUpToNode [
 ]
 
 { #category : #'tests - skipping' }
+SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
+
+	| dbg realExecPC realExecNode realExecTopStack oldValueOfA |
+	self skipOnPharoCITestingEnvironment.
+	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
+	"after stepping, we stop at the beginning of the block"
+	dbg
+		step;
+		step;
+		stepOver;
+		stepOver;
+		stepThrough.
+	oldValueOfA := dbg temporaryNamed: #a.
+	"after stepping, we stop on  b: = 3 + 2 assignment node"
+	dbg
+		stepOver;
+		stepOver.
+	realExecPC := dbg pc.
+	realExecNode := dbg node.
+	realExecTopStack := dbg topStack.
+
+	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
+
+	dbg
+		step;
+		step;
+		stepOver;
+		stepOver;
+		stepThrough;
+		skipUpToNode: realExecNode.
+	self assert: dbg pc equals: realExecPC.
+	self assert: dbg node identicalTo: realExecNode.
+	self assert: (dbg temporaryNamed: #a) equals: oldValueOfA.
+	self assert: dbg topStack equals: nil.
+
+	dbg stepOver.
+	"nil is on the stack so stepping over the assignment should put nil into b"
+	self assert: (dbg temporaryNamed: #b) equals: nil
+]
+
+{ #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipWith [
 	| a p scdbg |
 	self skipOnPharoCITestingEnvironment.

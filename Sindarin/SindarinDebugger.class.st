@@ -402,6 +402,17 @@ SindarinDebugger >> pc [
 	^ self context pc
 ]
 
+{ #category : #accessing }
+SindarinDebugger >> pc: anInteger [
+
+	self context pc: anInteger.
+	[ self context stackPtr > self context numTemps ] whileTrue: [ 
+		self context pop ].
+
+	self debugSession stepToFirstInterestingBytecodeIn:
+		self debugSession interruptedProcess
+]
+
 { #category : #'stepping -  auto' }
 SindarinDebugger >> proceed [
 	"alias of #continue"

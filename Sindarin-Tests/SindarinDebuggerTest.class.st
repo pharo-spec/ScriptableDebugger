@@ -598,7 +598,7 @@ SindarinDebuggerTest >> testSkip [
 	self assert: a equals: 1.
 	scdbg skip.
 	scdbg step.
-	self assert: p equals: nil
+	self assert: p equals: Point
 ]
 
 { #category : #tests }
@@ -628,6 +628,23 @@ SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacement
 	dbg skip. "we skip the assignment a:= (b := 3 + 4)"
 	self assert: dbg topStack equals: aFormerValue.
 	self assert: a equals: aFormerValue
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
+
+	| a scdbg |
+	a := 1.
+	scdbg := SindarinDebugger
+		debug: [ a := a + 2 ].
+	self assert: a equals: 1.
+	
+	scdbg skip.
+	scdbg step.
+	
+	self assert: a equals: 1
+	
+
 ]
 
 { #category : #'tests - skipping' }

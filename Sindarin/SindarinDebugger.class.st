@@ -363,6 +363,13 @@ SindarinDebugger >> method [
 	^ self context method
 ]
 
+{ #category : #'accessing - bytes' }
+SindarinDebugger >> nextBytecode [
+
+	^ self currentBytecode detect: [ :each | 
+		  each offset = self context pc ]
+]
+
 { #category : #astAndAstMapping }
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"

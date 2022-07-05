@@ -587,6 +587,25 @@ SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
  	self assert: a equals: 1
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
+
+	| a scdbg oldValueOfA negatedContext |
+	a := ScaledDecimal newFromNumber: 3 scale: 2.
+	scdbg := SindarinDebugger debug: [ a := a negated ].
+	oldValueOfA := a.
+
+	scdbg
+		step;
+		stepOver;
+		skip.
+	negatedContext := scdbg context.
+	scdbg stepUntil: [ scdbg context == negatedContext ].
+	scdbg stepOver.
+
+	self assert: a equals: oldValueOfA
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipThroughNode [
 	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |

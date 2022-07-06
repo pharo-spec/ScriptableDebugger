@@ -571,6 +571,12 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
 ]
 
+{ #category : #'stepping - skip' }
+SindarinDebugger >> skipReturnNode [
+
+	^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node'
+]
+
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipThroughNode: aProgramNode [
 	"Skips execution until program counter reaches aProgramNode.
@@ -597,7 +603,9 @@ SindarinDebugger >> skipUpToNode: aProgramNode [
 SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
 	"Skips execution until program counter reaches aProgramNode."
 
-	[ self node == aProgramNode ] whileFalse: [ self skip ].
+	[ [ self node == aProgramNode ] whileFalse: [ self skip ] ]
+		on: SindarinSkippingReturnWarning 
+		do: [ ^ self ].
 	aProgramNode isReturn	ifTrue: [ ^ self ].
 	skipTargetNode ifTrue: [ self skip ]
 ]

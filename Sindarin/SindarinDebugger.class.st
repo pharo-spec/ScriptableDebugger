@@ -527,9 +527,11 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
+
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-	self node isAssignment
-		ifTrue: [ ^ self skipAssignmentNodeCompletely ].
+
+	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
+	self node isMethod ifTrue: [ ^ self step ].
 	self skipWith: nil
 ]
 

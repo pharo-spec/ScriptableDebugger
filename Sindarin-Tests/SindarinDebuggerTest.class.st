@@ -230,6 +230,15 @@ SindarinDebuggerTest >> helperMethodReturnWithHalt [
 	^ a + 1
 ]
 
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
+
+	| block a |
+	block := [ a := 1 ].
+	block value.
+	^ 43
+]
+
 { #category : #running }
 SindarinDebuggerTest >> runCaseManaged [
 	^ self runCase

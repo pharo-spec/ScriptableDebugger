@@ -385,15 +385,12 @@ SindarinDebuggerTest >> testIsAboutToInstantiateClass [
 
 { #category : #tests }
 SindarinDebuggerTest >> testIsExecutionFinished [
-	"Test shows that the debugger is actually not correctly working and therefore it is disabled.
-	The fix requires the changes in #isExecutionFinished and on the Pharo side (PR#8567)
-	Once integrated there will be another PR here. 
-	Projects are managed in different repos and therfore such complex integration"
+
 	| scdbg |
 	self skipOnPharoCITestingEnvironment.
 	scdbg := SindarinDebugger debug: [ self helperMethod16 ].
 	self deny: scdbg isExecutionFinished.
-	
+
 	[ scdbg isExecutionFinished ] whileFalse: [ scdbg stepOver ].
 
 	self assert: scdbg currentProcess isTerminated

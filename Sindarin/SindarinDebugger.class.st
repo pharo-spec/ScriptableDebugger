@@ -382,7 +382,7 @@ SindarinDebugger >> openInGraphicalDebugger [
 			'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'accessing - context' }
 SindarinDebugger >> outerMostContextOf: aContext [
 
 	| currentContext oldContext |

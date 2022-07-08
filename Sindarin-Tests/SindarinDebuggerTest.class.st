@@ -928,5 +928,5 @@ SindarinDebuggerTest >> testskipUpToNodeSkipTargetNode [
 	returnNode := (self class >> #helperMethod1) ast statements last.
 	dbg step; skipThroughNode: returnNode.
 	self assert: dbg node equals: returnNode.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: Point
 ]

@@ -8,6 +8,14 @@ Class {
 	#category : #Sindarin
 }
 
+{ #category : #'instance creation' }
+RBBlockDefinitionSearchingVisitor class >> newToSearch: aBlockNode [
+
+	^ self new
+		  blockToSearch: aBlockNode;
+		  yourself
+]
+
 { #category : #accessing }
 RBBlockDefinitionSearchingVisitor >> blockToSearch: aBlockNode [
 

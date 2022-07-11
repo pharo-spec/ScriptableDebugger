@@ -568,6 +568,46 @@ SindarinDebuggerTest >> testSkip [
 	self assert: p equals: nil
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipBlockNode [
+
+	| scdbg targetContext |
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+
+	scdbg
+		step;
+		step.
+
+	self assert: scdbg topStack isBlock.
+
+	scdbg stepUntil: [ 
+		scdbg node isMessage and: [ scdbg messageSelector = #value ] ].
+
+	targetContext := scdbg context sender.
+	scdbg stepOver.
+
+	self assert: scdbg context identicalTo: targetContext.
+	self assert: scdbg topStack equals: 42.
+
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+
+	scdbg
+		step;
+		skip.
+
+	self assert: scdbg topStack isNil.
+
+	scdbg stepUntil: [ 
+		scdbg node isMessage and: [ scdbg messageSelector = #value ] ].
+
+	targetContext := scdbg context.
+
+	scdbg stepOver.
+
+	self assert: scdbg context identicalTo: targetContext.
+	self assert: scdbg topStack equals: 43
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipThroughNode [
 	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |

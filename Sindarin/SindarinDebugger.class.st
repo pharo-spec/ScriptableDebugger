@@ -207,16 +207,13 @@ SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
 { #category : #start }
 SindarinDebugger >> debug: aBlock [
 	blockToDebug := aBlock.
-	process := aBlock newProcess
-		name: 'ExecutionDebuggedByScriptableDebugger'.
-
-	"process on: Exception do: [:ex | DebuggedExecutionSignalledAnException signalWithException: ex. ex resume ]."
+	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
 	sindarinSession := SindarinDebugSession
 		newWithName: 'ScriptableDebuggerDebugSession'
 		forProcess: process.
 	sindarinSession deactivateEventTriggering.
-	[ self selector = #newProcess ] whileFalse: [ self step ].	"Step the process to get out of the on:do: context added at the bottom of its stack"
-	[ self selector = #newProcess ] whileTrue: [ self step ].	"Step the process so that it leaves BlockClosure>>#newProcess and enters the block for which a process was created"
+	"Step the process until it enters the block for which a process was created"
+	[ self context closure == blockToDebug ] whileFalse: [ self step ]
 ]
 
 { #category : #accessing }
@@ -272,7 +269,7 @@ SindarinDebugger >> isAboutToSignalException [
 SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
-	^ process isTerminating
+	^ process isTerminated
 ]
 
 { #category : #stackAccessHelpers }
@@ -392,7 +389,7 @@ SindarinDebugger >> openInGraphicalDebugger [
 			'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'accessing - context' }
 SindarinDebugger >> outerMostContextOf: aContext [
 
 	| currentContext oldContext |
@@ -545,10 +542,20 @@ SindarinDebugger >> skip [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeCompletely [
 
+	| currentBytecode |
+	currentBytecode := self currentBytecode detect: [ :each | 
+		                   each offset = self context pc ].
+
+	"Pop the value that will be assigned"
 	self context pop.
-	"Pop the value to be assigned"
+
+	"If the assignment is a store bytecode and not a pop bytecode, we push the current value of the variable that was going to be assigned."
+	(#( 243 244 245 252 ) includes: currentBytecode bytes first) ifTrue: [ 
+		self context push:
+			(self node variable variableValueInContext: self context) ].
+
 	"Increase the pc to go over the assignment"
-	self context pc: (self context pc) + (self currentBytecode detect: [:each | each offset = self context pc ]) bytes size.
+	self context pc: self context pc + currentBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess
@@ -690,8 +697,8 @@ SindarinDebugger >> stepOver [
 	startContext := self context.
 	self step.
 	[ self context == startContext
-		or: [ startContext sender isNil
-				or: [ startContext hasSender: self context ] ] ]
+		or: [ (startContext isDead or: [ self context isDead ])
+				or: [ startContext hasSender: self context ]]]
 		whileFalse: [ self step ]
 ]
 

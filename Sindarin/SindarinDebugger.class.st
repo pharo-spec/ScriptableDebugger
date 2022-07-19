@@ -532,10 +532,17 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
 
+	| nextBytecode |
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
-	self node isMessage ifTrue: [ ^ self skipMessageNode ].
+  self node isMessage ifTrue: [ ^ self skipMessageNode ].
+	nextBytecode := self currentBytecode detect: [ :each | 
+		                each offset = self pc ].
+	(self node isReturn or: [ 
+		 nextBytecode bytes first between: 88 and: 94 ]) ifTrue: [ 
+		^ self skipReturnNode ].
+	self node isSequence ifTrue: [ ^ self step ].
+
 	self skipWith: nil
 ]
 
@@ -600,6 +607,12 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 		self debugSession interruptedProcess
 ]
 
+{ #category : #'stepping - skip' }
+SindarinDebugger >> skipReturnNode [
+
+	^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node'
+]
+
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipThroughNode: aProgramNode [
 	"Skips execution until program counter reaches aProgramNode.
@@ -626,7 +639,9 @@ SindarinDebugger >> skipUpToNode: aProgramNode [
 SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
 	"Skips execution until program counter reaches aProgramNode."
 
-	[ self node == aProgramNode ] whileFalse: [ self skip ].
+	[ [ self node == aProgramNode ] whileFalse: [ self skip ] ]
+		on: SindarinSkippingReturnWarning 
+		do: [ ^ self ].
 	aProgramNode isReturn	ifTrue: [ ^ self ].
 	skipTargetNode ifTrue: [ self skip ]
 ]

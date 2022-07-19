@@ -230,6 +230,15 @@ SindarinDebuggerTest >> helperMethodReturnWithHalt [
 	^ a + 1
 ]
 
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
+
+	| block a |
+	block := [ a := 1 ].
+	block value.
+	^ 43
+]
+
 { #category : #running }
 SindarinDebuggerTest >> runCaseManaged [
 	^ self runCase
@@ -631,6 +640,16 @@ SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
 	self assert: a equals: oldValueOfA
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipDoesNotSkipReturn [
+
+	| a scdbg |
+	scdbg := SindarinDebugger debug: [ a := 1. ^ 42  ].
+	
+	self shouldnt: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipThroughNode [
 	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |
@@ -702,6 +721,75 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	self assert: realValueOfA equals: 5.
 	self assert: (dbg temporaryNamed: #a) equals: 1.
 	self assert: dbg topStack equals: realExecTopStack
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturn [
+
+	| scdbg implicitReturnPc implicitReturnNode realExecPc realExecNode |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		stepOver.
+
+	implicitReturnPc := scdbg pc.
+	implicitReturnNode := scdbg node.
+	scdbg stepOver.
+
+	realExecPc := scdbg pc.
+	realExecNode := scdbg node.
+
+	self assert: realExecPc ~= implicitReturnPc.
+
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		skipUpToNode: realExecNode.
+
+	self assert: scdbg pc equals: implicitReturnPc.
+	self assert: scdbg node identicalTo: implicitReturnNode
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> testSkipUpToNodeStopsOnReturnNodes [
+
+	| scdbg returnInBlock realExecNode |
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepThrough.
+	returnInBlock := scdbg node.
+	realExecNode := scdbg node methodNode body statements last.
+
+	self assert: returnInBlock isReturn.
+	self assert: realExecNode isReturn.
+
+
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepThrough;
+		skipUpToNode: realExecNode.
+
+	self assert: scdbg node identicalTo: returnInBlock
 ]
 
 { #category : #'tests - skipping' }

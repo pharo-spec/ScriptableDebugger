@@ -565,7 +565,22 @@ SindarinDebuggerTest >> testSkip [
 	self assert: a equals: 1.
 	scdbg skip.
 	scdbg step.
-	self assert: p equals: nil
+	self assert: p equals: Point
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
+
+	| a scdbg |
+ 	a := 1.
+ 	scdbg := SindarinDebugger
+ 		debug: [ a := a + 2 ].
+ 	self assert: a equals: 1.
+
+ 	scdbg skip.
+ 	scdbg step.
+
+ 	self assert: a equals: 1
 ]
 
 { #category : #tests }
@@ -621,7 +636,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 	self assert: realValueOfA equals: 5.
 	self assert: (dbg temporaryNamed: #a) equals: 1.
 	self assert: realExecTopStack equals: 3.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: '3'
 ]
 
 { #category : #'tests - skipping' }
@@ -919,5 +934,5 @@ SindarinDebuggerTest >> testskipUpToNodeSkipTargetNode [
 	returnNode := (self class >> #helperMethod1) ast statements last.
 	dbg step; skipThroughNode: returnNode.
 	self assert: dbg node equals: returnNode.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: Point
 ]

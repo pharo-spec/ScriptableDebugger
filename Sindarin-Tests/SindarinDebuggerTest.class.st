@@ -568,6 +568,35 @@ SindarinDebuggerTest >> testSkip [
 	self assert: p equals: Point
 ]
 
+{ #category : #'tests - skipping' }
+SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacementValueButNotWithPopIntoBytecode [
+
+	| a b dbg aFormerValue bFormerValue |
+	dbg := SindarinDebugger debug: [ 
+		       b := 1.
+		       [ 
+		       a := 2.
+		       a := b := 3 + 4 ] value.
+		       ^ 42 ].
+	dbg step.
+	dbg step.
+	dbg stepThrough. "we enter the block"
+
+	dbg skip. "we skip the assignment a:= 2"
+	self assert: dbg topStack equals: 4.
+	self assert: a equals: nil.
+
+	bFormerValue := b.
+	dbg step. dbg skip. "we skip the assignment b := 3 + 4"
+	self assert: dbg topStack equals: bFormerValue.
+	self assert: b equals: bFormerValue.
+
+	aFormerValue := a.
+	dbg skip. "we skip the assignment a:= (b := 3 + 4)"
+	self assert: dbg topStack equals: aFormerValue.
+	self assert: a equals: aFormerValue
+]
+
 { #category : #tests }
 SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
 
@@ -600,34 +629,6 @@ SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
 	scdbg stepOver.
 
 	self assert: a equals: oldValueOfA
-]
-
-SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacementValueButNotWithPopIntoBytecode [
-
-	| a b dbg aFormerValue bFormerValue |
-	dbg := SindarinDebugger debug: [ 
-		       b := 1.
-		       [ 
-		       a := 2.
-		       a := b := 3 + 4 ] value.
-		       ^ 42 ].
-	dbg step.
-	dbg step.
-	dbg stepThrough. "we enter the block"
-
-	dbg skip. "we skip the assignment a:= 2"
-	self assert: dbg topStack equals: 4.
-	self assert: a equals: nil.
-
-	bFormerValue := b.
-	dbg step. dbg skip. "we skip the assignment b := 3 + 4"
-	self assert: dbg topStack equals: bFormerValue.
-	self assert: b equals: bFormerValue.
-
-	aFormerValue := a.
-	dbg skip. "we skip the assignment a:= (b := 3 + 4)"
-	self assert: dbg topStack equals: aFormerValue.
-	self assert: a equals: aFormerValue
 ]
 
 { #category : #'tests - skipping' }

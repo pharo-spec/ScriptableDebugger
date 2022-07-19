@@ -17,7 +17,6 @@ BaselineOfSindarin >> baseline: spec [
 				package: 'Sindarin-Experiments' ].
 			
 	spec 
-		group: 'default' with: #('Core' 'Experiments');
-		group: 'Core' with: #('Sindarin' 'Sindarin-Tests');
-		group: 'Experiments' with: #('Core' 'Sindarin-Experiments')
+		group: 'default' with: #('Sindarin' 'Sindarin-Tests');
+		group: 'experiments' with: #('default' 'Sindarin-Experiments')
 ]

@@ -394,19 +394,15 @@ SindarinDebuggerTest >> testIsAboutToInstantiateClass [
 
 { #category : #tests }
 SindarinDebuggerTest >> testIsExecutionFinished [
+
 	| scdbg |
+	self skipOnPharoCITestingEnvironment.
 	scdbg := SindarinDebugger debug: [ self helperMethod16 ].
 	self deny: scdbg isExecutionFinished.
-	scdbg
-		stepOver;
-		step;
-		step;
-		stepOver;
-		step;
-		stepOver;
-		step.
-	"Reached `self isActiveProcess` in Process>>#terminate"
-	self assert: scdbg isExecutionFinished
+
+	[ scdbg isExecutionFinished ] whileFalse: [ scdbg stepOver ].
+
+	self assert: scdbg currentProcess isTerminated
 ]
 
 { #category : #tests }
@@ -578,7 +574,70 @@ SindarinDebuggerTest >> testSkip [
 	self assert: a equals: 1.
 	scdbg skip.
 	scdbg step.
-	self assert: p equals: nil
+	self assert: p equals: Point
+]
+
+{ #category : #'tests - skipping' }
+SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacementValueButNotWithPopIntoBytecode [
+
+	| a b dbg aFormerValue bFormerValue |
+	dbg := SindarinDebugger debug: [ 
+		       b := 1.
+		       [ 
+		       a := 2.
+		       a := b := 3 + 4 ] value.
+		       ^ 42 ].
+	dbg step.
+	dbg step.
+	dbg stepThrough. "we enter the block"
+
+	dbg skip. "we skip the assignment a:= 2"
+	self assert: dbg topStack equals: 4.
+	self assert: a equals: nil.
+
+	bFormerValue := b.
+	dbg step. dbg skip. "we skip the assignment b := 3 + 4"
+	self assert: dbg topStack equals: bFormerValue.
+	self assert: b equals: bFormerValue.
+
+	aFormerValue := a.
+	dbg skip. "we skip the assignment a:= (b := 3 + 4)"
+	self assert: dbg topStack equals: aFormerValue.
+	self assert: a equals: aFormerValue
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
+
+	| a scdbg |
+ 	a := 1.
+ 	scdbg := SindarinDebugger
+ 		debug: [ a := a + 2 ].
+ 	self assert: a equals: 1.
+
+ 	scdbg skip.
+ 	scdbg step.
+
+ 	self assert: a equals: 1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
+
+	| a scdbg oldValueOfA negatedContext |
+	a := ScaledDecimal newFromNumber: 3 scale: 2.
+	scdbg := SindarinDebugger debug: [ a := a negated ].
+	oldValueOfA := a.
+
+	scdbg
+		step;
+		stepOver;
+		skip.
+	negatedContext := scdbg context.
+	scdbg stepUntil: [ scdbg context == negatedContext ].
+	scdbg stepOver.
+
+	self assert: a equals: oldValueOfA
 ]
 
 { #category : #tests }
@@ -615,7 +674,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 	self assert: realValueOfA equals: 5.
 	self assert: (dbg temporaryNamed: #a) equals: 1.
 	self assert: realExecTopStack equals: 3.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: '3'
 ]
 
 { #category : #'tests - skipping' }
@@ -982,5 +1041,5 @@ SindarinDebuggerTest >> testskipUpToNodeSkipTargetNode [
 	returnNode := (self class >> #helperMethod1) ast statements last.
 	dbg step; skipThroughNode: returnNode.
 	self assert: dbg node equals: returnNode.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: Point
 ]

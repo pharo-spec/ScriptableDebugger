@@ -533,10 +533,20 @@ SindarinDebugger >> skip [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeCompletely [
 
+	| currentBytecode |
+	currentBytecode := self currentBytecode detect: [ :each | 
+		                   each offset = self context pc ].
+
+	"Pop the value that will be assigned"
 	self context pop.
-	"Pop the value to be assigned"
+
+	"If the assignment is a store bytecode and not a pop bytecode, we push the current value of the variable that was going to be assigned."
+	(#( 243 244 245 252 ) includes: currentBytecode bytes first) ifTrue: [ 
+		self context push:
+			(self node variable variableValueInContext: self context) ].
+
 	"Increase the pc to go over the assignment"
-	self context pc: (self context pc) + (self currentBytecode detect: [:each | each offset = self context pc ]) bytes size.
+	self context pc: self context pc + currentBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess

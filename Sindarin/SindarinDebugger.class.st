@@ -360,6 +360,13 @@ SindarinDebugger >> method [
 	^ self context method
 ]
 
+{ #category : #'accessing - bytes' }
+SindarinDebugger >> nextBytecode [
+
+	^ self currentBytecode detect: [ :each | 
+		  each offset = self context pc ]
+]
+
 { #category : #astAndAstMapping }
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
@@ -572,7 +579,7 @@ SindarinDebugger >> skipMessageNode [
 	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"
 
 	"Increase the pc to go over the message send"
-	self context pc: self context pc + 1.
+	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess
@@ -587,7 +594,7 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 	"Push the replacement value on the context's value stack, to simulate that the message send happened and returned nil"
 	self context push: replacementValue.
 	"Increase the pc to go over the message send"
-	self context pc: self context pc + 1.
+	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess

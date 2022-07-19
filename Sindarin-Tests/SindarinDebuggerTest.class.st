@@ -568,22 +568,7 @@ SindarinDebuggerTest >> testSkip [
 	self assert: p equals: Point
 ]
 
-{ #category : #tests }
-SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
-
-	| a scdbg |
- 	a := 1.
- 	scdbg := SindarinDebugger
- 		debug: [ a := a + 2 ].
- 	self assert: a equals: 1.
-
- 	scdbg skip.
- 	scdbg step.
-
- 	self assert: a equals: 1
-]
-
-{ #category : #tests }
+{ #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacementValueButNotWithPopIntoBytecode [
 
 	| a b dbg aFormerValue bFormerValue |
@@ -610,6 +595,40 @@ SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacement
 	dbg skip. "we skip the assignment a:= (b := 3 + 4)"
 	self assert: dbg topStack equals: aFormerValue.
 	self assert: a equals: aFormerValue
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
+
+	| a scdbg |
+ 	a := 1.
+ 	scdbg := SindarinDebugger
+ 		debug: [ a := a + 2 ].
+ 	self assert: a equals: 1.
+
+ 	scdbg skip.
+ 	scdbg step.
+
+ 	self assert: a equals: 1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
+
+	| a scdbg oldValueOfA negatedContext |
+	a := ScaledDecimal newFromNumber: 3 scale: 2.
+	scdbg := SindarinDebugger debug: [ a := a negated ].
+	oldValueOfA := a.
+
+	scdbg
+		step;
+		stepOver;
+		skip.
+	negatedContext := scdbg context.
+	scdbg stepUntil: [ scdbg context == negatedContext ].
+	scdbg stepOver.
+
+	self assert: a equals: oldValueOfA
 ]
 
 { #category : #'tests - skipping' }

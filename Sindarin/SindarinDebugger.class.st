@@ -360,6 +360,13 @@ SindarinDebugger >> method [
 	^ self context method
 ]
 
+{ #category : #'accessing - bytes' }
+SindarinDebugger >> nextBytecode [
+
+	^ self currentBytecode detect: [ :each | 
+		  each offset = self context pc ]
+]
+
 { #category : #astAndAstMapping }
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
@@ -524,11 +531,19 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
-
+	
+	| nextBytecode |
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
-	self node isBlock ifTrue: [ self skipBlockNode ].
+  self node isMessage ifTrue: [ ^ self skipMessageNode ].
+  self node isMethod ifTrue: [ ^ self step ].
+  self node isBlock ifTrue: [ self skipBlockNode ].
+	nextBytecode := self currentBytecode detect: [ :each | 
+		                each offset = self pc ].
+	(self node isReturn or: [ 
+		 nextBytecode bytes first between: 88 and: 94 ]) ifTrue: [ 
+		^ self skipReturnNode ].
+	self node isSequence ifTrue: [ ^ self step ].
 
 	self skipWith: nil
 ]
@@ -536,10 +551,20 @@ SindarinDebugger >> skip [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeCompletely [
 
+	| currentBytecode |
+	currentBytecode := self currentBytecode detect: [ :each | 
+		                   each offset = self context pc ].
+
+	"Pop the value that will be assigned"
 	self context pop.
-	"Pop the value to be assigned"
+
+	"If the assignment is a store bytecode and not a pop bytecode, we push the current value of the variable that was going to be assigned."
+	(#( 243 244 245 252 ) includes: currentBytecode bytes first) ifTrue: [ 
+		self context push:
+			(self node variable variableValueInContext: self context) ].
+
 	"Increase the pc to go over the assignment"
-	self context pc: (self context pc) + (self currentBytecode detect: [:each | each offset = self context pc ]) bytes size.
+	self context pc: self context pc + currentBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess
@@ -568,18 +593,36 @@ SindarinDebugger >> skipBlockNode [
 	self context push: nil
 ]
 
+SindarinDebugger >> skipMessageNode [
+
+	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"
+
+	"Increase the pc to go over the message send"
+	self context pc: self context pc + self nextBytecode bytes size.
+	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
+	self debugSession stepToFirstInterestingBytecodeIn:
+		self debugSession interruptedProcess
+]
+
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipMessageNodeWith: replacementValue [
-	self node arguments do: [ :arg | self context pop ].	"Pop the arguments of the message send from the context's value stack"
+
+	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"
 	"Pop the receiver from the context's value stack"
 	self context pop.
 	"Push the replacement value on the context's value stack, to simulate that the message send happened and returned nil"
 	self context push: replacementValue.
 	"Increase the pc to go over the message send"
-	self context pc: self context pc + 1.
+	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession
-		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
+	self debugSession stepToFirstInterestingBytecodeIn:
+		self debugSession interruptedProcess
+]
+
+{ #category : #'stepping - skip' }
+SindarinDebugger >> skipReturnNode [
+
+	^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node'
 ]
 
 { #category : #'stepping -  skip' }
@@ -608,7 +651,9 @@ SindarinDebugger >> skipUpToNode: aProgramNode [
 SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
 	"Skips execution until program counter reaches aProgramNode."
 
-	[ self node == aProgramNode ] whileFalse: [ self skip ].
+	[ [ self node == aProgramNode ] whileFalse: [ self skip ] ]
+		on: SindarinSkippingReturnWarning 
+		do: [ ^ self ].
 	aProgramNode isReturn	ifTrue: [ ^ self ].
 	skipTargetNode ifTrue: [ self skip ]
 ]

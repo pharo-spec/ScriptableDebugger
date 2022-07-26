@@ -230,6 +230,15 @@ SindarinDebuggerTest >> helperMethodReturnWithHalt [
 	^ a + 1
 ]
 
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
+
+	| block a |
+	block := [ a := 1 ].
+	block value.
+	^ 43
+]
+
 { #category : #running }
 SindarinDebuggerTest >> runCaseManaged [
 	^ self runCase
@@ -565,7 +574,146 @@ SindarinDebuggerTest >> testSkip [
 	self assert: a equals: 1.
 	scdbg skip.
 	scdbg step.
-	self assert: p equals: nil
+	self assert: p equals: Point
+]
+
+{ #category : #'tests - skipping' }
+SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacementValueButNotWithPopIntoBytecode [
+
+	| a b dbg aFormerValue bFormerValue |
+	dbg := SindarinDebugger debug: [ 
+		       b := 1.
+		       [ 
+		       a := 2.
+		       a := b := 3 + 4 ] value.
+		       ^ 42 ].
+	dbg step.
+	dbg step.
+	dbg stepThrough. "we enter the block"
+
+	dbg skip. "we skip the assignment a:= 2"
+	self assert: dbg topStack equals: 4.
+	self assert: a equals: nil.
+
+	bFormerValue := b.
+	dbg step. dbg skip. "we skip the assignment b := 3 + 4"
+	self assert: dbg topStack equals: bFormerValue.
+	self assert: b equals: bFormerValue.
+
+	aFormerValue := a.
+	dbg skip. "we skip the assignment a:= (b := 3 + 4)"
+	self assert: dbg topStack equals: aFormerValue.
+	self assert: a equals: aFormerValue
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
+
+	| a scdbg |
+ 	a := 1.
+ 	scdbg := SindarinDebugger
+ 		debug: [ a := a + 2 ].
+ 	self assert: a equals: 1.
+
+ 	scdbg skip.
+ 	scdbg step.
+
+ 	self assert: a equals: 1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
+
+	| a scdbg oldValueOfA negatedContext |
+	a := ScaledDecimal newFromNumber: 3 scale: 2.
+	scdbg := SindarinDebugger debug: [ a := a negated ].
+	oldValueOfA := a.
+
+	scdbg
+		step;
+		stepOver;
+		skip.
+	negatedContext := scdbg context.
+	scdbg stepUntil: [ scdbg context == negatedContext ].
+	scdbg stepOver.
+
+	self assert: a equals: oldValueOfA
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipDoesNotSkipReturn [
+
+	| a scdbg |
+	scdbg := SindarinDebugger debug: [ a := 1. ^ 42  ].
+	
+	self shouldnt: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipStepsMethodNodes [
+
+	| scdbg realExecNode realExecPc realTopStack |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg step.
+	scdbg stepOver.
+
+	realExecNode := scdbg node.
+	realExecPc := scdbg pc.
+	realTopStack := scdbg topStack.
+
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		skip.
+
+	self assert: scdbg node identicalTo: realExecNode.
+	self assert: scdbg pc identicalTo: realExecPc.
+	self assert: scdbg topStack equals: realTopStack
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipBlockNode [
+
+	| scdbg targetContext |
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+
+	scdbg
+		step;
+		step.
+
+	self assert: scdbg topStack isBlock.
+
+	scdbg stepUntil: [ 
+		scdbg node isMessage and: [ scdbg messageSelector = #value ] ].
+
+	targetContext := scdbg context sender.
+	scdbg stepOver.
+
+	self assert: scdbg context identicalTo: targetContext.
+	self assert: scdbg topStack equals: 42.
+
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+
+	scdbg
+		step;
+		skip.
+
+	self assert: scdbg topStack isNil.
+
+	scdbg stepUntil: [ 
+		scdbg node isMessage and: [ scdbg messageSelector = #value ] ].
+
+	targetContext := scdbg context.
+
+	scdbg stepOver.
+
+	self assert: scdbg context identicalTo: targetContext.
+	self assert: scdbg topStack equals: 43
 ]
 
 { #category : #'tests - skipping' }
@@ -592,7 +740,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 	self assert: realValueOfA equals: 5.
 	self assert: (dbg temporaryNamed: #a) equals: 1.
 	self assert: realExecTopStack equals: 3.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: '3'
 ]
 
 { #category : #'tests - skipping' }
@@ -639,6 +787,75 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	self assert: realValueOfA equals: 5.
 	self assert: (dbg temporaryNamed: #a) equals: 1.
 	self assert: dbg topStack equals: realExecTopStack
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturn [
+
+	| scdbg implicitReturnPc implicitReturnNode realExecPc realExecNode |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		stepOver.
+
+	implicitReturnPc := scdbg pc.
+	implicitReturnNode := scdbg node.
+	scdbg stepOver.
+
+	realExecPc := scdbg pc.
+	realExecNode := scdbg node.
+
+	self assert: realExecPc ~= implicitReturnPc.
+
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		skipUpToNode: realExecNode.
+
+	self assert: scdbg pc equals: implicitReturnPc.
+	self assert: scdbg node identicalTo: implicitReturnNode
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> testSkipUpToNodeStopsOnReturnNodes [
+
+	| scdbg returnInBlock realExecNode |
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepThrough.
+	returnInBlock := scdbg node.
+	realExecNode := scdbg node methodNode body statements last.
+
+	self assert: returnInBlock isReturn.
+	self assert: realExecNode isReturn.
+
+
+	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepThrough;
+		skipUpToNode: realExecNode.
+
+	self assert: scdbg node identicalTo: returnInBlock
 ]
 
 { #category : #'tests - skipping' }
@@ -890,5 +1107,5 @@ SindarinDebuggerTest >> testskipUpToNodeSkipTargetNode [
 	returnNode := (self class >> #helperMethod1) ast statements last.
 	dbg step; skipThroughNode: returnNode.
 	self assert: dbg node equals: returnNode.
-	self assert: dbg topStack equals: nil
+	self assert: dbg topStack equals: Point
 ]

@@ -593,6 +593,7 @@ SindarinDebugger >> skipBlockNode [
 	self context push: nil
 ]
 
+{ #category : #'stepping - skip' }
 SindarinDebugger >> skipMessageNode [
 
 	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"

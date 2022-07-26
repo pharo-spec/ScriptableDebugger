@@ -537,6 +537,7 @@ SindarinDebugger >> skip [
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
   self node isMessage ifTrue: [ ^ self skipMessageNode ].
   self node isMethod ifTrue: [ ^ self step ].
+  self node isBlock ifTrue: [ self skipBlockNode ].
 	nextBytecode := self currentBytecode detect: [ :each | 
 		                each offset = self pc ].
 	(self node isReturn or: [ 
@@ -582,6 +583,17 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 ]
 
 { #category : #'stepping -  skip' }
+SindarinDebugger >> skipBlockNode [
+
+	| nextBytecode |
+	nextBytecode := self currentBytecode detect: [ :bytecode | bytecode offset = self pc ].
+	
+	self context pc: self pc + nextBytecode bytes size.
+	
+	self context push: nil
+]
+
+{ #category : #'stepping - skip' }
 SindarinDebugger >> skipMessageNode [
 
 	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"

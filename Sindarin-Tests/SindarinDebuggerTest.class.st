@@ -650,6 +650,32 @@ SindarinDebuggerTest >> testSkipDoesNotSkipReturn [
 	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipStepsMethodNodes [
+
+	| scdbg realExecNode realExecPc realTopStack |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg step.
+	scdbg stepOver.
+
+	realExecNode := scdbg node.
+	realExecPc := scdbg pc.
+	realTopStack := scdbg topStack.
+
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		skip.
+
+	self assert: scdbg node identicalTo: realExecNode.
+	self assert: scdbg pc identicalTo: realExecPc.
+	self assert: scdbg topStack equals: realTopStack
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipThroughNode [
 	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |

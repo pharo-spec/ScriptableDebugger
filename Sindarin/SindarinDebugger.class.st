@@ -531,11 +531,12 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
-
+	
 	| nextBytecode |
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
   self node isMessage ifTrue: [ ^ self skipMessageNode ].
+  self node isMethod ifTrue: [ ^ self step ].
 	nextBytecode := self currentBytecode detect: [ :each | 
 		                each offset = self pc ].
 	(self node isReturn or: [ 

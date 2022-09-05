@@ -835,6 +835,45 @@ SindarinDebuggerTest >> testSkipToPC [
 	self assert: dbg topStack equals: realExecTopStack
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsAfterEndPc [
+
+	| sdbg aimedPc pcBeforeSkip |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	sdbg stepOver.
+	pcBeforeSkip := sdbg pc.
+	aimedPc := sdbg context endPC + 1.
+
+	sdbg skipToPC: aimedPc.
+
+	self assert: sdbg pc equals: sdbg context endPC.
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
+
+	| sdbg aimedPc pcBeforeSkip |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	aimedPc := sdbg pc.
+
+	sdbg stepOver.
+	pcBeforeSkip := sdbg pc.
+
+	sdbg skipToPC: aimedPc.
+
+	self assert: sdbg pc equals: pcBeforeSkip.
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNode [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |

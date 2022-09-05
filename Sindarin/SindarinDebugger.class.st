@@ -661,8 +661,12 @@ SindarinDebugger >> skipThroughNode: aProgramNode [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipToPC: aPC [
+
 	"Skips execution until program counter reaches aPC."
-	[ self pc >= aPC ] whileFalse: [ self skip ]
+
+	[ [ self pc >= aPC ] whileFalse: [ self skip ] ]
+		on: SindarinSkippingReturnWarning
+		do: [ ^ self ]
 ]
 
 { #category : #'stepping -  skip' }

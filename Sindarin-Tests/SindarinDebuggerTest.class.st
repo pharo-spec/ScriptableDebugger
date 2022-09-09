@@ -240,6 +240,17 @@ SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
+
+	| a b block |
+	a := 1.
+	block := [ a := 2. b := 3 + 2 ].
+	block value.
+	^ 42
+	
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
 
 	| a b block |
@@ -919,7 +930,7 @@ SindarinDebuggerTest >> testSkipUpToNodeDoesNotLoopWhenAimedNodeIsBeforeCurrentN
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 
-	| dbg realExecPC realExecNode realExecTopStack oldValueOfA |
+	| dbg realExecPC realExecNode realExecTopStack oldValueOfA valueOfBAfterSkipAndStep |
 	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
 	"after stepping, we stop at the beginning of the block"
@@ -928,12 +939,17 @@ SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 		step;
 		stepOver;
 		stepOver;
+		stepOver;
 		stepThrough.
 	oldValueOfA := dbg temporaryNamed: #a.
 	"after stepping, we stop on  b: = 3 + 2 assignment node"
-	dbg
-		stepOver;
-		stepOver.
+	dbg stepOver.
+
+	self assert: dbg node isMessage.
+	valueOfBAfterSkipAndStep := dbg node receiver value.
+	
+	dbg stepOver.
+	
 	realExecPC := dbg pc.
 	realExecNode := dbg node.
 	realExecTopStack := dbg topStack.
@@ -945,16 +961,17 @@ SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 		step;
 		stepOver;
 		stepOver;
+		stepOver;
 		stepThrough;
 		skipUpToNode: realExecNode.
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node identicalTo: realExecNode.
 	self assert: (dbg temporaryNamed: #a) equals: oldValueOfA.
-	self assert: dbg topStack equals: nil.
+	self assert: dbg topStack equals: valueOfBAfterSkipAndStep.
 
 	dbg stepOver.
-	"nil is on the stack so stepping over the assignment should put nil into b"
-	self assert: (dbg temporaryNamed: #b) equals: nil
+	"3 is on the stack so stepping over the assignment should put 3 into b"
+	self assert: (dbg temporaryNamed: #b) equals: valueOfBAfterSkipAndStep 
 ]
 
 { #category : #helpers }

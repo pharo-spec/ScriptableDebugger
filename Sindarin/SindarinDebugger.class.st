@@ -714,6 +714,23 @@ SindarinDebugger >> stack [
 	^ self debugSession stack
 ]
 
+{ #category : #API }
+SindarinDebugger >> statementNodeContaining: aNode [
+
+	| method statementNode parentOfStatementNode |
+	method := self methodNode.
+	statementNode := aNode.
+	parentOfStatementNode := method parentOfIdenticalSubtree:
+		                         statementNode.
+	parentOfStatementNode
+		ifNil: [ ^ NodeNotInASTError signal ]
+		ifNotNil: [ 
+			[ parentOfStatementNode isSequence ] whileFalse: [ 
+				statementNode := parentOfStatementNode.
+				parentOfStatementNode := parentOfStatementNode parent ] ].
+	^ statementNode
+]
+
 { #category : #'stepping - steps' }
 SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."

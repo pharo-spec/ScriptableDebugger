@@ -1078,6 +1078,41 @@ SindarinDebuggerTest >> testStack [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testStatementNodeContaining [
+
+	| sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step; stepOver; stepOver; stepOver. "pc of Point x: y:"
+	
+	self assert: (sdbg statementNodeContaining: sdbg node) identicalTo: sdbg methodNode statements last
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testStatementNodeContainingReturnsStatementNodeThatContainsTheIdenticalSubtree [
+
+	| sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step.
+
+	"1 is in the tree but it should return its parent only if we provide the exact literal node"
+	self
+		should: [ sdbg statementNodeContaining: (RBLiteralNode value: 1) ]
+		raise: NodeNotInASTError
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testStatementNodeContainingWhenNodeIsNotInAST [
+
+	| sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step.
+
+	self
+		should: [ sdbg statementNodeContaining: (RBLiteralNode value: 2) ]
+		raise: NodeNotInASTError
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testStep [
 	| node scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod13 ].

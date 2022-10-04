@@ -121,6 +121,25 @@ SindarinDebugger >> bestNodeFor: anInterval [
 	^self node methodNode bestNodeFor: anInterval
 ]
 
+{ #category : #'ast manipulation' }
+SindarinDebugger >> canStillExecute: aProgramNode [
+
+	"returns true if the last pc mapped to aProgramNode is greater than `self pc` in the right context "
+
+	| lastPcForNode rightContext |
+	rightContext := self context.
+
+	[ 
+	rightContext == rightContext outerMostContext or: [ 
+		rightContext method ast allChildren identityIncludes: aProgramNode ] ] 
+		whileFalse: [ rightContext := rightContext sender ].
+
+	lastPcForNode := (rightContext method ast lastPcForNode: aProgramNode) 
+		                 ifNil: [ 0 ].
+
+	^ rightContext pc < lastPcForNode
+]
+
 { #category : #stackAccess }
 SindarinDebugger >> context [
 	"Returns a reification of the current stack-frame."
@@ -358,6 +377,12 @@ SindarinDebugger >> method [
 	"Returns the method of the current stack-frame."
 
 	^ self context method
+]
+
+{ #category : #accessing }
+SindarinDebugger >> methodNode [ 
+
+	^ self method ast
 ]
 
 { #category : #'accessing - bytes' }
@@ -636,8 +661,12 @@ SindarinDebugger >> skipThroughNode: aProgramNode [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipToPC: aPC [
+
 	"Skips execution until program counter reaches aPC."
-	[ self pc >= aPC ] whileFalse: [ self skip ]
+
+	[ [ self pc >= aPC ] whileFalse: [ self skip ] ]
+		on: SindarinSkippingReturnWarning
+		do: [ ^ self ]
 ]
 
 { #category : #'stepping -  skip' }
@@ -650,12 +679,16 @@ SindarinDebugger >> skipUpToNode: aProgramNode [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
-	"Skips execution until program counter reaches aProgramNode."
 
-	[ [ self node == aProgramNode ] whileFalse: [ self skip ] ]
-		on: SindarinSkippingReturnWarning 
+	"Skips execution until program counter reaches aProgramNode."
+	[ 
+	[ 
+	self node ~~ aProgramNode and: [ 
+		self canStillExecute: aProgramNode  ] ] whileTrue: [ 
+		self skip ] ]
+		on: SindarinSkippingReturnWarning
 		do: [ ^ self ].
-	aProgramNode isReturn	ifTrue: [ ^ self ].
+	aProgramNode isReturn ifTrue: [ ^ self ].
 	skipTargetNode ifTrue: [ self skip ]
 ]
 

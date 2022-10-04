@@ -239,6 +239,30 @@ SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
 	^ 43
 ]
 
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
+
+	| a b block |
+	a := 1.
+	block := [ a := 2. b := 3 + 2 ].
+	block value.
+	^ 42
+	
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
+
+	| a b block |
+	a := 3.
+	block := [ 
+	         a := 1.
+	         b := 2.
+	         1 + 2 ].
+	b := block value.
+	^ 42
+]
+
 { #category : #running }
 SindarinDebuggerTest >> runCaseManaged [
 	^ self runCase
@@ -304,6 +328,62 @@ SindarinDebuggerTest >> testAssignmentVariableName [
 	scdbg := SindarinDebugger debug: [ self helperMethod3 ].
 	scdbg step.
 	self assert: scdbg assignmentVariableName equals: #a
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsAfterInAnyContext [
+
+	| sdbg aimedNodeInContext aimedNodeOutsideContext |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		stepOver.
+
+	aimedNodeInContext := sdbg methodNode body statements last.
+
+	self assert: sdbg pc
+		< (sdbg methodNode lastPcForNode: aimedNodeInContext).
+	self assert: (sdbg canStillExecute: aimedNodeInContext).
+
+	aimedNodeOutsideContext := sdbg node methodNode body statements last.
+
+	self assert: (sdbg outerMostContextOf: sdbg context) pc
+		< (sdbg node methodNode lastPcForNode:
+				 aimedNodeOutsideContext).
+	self assert: (sdbg canStillExecute: aimedNodeOutsideContext)
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsBeforeInAnyContext [
+
+	| sdbg aimedNodeInContext aimedNodeOutsideContext |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		stepOver.
+
+	aimedNodeInContext := sdbg methodNode body statements first.
+
+	self deny: sdbg pc
+		< (sdbg methodNode lastPcForNode: aimedNodeInContext).
+	self deny: (sdbg canStillExecute: aimedNodeInContext).
+
+	aimedNodeOutsideContext := sdbg node methodNode body statements second.
+
+	self deny: (sdbg outerMostContextOf: sdbg context) pc
+		< (sdbg node methodNode lastPcForNode:
+				 aimedNodeOutsideContext).
+	self deny: (sdbg canStillExecute: aimedNodeOutsideContext)
 ]
 
 { #category : #tests }
@@ -607,76 +687,6 @@ SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacement
 ]
 
 { #category : #tests }
-SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
-
-	| a scdbg |
- 	a := 1.
- 	scdbg := SindarinDebugger
- 		debug: [ a := a + 2 ].
- 	self assert: a equals: 1.
-
- 	scdbg skip.
- 	scdbg step.
-
- 	self assert: a equals: 1
-]
-
-{ #category : #tests }
-SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
-
-	| a scdbg oldValueOfA negatedContext |
-	a := ScaledDecimal newFromNumber: 3 scale: 2.
-	scdbg := SindarinDebugger debug: [ a := a negated ].
-	oldValueOfA := a.
-
-	scdbg
-		step;
-		stepOver;
-		skip.
-	negatedContext := scdbg context.
-	scdbg stepUntil: [ scdbg context == negatedContext ].
-	scdbg stepOver.
-
-	self assert: a equals: oldValueOfA
-]
-
-{ #category : #tests }
-SindarinDebuggerTest >> testSkipDoesNotSkipReturn [
-
-	| a scdbg |
-	scdbg := SindarinDebugger debug: [ a := 1. ^ 42  ].
-	
-	self shouldnt: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
-	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning
-]
-
-{ #category : #tests }
-SindarinDebuggerTest >> testSkipStepsMethodNodes [
-
-	| scdbg realExecNode realExecPc realTopStack |
-	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithBlockWithNoReturn ].
-
-	scdbg step.
-	scdbg stepOver.
-
-	realExecNode := scdbg node.
-	realExecPc := scdbg pc.
-	realTopStack := scdbg topStack.
-
-	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithBlockWithNoReturn ].
-
-	scdbg
-		step;
-		skip.
-
-	self assert: scdbg node identicalTo: realExecNode.
-	self assert: scdbg pc identicalTo: realExecPc.
-	self assert: scdbg topStack equals: realTopStack
-]
-
-{ #category : #tests }
 SindarinDebuggerTest >> testSkipBlockNode [
 
 	| scdbg targetContext |
@@ -714,6 +724,76 @@ SindarinDebuggerTest >> testSkipBlockNode [
 
 	self assert: scdbg context identicalTo: targetContext.
 	self assert: scdbg topStack equals: 43
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipDoesNotSkipReturn [
+
+	| a scdbg |
+	scdbg := SindarinDebugger debug: [ a := 1. ^ 42  ].
+	
+	self shouldnt: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsMessagesByPuttingReceiverOnStack [
+
+	| a scdbg |
+ 	a := 1.
+ 	scdbg := SindarinDebugger
+ 		debug: [ a := a + 2 ].
+ 	self assert: a equals: 1.
+
+ 	scdbg skip.
+ 	scdbg step.
+
+ 	self assert: a equals: 1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipSkipsSuperSendBytecodesCorrectly [
+
+	| a scdbg oldValueOfA negatedContext |
+	a := ScaledDecimal newFromNumber: 3 scale: 2.
+	scdbg := SindarinDebugger debug: [ a := a negated ].
+	oldValueOfA := a.
+
+	scdbg
+		step;
+		stepOver;
+		skip.
+	negatedContext := scdbg context.
+	scdbg stepUntil: [ scdbg context == negatedContext ].
+	scdbg stepOver.
+
+	self assert: a equals: oldValueOfA
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipStepsMethodNodes [
+
+	| scdbg realExecNode realExecPc realTopStack |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg step.
+	scdbg stepOver.
+
+	realExecNode := scdbg node.
+	realExecPc := scdbg pc.
+	realTopStack := scdbg topStack.
+
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithBlockWithNoReturn ].
+
+	scdbg
+		step;
+		skip.
+
+	self assert: scdbg node identicalTo: realExecNode.
+	self assert: scdbg pc identicalTo: realExecPc.
+	self assert: scdbg topStack equals: realTopStack
 ]
 
 { #category : #'tests - skipping' }
@@ -766,6 +846,45 @@ SindarinDebuggerTest >> testSkipToPC [
 	self assert: dbg topStack equals: realExecTopStack
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsAfterEndPc [
+
+	| sdbg aimedPc pcBeforeSkip |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	sdbg stepOver.
+	pcBeforeSkip := sdbg pc.
+	aimedPc := sdbg context endPC + 1.
+
+	sdbg skipToPC: aimedPc.
+
+	self assert: sdbg pc equals: sdbg context endPC.
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
+
+	| sdbg aimedPc pcBeforeSkip |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	aimedPc := sdbg pc.
+
+	sdbg stepOver.
+	pcBeforeSkip := sdbg pc.
+
+	sdbg skipToPC: aimedPc.
+
+	self assert: sdbg pc equals: pcBeforeSkip.
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNode [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
@@ -789,8 +908,74 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	self assert: dbg topStack equals: realExecTopStack
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipUpToNodeDoesNotLoopWhenAimedNodeIsBeforeCurrentNode [
+
+	| sdbg aimedNode nodeBeforeSkip |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithSeveralInstructionsInBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	aimedNode := sdbg node.
+	sdbg stepOver.
+	nodeBeforeSkip := sdbg node.
+
+	sdbg skipUpToNode: aimedNode.
+
+	self assert: sdbg node identicalTo: nodeBeforeSkip
+]
+
+{ #category : #'tests - skipping' }
+SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
+
+	| dbg realExecPC realExecNode realExecTopStack oldValueOfA valueOfBAfterSkipAndStep |
+	self skipOnPharoCITestingEnvironment.
+	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
+	"after stepping, we stop at the beginning of the block"
+	dbg
+		step;
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough.
+	oldValueOfA := dbg temporaryNamed: #a.
+	"after stepping, we stop on  b: = 3 + 2 assignment node"
+	dbg stepOver.
+
+	self assert: dbg node isMessage.
+	valueOfBAfterSkipAndStep := dbg node receiver value.
+	
+	dbg stepOver.
+	
+	realExecPC := dbg pc.
+	realExecNode := dbg node.
+	realExecTopStack := dbg topStack.
+
+	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
+
+	dbg
+		step;
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepThrough;
+		skipUpToNode: realExecNode.
+	self assert: dbg pc equals: realExecPC.
+	self assert: dbg node identicalTo: realExecNode.
+	self assert: (dbg temporaryNamed: #a) equals: oldValueOfA.
+	self assert: dbg topStack equals: valueOfBAfterSkipAndStep.
+
+	dbg stepOver.
+	"3 is on the stack so stepping over the assignment should put 3 into b"
+	self assert: (dbg temporaryNamed: #b) equals: valueOfBAfterSkipAndStep 
+]
+
 { #category : #helpers }
-SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturn [
+SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturnIfAimedNodeCanStillBeExecuted [
 
 	| scdbg implicitReturnPc implicitReturnNode realExecPc realExecNode |
 	scdbg := SindarinDebugger debug: [ 
@@ -821,8 +1006,11 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturn [
 		stepOver;
 		stepOver;
 		stepOver;
-		stepThrough;
-		skipUpToNode: realExecNode.
+		stepThrough.
+
+	self assert: (scdbg canStillExecute: realExecNode).
+
+	scdbg skipUpToNode: realExecNode.
 
 	self assert: scdbg pc equals: implicitReturnPc.
 	self assert: scdbg node identicalTo: implicitReturnNode

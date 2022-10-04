@@ -389,7 +389,7 @@ SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsBeforeInAnyContext [
 	self deny: (sdbg canStillExecute: aimedNodeOutsideContext)
 ]
 
-{ #category : #'tests - skipping' }
+{ #category : #tests }
 SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnStack [
 
 	| scdbg newPc newNode expectedStackTop |
@@ -397,6 +397,7 @@ SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnSt
 
 	scdbg
 		step;
+		stepOver;
 		stepOver.
 	"pc of '3' asInteger"
 	newNode := scdbg node.
@@ -404,12 +405,39 @@ SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnSt
 	expectedStackTop := scdbg topStack.
 	scdbg
 		stepOver;
-		stepOver;
 		stepOver.
 
 	self assert: (scdbg temporaryNamed: #a) equals: 5.
 
 	scdbg pc: newPc.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsLowerThanInitialPC [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver.
+	
+	self shouldnt: [ scdbg pc: scdbg method initialPC ] raise: NotValidPcError.
+	
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver.
+
+	self should: [ scdbg pc: scdbg method initialPC - 1 ] raise: NotValidPcError.
 
 	self assert: (scdbg temporaryNamed: #a) equals: 5.
 	self assert: scdbg node equals: newNode.

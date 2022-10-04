@@ -5,6 +5,9 @@ Class {
 		'breakpointsBeforeTest',
 		'testObjectPoint'
 	],
+	#classInstVars : [
+		'helperMethod1'
+	],
 	#category : #'Sindarin-Tests-Base'
 }
 
@@ -384,6 +387,34 @@ SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsBeforeInAnyContext [
 		< (sdbg node methodNode lastPcForNode:
 				 aimedNodeOutsideContext).
 	self deny: (sdbg canStillExecute: aimedNodeOutsideContext)
+]
+
+{ #category : #'tests - skipping' }
+SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnStack [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of '3' asInteger"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+	scdbg
+		stepOver;
+		stepOver;
+		stepOver.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+
+	scdbg pc: newPc.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
 ]
 
 { #category : #tests }

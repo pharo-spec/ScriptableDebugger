@@ -242,6 +242,12 @@ SindarinDebugger >> debugSession [
 	^ sindarinSession debugSession
 ]
 
+{ #category : #accessing }
+SindarinDebugger >> firstPCOfStatement: aStatementNode [
+
+	^ self methodNode firstPCOfStatement: aStatementNode
+]
+
 { #category : #private }
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -434,12 +440,24 @@ SindarinDebugger >> pc [
 { #category : #accessing }
 SindarinDebugger >> pc: anInteger [
 
-	self context pc: anInteger.
+	| statementNodeContainingNextNode nextNode firstExecutedNodeInStatement methodNode firstPCOfStatementNode |
+	(anInteger < self method initialPC or: [ 
+		 anInteger > self method endPC ]) ifTrue: [ 
+		^ NotValidPcError signal ].
+	methodNode := self methodNode.
+	nextNode := methodNode sourceNodeForPC: anInteger.
+	statementNodeContainingNextNode := self statementNodeContaining:
+		                                   nextNode.
+	firstPCOfStatementNode := self firstPCOfStatement:
+		                          statementNodeContainingNextNode.
+	firstExecutedNodeInStatement := methodNode sourceNodeForPC:
+		                                firstPCOfStatementNode.
 	[ self context stackPtr > self context numTemps ] whileTrue: [ 
 		self context pop ].
-
+	self context pc: self method initialPC.
 	self debugSession stepToFirstInterestingBytecodeIn:
-		self debugSession interruptedProcess
+		self debugSession interruptedProcess.
+	self skipUpToNode: nextNode
 ]
 
 { #category : #'stepping -  auto' }

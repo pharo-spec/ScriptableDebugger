@@ -1,6 +1,19 @@
 Extension { #name : #RBMethodNode }
 
 { #category : #'*Sindarin' }
+RBMethodNode >> firstPCOfStatement: aStatementNode [
+
+	| indexOfStatementNode statementBefore lastPcInStatementBefore |
+	indexOfStatementNode := self statements identityIndexOf:
+		                        aStatementNode.
+	indexOfStatementNode == 1 ifTrue: [ ^ self compiledMethod initialPC ].
+	statementBefore := self statements at: indexOfStatementNode - 1.
+	lastPcInStatementBefore := self lastPcForNode: statementBefore.
+	^ self bcToASTCache bcToASTMap keys sorted detect: [ :key | 
+		  key > lastPcInStatementBefore ]
+]
+
+{ #category : #'*Sindarin' }
 RBMethodNode >> parentOfIdenticalSubtree: subtree [
 
 	^ self allChildren reversed

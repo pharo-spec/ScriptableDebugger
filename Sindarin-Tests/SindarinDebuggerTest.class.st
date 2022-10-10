@@ -669,6 +669,154 @@ SindarinDebuggerTest >> testMethod [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeInTheMiddleOfStatementSkipsTheBeginningOfStatement [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver.
+	"pc of Point x: y:"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	
+	self assert: (scdbg temporaryNamed: #a) equals: 1.
+
+	scdbg moveToNode: newNode.
+	"It should skip the assignment a:=5 AND skip the beginning of the statement ('3' asInteger)"
+
+	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self deny: scdbg topStack equals: expectedStackTop.
+	self assert: scdbg topStack equals: '3' "topStack is nil because the message send asInteger to the receiver '3' has been skipped"
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeKeepsSameStateAndPushesCorrectElementsOnStack [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+	scdbg
+		stepOver;
+		stepOver.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+
+	scdbg moveToNode: newNode.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeInMethod [
+
+	| oldNode sdbg aimedNode |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver.
+	aimedNode := sdbg node.
+	sdbg
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		shouldnt: [ sdbg moveToNode: aimedNode ] raise: NodeNotInASTError;
+		assert: sdbg node equals: aimedNode.
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		should: [ sdbg moveToNode: (RBLiteralValueNode value: 1) ]
+		raise: NodeNotInASTError;
+		assert: sdbg node equals: oldNode
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotInMethod [
+
+	| oldNode sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		shouldnt: [ sdbg moveToNode: sdbg methodNode statements last ]
+		raise: NodeNotInASTError;
+		deny: sdbg node equals: oldNode.
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		should: [ sdbg moveToNode: (RBLiteralValueNode value: 2) ]
+		raise: NodeNotInASTError;
+		assert: sdbg node equals: oldNode
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableExecutesAssociatedBytecodesBecauseRelatedToStack [
+
+	| oldNode sdbg aimedNode siblingsAfterAimedNode indexOfAimedNode realNode indexOfRealNode |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step.
+	oldNode := sdbg node.
+	"This is the literal value node 5 from `Point x: 5 y: '3' asInteger"
+	aimedNode := sdbg methodNode statements last value receiver.
+	indexOfAimedNode := sdbg methodNode allChildren indexOf: aimedNode.
+	siblingsAfterAimedNode := sdbg methodNode allChildren 
+		                          withIndexSelect: [ :value :index | 
+		                          index > indexOfAimedNode ].
+
+	self deny: (sdbg methodNode pcsForNode: aimedNode) isEmpty.
+	self assert: aimedNode isVariable.
+
+	sdbg moveToNode: aimedNode.
+
+	realNode := sdbg node.
+	indexOfRealNode := siblingsAfterAimedNode indexOf: realNode.
+
+	self deny: realNode identicalTo: aimedNode.
+	siblingsAfterAimedNode
+		from: 1
+		to: indexOfRealNode - 1
+		do: [ :each | 
+		self assert: (each isVariable or: [ each isLiteralNode ]) ].
+
+	self deny: (realNode isLiteralNode or: [ realNode isVariable ])
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testNode [
 	| node scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod1 ].

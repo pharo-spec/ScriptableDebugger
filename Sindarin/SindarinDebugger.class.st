@@ -391,6 +391,19 @@ SindarinDebugger >> methodNode [
 	^ self method ast
 ]
 
+{ #category : #'API - changes' }
+SindarinDebugger >> moveToNode: aNode [
+
+	| firstPCForNode |
+	firstPCForNode := self methodNode firstPcForNode: aNode.
+
+	firstPCForNode ifNil: [ 
+		(self methodNode parentOfIdenticalSubtree: aNode) ifNil: [ 
+			^ NodeNotInASTError signal ] ].
+
+	self pc: firstPCForNode
+]
+
 { #category : #'accessing - bytes' }
 SindarinDebugger >> nextBytecode [
 

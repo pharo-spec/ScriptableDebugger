@@ -781,6 +781,33 @@ SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNode [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNodeThatDoesNotHaveAssociatedPC [
+
+	| scdbg newPc newNode realPC realNode |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg methodNode.
+	newPc := scdbg methodNode firstPcForNode: scdbg methodNode.
+
+
+	self assert: newPc isNil.
+
+	scdbg moveToNode: newNode.
+
+	realPC := scdbg pc.
+	realNode := scdbg node.
+
+	self assert: scdbg pc equals: scdbg method endPC.
+	self
+		assert: scdbg node
+		identicalTo: (scdbg methodNode sourceNodeForPC: scdbg pc)
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeInMethod [
 
 	| oldNode sdbg aimedNode |

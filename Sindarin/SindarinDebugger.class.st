@@ -399,7 +399,10 @@ SindarinDebugger >> moveToNode: aNode [
 
 	firstPCForNode ifNil: [ 
 		(self methodNode parentOfIdenticalSubtree: aNode)
-			ifNil: [ ^ NodeNotInASTError signal ]
+			ifNil: [ 
+				(aNode == self methodNode or: [ aNode == self methodNode body ])
+					ifTrue: [ firstPCForNode := self method endPC ]
+					ifFalse: [ ^ NodeNotInASTError signal ] ]
 			ifNotNil: [ :parent | 
 				| nodesAfter indexOfNode indexOfNextNode nextNode |
 				nodesAfter := self methodNode allChildrenPostOrder.

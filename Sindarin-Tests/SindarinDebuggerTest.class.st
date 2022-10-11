@@ -527,6 +527,26 @@ SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsLowerThanInitialPC [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testChangingPcToNonExistingBytecodeOffsetGoesToPreviousPcWithExistingBytecodeOffset [
+
+	| scdbg newPc newNode |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithDoubleAssignment ].
+
+	scdbg step.
+	"pc of b := 1 from `a:= b:= 1` This is associated to the pc of a storeIntoTemp bytecode, of length 2 bytes. So we add 1 to get a pc that is in the middle of the bytecode"
+	newNode := scdbg methodNode statements first value.
+	newPc := (scdbg methodNode firstPcForNode: newNode) + 1.
+
+	self assert: (scdbg methodNode sourceNodeForPC: newPc) identicalTo: newNode.
+	
+	scdbg pc: newPc.
+
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc - 1.
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testContext [
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod15 ].

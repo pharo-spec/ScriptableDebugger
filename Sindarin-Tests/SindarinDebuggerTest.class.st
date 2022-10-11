@@ -390,6 +390,27 @@ SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsBeforeInAnyContext [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testChangingPcAssociatedToMethodOrSequenceNodeKeepsStackAsItIs [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithDoubleAssignment ].
+
+	scdbg
+		step;
+		stepOver.
+	newNode := scdbg methodNode.
+	newPc := scdbg methodNode firstPcForNode: newNode.
+	expectedStackTop := scdbg topStack.
+
+	scdbg pc: newPc.
+
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testChangingPcInTheMiddleOfStatementSkipsTheBeginningOfStatement [
 
 	| scdbg newPc newNode expectedStackTop |

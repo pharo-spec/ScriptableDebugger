@@ -453,21 +453,24 @@ SindarinDebugger >> pc [
 { #category : #accessing }
 SindarinDebugger >> pc: anInteger [
 
-	| statementNodeContainingNextNode nextNode firstExecutedNodeInStatement methodNode firstPCOfStatementNode |
+	| statementNodeContainingNextNode nextNode methodNode firstPCOfStatementNode |
 	(anInteger < self method initialPC or: [ 
 		 anInteger > self method endPC ]) ifTrue: [ 
 		^ NotValidPcError signal ].
 	methodNode := self methodNode.
 	nextNode := methodNode sourceNodeForPC: anInteger.
-	statementNodeContainingNextNode := self statementNodeContaining:
-		                                   nextNode.
-	firstPCOfStatementNode := self firstPCOfStatement:
-		                          statementNodeContainingNextNode.
-	firstExecutedNodeInStatement := methodNode sourceNodeForPC:
-		                                firstPCOfStatementNode.
-	[ self context stackPtr > self context numTemps ] whileTrue: [ 
-		self context pop ].
-	self context pc: self method initialPC.
+	(nextNode == methodNode or: [ nextNode == methodNode body ])
+		ifTrue: [ firstPCOfStatementNode := anInteger ]
+		ifFalse: [ 
+			statementNodeContainingNextNode := self statementNodeContaining:
+				                                   nextNode.
+			firstPCOfStatementNode := self firstPCOfStatement:
+				                          statementNodeContainingNextNode.
+			"firstExecutedNodeInStatement := methodNode sourceNodeForPC:
+		                                firstPCOfStatementNode."
+			[ self context stackPtr > self context numTemps ] whileTrue: [ 
+				self context pop ] ].
+	self context pc: firstPCOfStatementNode.
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess.
 	self skipUpToNode: nextNode

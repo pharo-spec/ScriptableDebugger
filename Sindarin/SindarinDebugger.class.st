@@ -398,8 +398,20 @@ SindarinDebugger >> moveToNode: aNode [
 	firstPCForNode := self methodNode firstPcForNode: aNode.
 
 	firstPCForNode ifNil: [ 
-		(self methodNode parentOfIdenticalSubtree: aNode) ifNil: [ 
-			^ NodeNotInASTError signal ] ].
+		(self methodNode parentOfIdenticalSubtree: aNode)
+			ifNil: [ ^ NodeNotInASTError signal ]
+			ifNotNil: [ :parent | 
+				| nodesAfter indexOfNode indexOfNextNode nextNode |
+				nodesAfter := self methodNode allChildrenPostOrder.
+				indexOfNode := nodesAfter identityIndexOf: aNode.
+				nodesAfter := nodesAfter withIndexSelect: [ :value :index | 
+					              index > indexOfNode ].
+				"if aimed node has no associated pc, we find the first node executed after him (in pre-order) that has at least one associated pc"
+				indexOfNextNode := nodesAfter findFirst: [ :each | 
+					                   (self methodNode firstPcForNode: each)
+						                   isNotNil ].
+				nextNode := nodesAfter at: indexOfNextNode.
+				firstPCForNode := self methodNode firstPcForNode: nextNode ] ].
 
 	self pc: firstPCForNode
 ]

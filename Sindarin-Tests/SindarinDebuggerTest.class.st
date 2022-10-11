@@ -243,6 +243,13 @@ SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithDoubleAssignment [
+
+	| b a |
+	a := b :=  1
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
 
 	| a b block |
@@ -752,6 +759,28 @@ SindarinDebuggerTest >> testMoveToNodeKeepsSameStateAndPushesCorrectElementsOnSt
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNode [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithDoubleAssignment ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg methodNode.
+	newPc := scdbg methodNode firstPcForNode: scdbg methodNode.
+	expectedStackTop := scdbg topStack.
+
+	scdbg moveToNode: newNode.
+
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeInMethod [
 
 	| oldNode sdbg aimedNode |
@@ -812,10 +841,10 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableExecutesAssocia
 	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	sdbg step.
 	oldNode := sdbg node.
-	"This is the literal value node 5 from `Point x: 5 y: '3' asInteger"
+	"This is the literal variable Point from `Point x: 5 y: '3' asInteger"
 	aimedNode := sdbg methodNode statements last value receiver.
-	indexOfAimedNode := sdbg methodNode allChildren indexOf: aimedNode.
-	siblingsAfterAimedNode := sdbg methodNode allChildren 
+	indexOfAimedNode := sdbg methodNode allChildrenPostOrder identityIndexOf: aimedNode.
+	siblingsAfterAimedNode := sdbg methodNode allChildrenPostOrder
 		                          withIndexSelect: [ :value :index | 
 		                          index > indexOfAimedNode ].
 
@@ -835,6 +864,47 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableExecutesAssocia
 		self assert: (each isVariable or: [ each isLiteralNode ]) ].
 
 	self deny: (realNode isLiteralNode or: [ realNode isVariable ])
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableThatHasNoAssociatedBytecodesMovesToNextNodeThatIsNotLiteralNorVariableThatHasAnAssociatedPC [
+
+	| oldNode sdbg aimedNode siblingsAfterAimedNode indexOfAimedNode realNode indexOfRealNode |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithDoubleAssignment ].
+	sdbg step.
+	oldNode := sdbg node.
+	"This is the variable node b from `a:= b:= 1`"
+	aimedNode := sdbg methodNode statements first value variable.
+	indexOfAimedNode := sdbg methodNode allChildrenPostOrder identityIndexOf:
+		                    aimedNode.
+	siblingsAfterAimedNode := sdbg methodNode allChildrenPostOrder 
+		                          withIndexSelect: [ :value :index | 
+		                          index > indexOfAimedNode ].
+
+	self assert: (sdbg methodNode pcsForNode: aimedNode) isEmpty.
+
+	sdbg moveToNode: aimedNode.
+
+	realNode := sdbg node.
+	indexOfRealNode := siblingsAfterAimedNode identityIndexOf: realNode.
+
+	self deny: realNode identicalTo: aimedNode.
+	siblingsAfterAimedNode
+		from: 1
+		to: indexOfRealNode - 1
+		do: [ :each | 
+			self assert: (each isVariable or: [ 
+					 each isLiteralNode or: [ 
+						 (sdbg methodNode pcsForNode: each) isEmpty ] ]) ].
+
+	" Why doesn't it work ??
+	self deny: (realNode isLiteralNode or: [   realNode isVariable or: [   (sdbg methodNode pcsForNode: realNode) isEmpty  ] ]) "
+	
+	self
+		deny: realNode isLiteralNode;
+		deny: realNode isVariable;
+		deny: (sdbg methodNode pcsForNode: realNode) isEmpty
 ]
 
 { #category : #tests }

@@ -273,7 +273,7 @@ SindarinDebuggerTest >> helperMethodWithIfTrueBlock [
 SindarinDebuggerTest >> helperMethodWithNotEvaluatedBlock [
 
 	| a |
-	a := 0.
+	a := 1.
 	[ a := a + 1 ].
 	a := a + 2.
 	^ a * 42
@@ -914,38 +914,36 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 
 	sdbg moveToNode: sdbg methodNode statements first.
 
-	"It is going to execute the comparison a = 2"
+	"It is going to execute the comparison a := 1"
 	oldNode := sdbg node.
 	oldContext := sdbg context.
 
-	"We want to enter the block, to get to execute a:=3"
+	"We want to enter the block, to get to execute a + 1 in the block"
 	aimedNode := sdbg methodNode statements second body statements first
 		             value.
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 0.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 0.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
 
 	self assert: sdbg node identicalTo: aimedNode.
 	self assert: sdbg context sender identicalTo: oldContext.
 
 	sdbg
 		stepOver;
-		stepOver.
-
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
-
-	sdbg
-		stepOver;
 		stepOver;
 		stepOver.
-	"When you perform a stepOver, you quit the block and continue just after the ifTrue: message"
-	self assert: (sdbg temporaryNamed: #a) equals: 3.
-	self assert: sdbg topStack equals: 42
+
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
+	self assert: sdbg node identicalTo: oldNode.
+	self assert: sdbg context identicalTo: oldContext.
+	self assert: sdbg topStack equals: 2
 ]
 
 { #category : #tests }

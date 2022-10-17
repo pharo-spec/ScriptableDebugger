@@ -4,3 +4,9 @@ Extension { #name : #DebugSession }
 DebugSession >> asSindarinDebugSession [
 	^ SindarinDebugSession new debugSession: self
 ]
+
+{ #category : #'*Sindarin' }
+DebugSession >> suspendedContext: aContext [ 
+	
+	interruptedContext := aContext
+]

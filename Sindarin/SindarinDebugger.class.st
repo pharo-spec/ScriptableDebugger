@@ -436,7 +436,7 @@ SindarinDebugger >> moveToNode: aNode [
 					self pc: olderPC.
 					"we need to change the suspended context and maybe do the same in its debug session"
 					self currentProcess suspendedContext: newContext.
-					self debugSession process: self currentProcess context: newContext.
+					self debugSession suspendedContext: newContext.
 					"This does an infinite loop because it doesn't actually change the interrupted context in the debug session"
 					^  self moveToNode: aNode ] ] ].
 

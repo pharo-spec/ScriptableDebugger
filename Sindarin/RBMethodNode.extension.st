@@ -6,7 +6,9 @@ RBMethodNode >> firstPCOfStatement: aStatementNode [
 	| indexOfStatementNode statementBefore lastPcInStatementBefore |
 	indexOfStatementNode := self statements identityIndexOf:
 		                        aStatementNode.
-	indexOfStatementNode == 1 ifTrue: [ ^ self compiledMethod initialPC ].
+	indexOfStatementNode == 1 ifTrue: [ 
+		^ self bcToASTCache bcToASTMap keys sorted detect: [ :key | 
+			  (self sourceNodeForPC: key) statementNode == aStatementNode ] ].
 	statementBefore := self statements at: indexOfStatementNode - 1.
 	lastPcInStatementBefore := self lastPcForNode: statementBefore.
 	^ self bcToASTCache bcToASTMap keys sorted detect: [ :key | 

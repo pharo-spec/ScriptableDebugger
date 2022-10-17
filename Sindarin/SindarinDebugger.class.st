@@ -397,7 +397,7 @@ SindarinDebugger >> moveToNode: aNode [
 	| firstPCForNode |
 	firstPCForNode := self methodNode firstPcForNode: aNode.
 
-	firstPCForNode ifNil: [ 
+	firstPCForNode ifNil: [ "]"
 		(self methodNode parentOfIdenticalSubtree: aNode)
 			ifNil: [ 
 				(aNode == self methodNode or: [ aNode == self methodNode body ])
@@ -405,6 +405,15 @@ SindarinDebugger >> moveToNode: aNode [
 					ifFalse: [ ^ NodeNotInASTError signal ] ]
 			ifNotNil: [ :parent | 
 				| nodesAfter indexOfNode indexOfNextNode nextNode |
+				"aNode statementNode parent parent isBlock ifTrue: [ 
+					| newContext blockClosure |
+					blockClosure := aNode statementNode parent parent evaluate.
+					newContext := blockClosure asContextWithSender: self context.
+					""we need to change the suspended context and maybe do the same in its debug session""
+					self currentProcess suspendedContext: newContext.
+					self debugSession
+						process: self currentProcess
+						context: newContext ].""ifFalse: [ "
 				nodesAfter := self methodNode allChildrenPostOrder.
 				indexOfNode := nodesAfter identityIndexOf: aNode.
 				nodesAfter := nodesAfter withIndexSelect: [ :value :index | 
@@ -414,7 +423,22 @@ SindarinDebugger >> moveToNode: aNode [
 					                   (self methodNode firstPcForNode: each)
 						                   isNotNil ].
 				nextNode := nodesAfter at: indexOfNextNode.
-				firstPCForNode := self methodNode firstPcForNode: nextNode ] ].
+				firstPCForNode := self methodNode firstPcForNode: nextNode.
+				nextNode isBlock ifTrue: [ 
+					| newContext blockClosure olderPC |
+					olderPC := self pc.
+					"We move to the block node pc to get its full block closure"
+					self pc: firstPCForNode.
+					self stepBytecode.
+					"The array of temps is missing on the stack. The last  bytecode of the previous statement pushes it."
+					blockClosure := self context pop.
+					newContext := blockClosure asContextWithSender: self context.
+					self pc: olderPC.
+					"we need to change the suspended context and maybe do the same in its debug session"
+					self currentProcess suspendedContext: newContext.
+					self debugSession process: self currentProcess context: newContext.
+					"This does an infinite loop because it doesn't actually change the interrupted context in the debug session"
+					^  self moveToNode: aNode ] ] ].
 
 	self pc: firstPCForNode
 ]
@@ -476,11 +500,20 @@ SindarinDebugger >> pc: anInteger [
 	nextNode := methodNode sourceNodeForPC: anInteger.
 	(nextNode == methodNode or: [ nextNode == methodNode body ])
 		ifTrue: [ firstPCOfStatementNode := anInteger ]
-		ifFalse: [ 
-			statementNodeContainingNextNode := self statementNodeContaining:
+		ifFalse: [ "statementNodeContainingNextNode := self statementNodeContaining:
 				                                   nextNode.
+			[ statementNodeContainingNextNode parent == self methodNode body ] 
+				whileFalse: [ 
+					statementNodeContainingNextNode := self statementNodeContaining:
+						                                   statementNodeContainingNextNode
+							                                   parent ].
 			firstPCOfStatementNode := self firstPCOfStatement:
-				                          statementNodeContainingNextNode.
+				                          statementNodeContainingNextNode."
+			firstPCOfStatementNode := methodNode bcToASTCache bcToASTMap keys
+				                          sorted detect: [ :key | 
+				                          (methodNode sourceNodeForPC: key)
+					                          statementNode
+				                          == methodNode statements first ].
 			"firstExecutedNodeInStatement := methodNode sourceNodeForPC:
 		                                firstPCOfStatementNode."
 			[ self context stackPtr > self context numTemps ] whileTrue: [ 

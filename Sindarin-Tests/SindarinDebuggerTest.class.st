@@ -261,6 +261,25 @@ SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithIfTrueBlock [
+
+	| a |
+	a := 1.
+	a = 2 ifTrue: [ a := 3 ].
+	a := 4
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithNotEvaluatedBlock [
+
+	| a |
+	a := 0.
+	[ a := a + 1 ].
+	a := a + 2.
+	^ a * 42
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
 
 	| a b block |
@@ -879,6 +898,93 @@ SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotInMethod [
 		should: [ sdbg moveToNode: (RBLiteralValueNode value: 2) ]
 		raise: NodeNotInASTError;
 		assert: sdbg node equals: oldNode
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockHasBeenCreated [
+
+	| oldNode sdbg aimedNode oldContext aimedPC |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithNotEvaluatedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver.
+
+	sdbg moveToNode: sdbg methodNode statements first.
+
+	"It is going to execute the comparison a = 2"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+
+	"We want to enter the block, to get to execute a:=3"
+	aimedNode := sdbg methodNode statements second body statements first
+		             value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 0.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 0.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg context sender identicalTo: oldContext.
+
+	sdbg
+		stepOver;
+		stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+	"When you perform a stepOver, you quit the block and continue just after the ifTrue: message"
+	self assert: (sdbg temporaryNamed: #a) equals: 3.
+	self assert: sdbg topStack equals: 42
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
+
+	| oldNode sdbg aimedNode oldContext aimedPC |
+	self skip.
+	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	"It is going to execute the comparison a = 2"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+
+	"We want to enter the block, to get to execute a:=3"
+	aimedNode := sdbg methodNode statements second arguments first body
+		             statements first.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNotNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg pc identicalTo: aimedPC.
+	self assert: sdbg context identicalTo: oldContext.
+
+	sdbg stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 3.
+
+	sdbg stepOver.
+	"When you perform a stepOver, you quit the block and continue just after the ifTrue: message"
+	self assert: (sdbg temporaryNamed: #a) equals: 4
 ]
 
 { #category : #tests }

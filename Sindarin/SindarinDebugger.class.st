@@ -556,18 +556,25 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
-	
-	| nextBytecode |
+
+	| nextBytecode instructionStream |
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
-  self node isMessage ifTrue: [ ^ self skipMessageNode ].
-  self node isMethod ifTrue: [ ^ self step ].
-  self node isBlock ifTrue: [ self skipBlockNode ].
+	"We need to treat jumps before messages because if it is associated to a message node, it would pop the arguments of the message, that aren't on the stack if they are jumps"
+	instructionStream := self context instructionStream.
+	(instructionStream willJumpTo or: [ 
+		 instructionStream willJumpIfFalse or: [ 
+			 instructionStream willJumpIfTrue ] ]) ifTrue: [ ^ self skipJump ].
+	self node isMessage ifTrue: [ ^ self skipMessageNode ].
+	self node isMethod ifTrue: [ ^ self step ].
+	self node isBlock ifTrue: [ ^ self skipBlockNode ].
 	nextBytecode := self currentBytecode detect: [ :each | 
 		                each offset = self pc ].
+
 	(self node isReturn or: [ 
 		 nextBytecode bytes first between: 88 and: 94 ]) ifTrue: [ 
 		^ self skipReturnNode ].
+
 	self node isSequence ifTrue: [ ^ self step ].
 
 	self skipWith: nil
@@ -591,7 +598,7 @@ SindarinDebugger >> skipAssignmentNodeCompletely [
 	"Increase the pc to go over the assignment"
 	self context pc: self context pc + currentBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession stepToFirstInterestingBytecodeIn:
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
 
@@ -604,18 +611,36 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 	self step.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession
-		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
+		stepToFirstInterestingBytecodeWithJumpIn: self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipBlockNode [
 
 	| nextBytecode |
-	nextBytecode := self currentBytecode detect: [ :bytecode | bytecode offset = self pc ].
-	
+	nextBytecode := self currentBytecode detect: [ :bytecode | 
+		                bytecode offset = self pc ].
+
 	self context pc: self pc + nextBytecode bytes size.
-	
-	self context push: nil
+
+	self context push: nil.
+
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
+]
+
+{ #category : #'stepping - skip' }
+SindarinDebugger >> skipJump [
+
+	| instructionStream nextBytecode |
+	instructionStream := self context instructionStream.
+	(instructionStream willJumpIfFalse or: [ 
+		 instructionStream willJumpIfTrue ]) ifTrue: [ self context pop ].
+	nextBytecode := self currentBytecode detect: [ :each | 
+		                each offset = self pc ].
+	self context pc: self context pc + nextBytecode bytes size.
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping - skip' }
@@ -626,7 +651,7 @@ SindarinDebugger >> skipMessageNode [
 	"Increase the pc to go over the message send"
 	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession stepToFirstInterestingBytecodeIn:
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
 
@@ -641,7 +666,7 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 	"Increase the pc to go over the message send"
 	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession stepToFirstInterestingBytecodeIn:
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
 

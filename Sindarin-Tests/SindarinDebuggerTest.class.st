@@ -250,6 +250,17 @@ SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
 	
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> helperMethodWithIfTrueIfFalse [
+
+	| a |
+	a := true.
+	a
+		ifFalse: [ a := 1 ]
+		ifTrue: [ a := 2 ].
+	a := 3
+]
+
 { #category : #helpers }
 SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
 
@@ -883,6 +894,59 @@ SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
 	sdbg skipToPC: aimedPc.
 
 	self assert: sdbg pc equals: pcBeforeSkip.
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipUpToIgnoresJumps [
+
+	| sdbg aimedNode aimedPC a |
+	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueIfFalse ].
+
+	sdbg step.
+
+	aimedNode := sdbg methodNode statements second arguments first
+		             statements first.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	a := sdbg temporaryNamed: #a.
+
+	self assert: a isNil.
+
+	sdbg skipUpToNode: aimedNode.
+
+	self
+		assert: a isNil;
+		assert: sdbg node identicalTo: aimedNode;
+		assert: sdbg pc equals: aimedPC.
+
+	aimedNode := sdbg methodNode statements second arguments second
+		             statements first.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	a := sdbg temporaryNamed: #a.
+
+	self assert: a isNil.
+
+	sdbg skipUpToNode: aimedNode .
+
+	self
+		assert: a isNil;
+		assert: sdbg node identicalTo: aimedNode;
+		assert: sdbg pc equals: aimedPC.
+
+	aimedNode := sdbg methodNode statements third.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	a := sdbg temporaryNamed: #a.
+
+	self assert: a isNil.
+
+	sdbg skipUpToNode: aimedNode.
+
+	self
+		assert: a isNil;
+		assert: sdbg node identicalTo: aimedNode;
+		assert: sdbg pc equals: aimedPC
 ]
 
 { #category : #'tests - skipping' }

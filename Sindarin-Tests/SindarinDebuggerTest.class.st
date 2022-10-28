@@ -250,6 +250,16 @@ SindarinDebuggerTest >> helperMethodWithDoubleAssignment [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithEmbeddedBlock [
+
+	| a |
+	a := 1.
+	[ :each | a := a + each. [ a := a + 1 ]. a * 42 ].
+	a := a + 2.
+	^ a * 42
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
 
 	| a b block |
@@ -1056,6 +1066,62 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableThatHasNoAssoci
 		deny: realNode isLiteralNode;
 		deny: realNode isVariable;
 		deny: (sdbg methodNode pcsForNode: realNode) isEmpty
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsNonInlinedAndEmbeddedInNonInlinedBlock [
+
+	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithEmbeddedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver. 
+		
+	"stops on outer block creation"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+	methodNode := sdbg methodNode.
+	
+	"We want to move to node 'a + 1' in [a := a +1] (embedded block)"
+	aimedNode := sdbg methodNode statements second statements second statements first value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+	
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg context home identicalTo: oldContext.
+	self assert: sdbg methodNode identicalTo: methodNode statements second statements second.
+
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform a stepOver, you quit the block and continue after the embedded block creation in the embedding block context"
+	self assert: sdbg methodNode identicalTo: methodNode statements second.
+	self assert: sdbg node identicalTo: methodNode statements second statements third.
+	self assert: sdbg context sender identicalTo: oldContext.
+	
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+		
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform stepOver again, you quit the embedding block and continue after the embedding block creation in the old context"
+	self assert: sdbg methodNode identicalTo: methodNode.
+	self assert: sdbg node identicalTo: sdbg methodNode statements third.
+	self assert: sdbg context identicalTo: oldContext.
 ]
 
 { #category : #tests }

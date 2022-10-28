@@ -941,7 +941,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 	self assert: (sdbg temporaryNamed: #a) equals: 2.
 
 	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
-	self assert: sdbg node identicalTo: oldNode.
+	self assert: sdbg node identicalTo: sdbg methodNode statements third value.
 	self assert: sdbg context identicalTo: oldContext.
 	self assert: sdbg topStack equals: 2
 ]

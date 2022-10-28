@@ -426,14 +426,16 @@ SindarinDebugger >> moveToNode: aNode [
 				firstPCForNode := self methodNode firstPcForNode: nextNode.
 				nextNode isBlock ifTrue: [ 
 					| newContext blockClosure olderPC |
-					olderPC := self pc.
+					"olderPC := self pc."
+					
 					"We move to the block node pc to get its full block closure"
 					self pc: firstPCForNode.
 					self stepBytecode.
 					"The array of temps is missing on the stack. The last  bytecode of the previous statement pushes it."
-					blockClosure := self context pop.
+					blockClosure := self context top.
 					newContext := blockClosure asContextWithSender: self context.
-					self pc: olderPC.
+					"self pc: olderPC."
+					
 					"we need to change the suspended context and maybe do the same in its debug session"
 					self currentProcess suspendedContext: newContext.
 					self debugSession suspendedContext: newContext.

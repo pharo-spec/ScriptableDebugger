@@ -1115,10 +1115,54 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockHasBeenCreatedBackward [
+
+	| oldNode sdbg aimedNode oldContext aimedPC |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithNotEvaluatedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepOver.
+
+	"It is going to execute a := a + 2"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+
+	"We want to enter the block, to get to execute a + 1 in the block"
+	aimedNode := sdbg methodNode statements second body statements first
+		             value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg context sender identicalTo: oldContext.
+
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
+	self assert: sdbg node identicalTo: oldNode value.
+	self assert: sdbg context identicalTo: oldContext.
+	self assert: sdbg topStack equals: 2
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
 
 	| oldNode sdbg aimedNode oldContext aimedPC |
-	self skip.
 	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueBlock ].
 	sdbg
 		step;

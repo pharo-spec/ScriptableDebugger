@@ -402,7 +402,20 @@ SindarinDebugger >> moveToNode: aNode [
 			ifNil: [ 
 				(aNode == self methodNode or: [ aNode == self methodNode body ])
 					ifTrue: [ firstPCForNode := self method endPC ]
-					ifFalse: [ ^ NodeNotInASTError signal ] ]
+					ifFalse: [ 
+						self context ~~ self context home
+							ifTrue: [ 
+								| oldContext |
+								oldContext := self context.
+								self currentProcess suspendedContext: oldContext home.
+								self debugSession suspendedContext: oldContext home.
+								[ self moveToNode: aNode ]
+									on: NodeNotInASTError
+									do: [ 
+										self currentProcess suspendedContext: oldContext.
+										self debugSession suspendedContext: oldContext ].
+								^ self ]
+							ifFalse: [ ^ NodeNotInASTError signal ] ] ]
 			ifNotNil: [ :parent | 
 				| nodesAfter indexOfNode indexOfNextNode nextNode |
 				"aNode statementNode parent parent isBlock ifTrue: [ 
@@ -426,21 +439,19 @@ SindarinDebugger >> moveToNode: aNode [
 				firstPCForNode := self methodNode firstPcForNode: nextNode.
 				nextNode isBlock ifTrue: [ 
 					| newContext blockClosure olderPC |
-					"olderPC := self pc."
-					
-					"We move to the block node pc to get its full block closure"
+					"olderPC := self pc.""We move to the block node pc to get its full block closure"
 					self pc: firstPCForNode.
 					self stepBytecode.
 					"The array of temps is missing on the stack. The last  bytecode of the previous statement pushes it."
 					blockClosure := self context top.
 					newContext := blockClosure asContextWithSender: self context.
 					"self pc: olderPC."
-					
+
 					"we need to change the suspended context and maybe do the same in its debug session"
 					self currentProcess suspendedContext: newContext.
 					self debugSession suspendedContext: newContext.
 					"This does an infinite loop because it doesn't actually change the interrupted context in the debug session"
-					^  self moveToNode: aNode ] ] ].
+					^ self moveToNode: aNode ] ] ].
 
 	self pc: firstPCForNode
 ]

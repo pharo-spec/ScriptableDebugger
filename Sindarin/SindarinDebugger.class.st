@@ -140,6 +140,13 @@ SindarinDebugger >> canStillExecute: aProgramNode [
 	^ rightContext pc < lastPcForNode
 ]
 
+{ #category : #cleaning }
+SindarinDebugger >> cleanStack [
+
+	[ self context stackPtr > self context numTemps ] whileTrue: [ 
+		self context pop ]
+]
+
 { #category : #stackAccess }
 SindarinDebugger >> context [
 	"Returns a reification of the current stack-frame."
@@ -297,6 +304,25 @@ SindarinDebugger >> isExecutionFinished [
 	^ process isTerminated
 ]
 
+{ #category : #'API - changes' }
+SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
+
+	"Moves to targetNode that must be in aBlockNode, which should be a recursive child"
+
+	| blockClosure newContext firstPCForNode |
+	"To jump into a block, we change pc to the block creation pc and we step it to get the block closure and create a new context for it. Then, we call moveToNode: recursively to go to the correct pc in the new context (or to create even more contexts if we want to enter embedded blocks)"
+	firstPCForNode := self methodNode firstPcForNode: aBlockNode.
+	self pc: firstPCForNode.
+	self stepBytecode.
+	blockClosure := self context top.
+	newContext := blockClosure asContextWithSender: self context.
+
+	"we need to change the suspended context and do the same in its debug session to see what we do in the debugger"
+	self currentProcess suspendedContext: newContext.
+	self debugSession suspendedContext: newContext.
+	^ self moveToNode: targetNode
+]
+
 { #category : #stackAccessHelpers }
 SindarinDebugger >> message: aSelector [
 	"Returns whether the execution is about to send a message of selector @aSelector to any object"
@@ -394,64 +420,27 @@ SindarinDebugger >> methodNode [
 { #category : #'API - changes' }
 SindarinDebugger >> moveToNode: aNode [
 
+	"Allows to jump to the first bytecode offset associated to aNode, as long as aNode is in the same lexical context as the suspended context"
+
 	| firstPCForNode |
 	firstPCForNode := self methodNode firstPcForNode: aNode.
 
-	firstPCForNode ifNil: [ "]"
+	firstPCForNode ifNil: [ "If a node does not have any associated pc and if it is not a child in the method node then, aNode may be identical to the method node or its body, in which case, we move to the endPC. Otherwise, we check if it is a child in the home context's method node. If this is the case, this means we want to exit a block context. Otherwise, aNode is not a child in the home context's method node"
 		(self methodNode parentOfIdenticalSubtree: aNode)
 			ifNil: [ 
 				(aNode == self methodNode or: [ aNode == self methodNode body ])
 					ifTrue: [ firstPCForNode := self method endPC ]
 					ifFalse: [ 
 						self context ~~ self context home
-							ifTrue: [ 
-								| oldContext |
-								oldContext := self context.
-								self currentProcess suspendedContext: oldContext home.
-								self debugSession suspendedContext: oldContext home.
-								[ self moveToNode: aNode ]
-									on: NodeNotInASTError
-									do: [ 
-										self currentProcess suspendedContext: oldContext.
-										self debugSession suspendedContext: oldContext ].
-								^ self ]
+							ifTrue: [ ^ self tryMoveToNodeInHomeContext: aNode ]
 							ifFalse: [ ^ NodeNotInASTError signal ] ] ]
 			ifNotNil: [ :parent | 
-				| nodesAfter indexOfNode indexOfNextNode nextNode |
-				"aNode statementNode parent parent isBlock ifTrue: [ 
-					| newContext blockClosure |
-					blockClosure := aNode statementNode parent parent evaluate.
-					newContext := blockClosure asContextWithSender: self context.
-					""we need to change the suspended context and maybe do the same in its debug session""
-					self currentProcess suspendedContext: newContext.
-					self debugSession
-						process: self currentProcess
-						context: newContext ].""ifFalse: [ "
-				nodesAfter := self methodNode allChildrenPostOrder.
-				indexOfNode := nodesAfter identityIndexOf: aNode.
-				nodesAfter := nodesAfter withIndexSelect: [ :value :index | 
-					              index > indexOfNode ].
-				"if aimed node has no associated pc, we find the first node executed after him (in pre-order) that has at least one associated pc"
-				indexOfNextNode := nodesAfter findFirst: [ :each | 
-					                   (self methodNode firstPcForNode: each)
-						                   isNotNil ].
-				nextNode := nodesAfter at: indexOfNextNode.
+				| nextNode |
+				"If a node does not have any associated pc but this node is a child in the method node then, we go to the next node that will be executed (so in pre-order) and that has an associated pc in this context."
+				nextNode := self nextExecutedNodeAfter: aNode.
 				firstPCForNode := self methodNode firstPcForNode: nextNode.
-				nextNode isBlock ifTrue: [ 
-					| newContext blockClosure olderPC |
-					"olderPC := self pc.""We move to the block node pc to get its full block closure"
-					self pc: firstPCForNode.
-					self stepBytecode.
-					"The array of temps is missing on the stack. The last  bytecode of the previous statement pushes it."
-					blockClosure := self context top.
-					newContext := blockClosure asContextWithSender: self context.
-					"self pc: olderPC."
-
-					"we need to change the suspended context and maybe do the same in its debug session"
-					self currentProcess suspendedContext: newContext.
-					self debugSession suspendedContext: newContext.
-					"This does an infinite loop because it doesn't actually change the interrupted context in the debug session"
-					^ self moveToNode: aNode ] ] ].
+				nextNode isBlock ifTrue: [ "If the node after aNode is a block node, then this means we want to enter a block." 
+					^ self jumpIntoBlock: nextNode toNode: aNode ] ] ].
 
 	self pc: firstPCForNode
 ]
@@ -461,6 +450,12 @@ SindarinDebugger >> nextBytecode [
 
 	^ self currentBytecode detect: [ :each | 
 		  each offset = self context pc ]
+]
+
+{ #category : #'API - changes' }
+SindarinDebugger >> nextExecutedNodeAfter: aNode [
+
+	^ self methodNode nextExecutedNodeAfter: aNode
 ]
 
 { #category : #astAndAstMapping }
@@ -505,32 +500,22 @@ SindarinDebugger >> pc [
 { #category : #accessing }
 SindarinDebugger >> pc: anInteger [
 
-	| statementNodeContainingNextNode nextNode methodNode firstPCOfStatementNode |
+	"Allows to move to the first PC associated to the node to which anInteger is associated. anInteger must be a valid pc in the suspended context"
+
+	| nextNode methodNode firstPCOfStatementNode |
+	"If aimedPC is outside the context PCs range, then an error is signaled"
 	(anInteger < self method initialPC or: [ 
 		 anInteger > self method endPC ]) ifTrue: [ 
 		^ NotValidPcError signal ].
 	methodNode := self methodNode.
 	nextNode := methodNode sourceNodeForPC: anInteger.
+	"If the aimed node is associated to the method node or its body, then we suppose that it is wanted and we'll get there directly"
 	(nextNode == methodNode or: [ nextNode == methodNode body ])
 		ifTrue: [ firstPCOfStatementNode := anInteger ]
-		ifFalse: [ "statementNodeContainingNextNode := self statementNodeContaining:
-				                                   nextNode.
-			[ statementNodeContainingNextNode parent == self methodNode body ] 
-				whileFalse: [ 
-					statementNodeContainingNextNode := self statementNodeContaining:
-						                                   statementNodeContainingNextNode
-							                                   parent ].
+		ifFalse: [ "If not, we skip to the wanted node, from the first (recursive) pc of the first statement node. We don't skip from the method node initial pc, otherwise we would create again the temp variables and lose their values."
 			firstPCOfStatementNode := self firstPCOfStatement:
-				                          statementNodeContainingNextNode."
-			firstPCOfStatementNode := methodNode bcToASTCache bcToASTMap keys
-				                          sorted detect: [ :key | 
-				                          (methodNode sourceNodeForPC: key)
-					                          statementNode
-				                          == methodNode statements first ].
-			"firstExecutedNodeInStatement := methodNode sourceNodeForPC:
-		                                firstPCOfStatementNode."
-			[ self context stackPtr > self context numTemps ] whileTrue: [ 
-				self context pop ] ].
+				                          methodNode statements first.
+			self cleanStack ].
 	self context pc: firstPCOfStatementNode.
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess.
@@ -973,4 +958,21 @@ SindarinDebugger >> terminate [
 { #category : #stackAccessHelpers }
 SindarinDebugger >> topStack [
 	^self context top
+]
+
+{ #category : #'API - changes' }
+SindarinDebugger >> tryMoveToNodeInHomeContext: aNode [
+
+	"Moves to node aNode if aNode is in the lexical context. Otherwise, the program state goes back to how it was before trying and signals an error as the node is not in AST"
+
+	| oldContext |
+	oldContext := self context.
+	self currentProcess suspendedContext: oldContext home.
+	self debugSession suspendedContext: oldContext home.
+	[ self moveToNode: aNode ]
+		on: NodeNotInASTError
+		do: [ 
+			self currentProcess suspendedContext: oldContext.
+			self debugSession suspendedContext: oldContext.
+			^ NodeNotInASTError signal ]
 ]

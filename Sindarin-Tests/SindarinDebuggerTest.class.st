@@ -1058,7 +1058,9 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatI
 	oldPC := sdbg pc.
 	oldContext := sdbg context.
 
-	sdbg moveToNode: (RBLiteralValueNode value: 1).
+	self
+		should: [ sdbg moveToNode: (RBLiteralValueNode value: 1) ]
+		raise: NodeNotInASTError.
 	"We jump to node in home context of embedded block"
 	self assert: sdbg node identicalTo: oldNode.
 	"We went back to the home context"

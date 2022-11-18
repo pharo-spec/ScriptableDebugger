@@ -562,7 +562,7 @@ SindarinDebugger >> skip [
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
   self node isMessage ifTrue: [ ^ self skipMessageNode ].
   self node isMethod ifTrue: [ ^ self step ].
-  self node isBlock ifTrue: [ self skipBlockNode ].
+  self node isBlock ifTrue: [ ^ self skipBlockNode ].
 	nextBytecode := self currentBytecode detect: [ :each | 
 		                each offset = self pc ].
 	(self node isReturn or: [ 
@@ -611,11 +611,15 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 SindarinDebugger >> skipBlockNode [
 
 	| nextBytecode |
-	nextBytecode := self currentBytecode detect: [ :bytecode | bytecode offset = self pc ].
-	
+	nextBytecode := self currentBytecode detect: [ :bytecode | 
+		                bytecode offset = self pc ].
+
 	self context pc: self pc + nextBytecode bytes size.
-	
-	self context push: nil
+
+	self context push: nil.
+
+	self debugSession stepToFirstInterestingBytecodeIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping - skip' }

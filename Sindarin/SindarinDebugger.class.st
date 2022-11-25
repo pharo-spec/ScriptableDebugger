@@ -575,9 +575,7 @@ SindarinDebugger >> skip [
 		 nextBytecode bytes first between: 88 and: 94 ]) ifTrue: [ 
 		^ self skipReturnNode ].
 
-	self node isSequence ifTrue: [ ^ self step ].
-
-	self skipWith: nil
+	self node isSequence ifTrue: [ ^ self step ]
 ]
 
 { #category : #'stepping -  skip' }

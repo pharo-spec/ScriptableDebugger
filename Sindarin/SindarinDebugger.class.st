@@ -557,22 +557,18 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
 
-	| nextBytecode instructionStream |
+	| instructionStream |
 	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
 	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
 	"We need to treat jumps before messages because if it is associated to a message node, it would pop the arguments of the message, that aren't on the stack if they are jumps"
 	instructionStream := self context instructionStream.
-	(instructionStream willJumpTo or: [ 
-		 instructionStream willJumpIfFalse or: [ 
-			 instructionStream willJumpIfTrue ] ]) ifTrue: [ ^ self skipJump ].
+	(instructionStream willJump) ifTrue: [ ^ self skipJump ].
 	self node isMessage ifTrue: [ ^ self skipMessageNode ].
 	self node isMethod ifTrue: [ ^ self step ].
 	self node isBlock ifTrue: [ ^ self skipBlockNode ].
-	nextBytecode := self currentBytecode detect: [ :each | 
-		                each offset = self pc ].
 
 	(self node isReturn or: [ 
-		 nextBytecode bytes first between: 88 and: 94 ]) ifTrue: [ 
+		 instructionStream willReturn ]) ifTrue: [ 
 		^ self skipReturnNode ].
 
 	self node isSequence ifTrue: [ ^ self step ]
@@ -632,6 +628,7 @@ SindarinDebugger >> skipJump [
 
 	| instructionStream nextBytecode |
 	instructionStream := self context instructionStream.
+	"If the next bytecode is a jumpTrue: or a jumpFalse: bytecode, then it expects one argument on the stack. As we skip the jump bytecode, we pop it."
 	(instructionStream willJumpIfFalse or: [ 
 		 instructionStream willJumpIfTrue ]) ifTrue: [ self context pop ].
 	nextBytecode := self currentBytecode detect: [ :each | 

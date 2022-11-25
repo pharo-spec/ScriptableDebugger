@@ -558,20 +558,13 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 SindarinDebugger >> skip [
 
 	| instructionStream |
-	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
-	"We need to treat jumps before messages because if it is associated to a message node, it would pop the arguments of the message, that aren't on the stack if they are jumps"
 	instructionStream := self context instructionStream.
-	(instructionStream willJump) ifTrue: [ ^ self skipJump ].
-	self node isMessage ifTrue: [ ^ self skipMessageNode ].
-	self node isMethod ifTrue: [ ^ self step ].
-	self node isBlock ifTrue: [ ^ self skipBlockNode ].
+	"We need to treat jumps before messages because if it is associated to a message node, it would pop the arguments of the message, that aren't on the stack if they are jumps"
+	instructionStream willJump ifTrue: [ ^ self skipJump ].
+	"A return bytecode can be on any node so have to treat it here systematically"
+	instructionStream willReturn ifTrue: [ ^ self skipReturnNode ].
 
-	(self node isReturn or: [ 
-		 instructionStream willReturn ]) ifTrue: [ 
-		^ self skipReturnNode ].
-
-	self node isSequence ifTrue: [ ^ self step ]
+	self node skipWithDebugger: self
 ]
 
 { #category : #'stepping -  skip' }

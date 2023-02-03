@@ -659,6 +659,7 @@ SindarinDebugger >> skip [
 	self node isMessage ifTrue: [ ^ self skipMessageNode ].
 	self node isMethod ifTrue: [ ^ self step ].
 	self node isBlock ifTrue: [ ^ self skipBlockNode ].
+
 	nextBytecode := self currentBytecode detect: [ :each | 
 		                each offset = self pc ].
 
@@ -715,7 +716,7 @@ SindarinDebugger >> skipBlockNode [
 	self context pc: self pc + nextBytecode bytes size.
 
 	self context push: nil.
-
+  
 	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]

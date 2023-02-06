@@ -38,6 +38,7 @@ RBBlockNode >> parentOfIdenticalSubtree: subtree [
 		  detect: [ :e | e == subtree ]
 		  ifFound: [ :e | e parent ]
 		  ifNone: [ nil ]
+]
 
 RBBlockNode >> skipWithDebugger: aSindarinDebugger [
 

@@ -23,3 +23,9 @@ DebugSession >> stepToFirstInterestingBytecodeWithJumpIn: aProcess [
 	
 	^ aProcess stepToSendOrReturnOrJump
 ]
+
+{ #category : #'*Sindarin' }
+DebugSession >> suspendedContext: aContext [ 
+	
+	interruptedContext := aContext
+]

@@ -40,6 +40,7 @@ RBBlockNode >> parentOfIdenticalSubtree: subtree [
 		  ifNone: [ nil ]
 ]
 
+{ #category : #'*Sindarin' }
 RBBlockNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger skipBlockNode 

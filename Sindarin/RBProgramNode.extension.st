@@ -11,6 +11,7 @@ RBProgramNode >> allChildrenPostOrder [
 	^ children
 ]
 
+{ #category : #'*Sindarin' }
 RBProgramNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger step

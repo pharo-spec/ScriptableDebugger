@@ -9,6 +9,7 @@ RBProgramNode >> allChildrenPostOrder [
 		each allChildrenPostOrder do: [ :child | children addLast: child ] ].
 	children addLast: self.
 	^ children
+]
 
 RBProgramNode >> skipWithDebugger: aSindarinDebugger [
 

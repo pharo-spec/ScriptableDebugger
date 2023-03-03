@@ -9,19 +9,6 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod16 [
-
-	^ 1 + 1
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod17: storeContextBlock [
-
-	storeContextBlock value: thisContext.
-	Point x: 5 y: 7
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod18: anArg with: anotherArg [
 
 	Point x: 5 y: 7
@@ -114,6 +101,12 @@ SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
 	         1 + 2 ].
 	b := block value.
 	^ 42
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithContextPassedToBlockParameter: storeContextBlock [
+
+	storeContextBlock value: thisContext
 ]
 
 { #category : #helpers }
@@ -328,8 +321,7 @@ SindarinDebuggerTest >> testIsAboutToInstantiateClass [
 SindarinDebuggerTest >> testIsExecutionFinished [
 
 	| scdbg |
-	self skipOnPharoCITestingEnvironment.
-	scdbg := SindarinDebugger debug: [ self helperMethod16 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments  ].
 	self deny: scdbg isExecutionFinished.
 
 	[ scdbg isExecutionFinished ] whileFalse: [ scdbg stepOver ].
@@ -879,18 +871,29 @@ SindarinDebuggerTest >> testSkipWith [
 
 { #category : #tests }
 SindarinDebuggerTest >> testStack [
-	| context1 context2 storeContextBlock scdbg |
-	storeContextBlock := [ :thisCtx | context2 := thisCtx ].
-	scdbg := SindarinDebugger
-		debug: [ context1 := thisContext.
-			self helperMethod17: storeContextBlock ].
+
+	| contextStoreBlock contextHere calleeContext scdbg |
+	contextStoreBlock := [ :localContext | calleeContext := localContext ].
+	scdbg := SindarinDebugger debug: [ "We capture the local context here, that should be the bottom context""stack = contextHere"
+		         contextHere := thisContext.
+		         "We send a block as paremeter of a method call that will capture the local context of the callee method"
+		         "After returning from the call, 
+					stack = calleeContext (callee)<< contextHere (sender)"
+
+		         self methodWithContextPassedToBlockParameter: contextStoreBlock ].
+	"We step the contextHere := thisContext instruction"
 	scdbg step.
-	self assert: scdbg stack first equals: context1.
-	scdbg
-		step;
-		stepOver.
-	self assert: scdbg stack first equals: context2.
-	self assert: (scdbg stack at: 2) equals: context1
+	"The stack has contextHere on top."
+	self assert: scdbg stack first equals: contextHere.
+
+	"We step into methodWithContextPassedToBlockParameter: and over the first statement (the execution of the block passed as parameter)"
+	scdbg step.
+	scdbg stepOver.
+
+	"The stack has calleeContext on top and contextHere as sender"
+	self assert: scdbg stack first identicalTo: calleeContext.
+	self assert: scdbg stack first sender identicalTo: contextHere.
+	self assert: scdbg stack second identicalTo: contextHere
 ]
 
 { #category : #tests }

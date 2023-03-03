@@ -9,63 +9,11 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethodNonLocalReturn [
+SindarinDebuggerTest >> methodNonLocalReturn [
 	| block |
 	block := [ ^ 42 ].
 	block value.
 	^ 43
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodReturnWithException [
-
-	| a |
-	a := 0.
-	1 / 0.
-	^ a + 1
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodReturnWithHalt [
-	<haltOrBreakpointForTesting>
-
-	| a |
-	a := 0.
-	self halt.
-	^ a + 1
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
-
-	| block a |
-	block := [ a := 1 ].
-	block value.
-	^ 43
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
-
-	| a b block |
-	a := 1.
-	block := [ a := 2. b := 3 + 2 ].
-	block value.
-	^ 42
-	
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
-
-	| a b block |
-	a := 3.
-	block := [ 
-	         a := 1.
-	         b := 2.
-	         1 + 2 ].
-	b := block value.
-	^ 42
 ]
 
 { #category : #helpers }
@@ -78,9 +26,48 @@ SindarinDebuggerTest >> methodReturn: bool with: anObject [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> methodReturnWithException [
+
+	| a |
+	a := 0.
+	1 / 0.
+	^ a + 1
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodReturnWithHalt [
+	<haltOrBreakpointForTesting>
+
+	| a |
+	a := 0.
+	self halt.
+	^ a + 1
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithBlockWithNoReturn [
+
+	| block a |
+	block := [ a := 1 ].
+	block value.
+	^ 43
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> methodWithContextPassedToBlockParameter: storeContextBlock [
 
 	storeContextBlock value: thisContext
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithEvaluatedBlock [
+
+	| a b block |
+	a := 1.
+	block := [ a := 2. b := 3 + 2 ].
+	block value.
+	^ 42
+	
 ]
 
 { #category : #helpers }
@@ -97,6 +84,19 @@ SindarinDebuggerTest >> methodWithOneAssignment [
 	| a |
 	a := 5.
 	^ Point x: 5 y: '3' asInteger
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithSeveralInstructionsInBlock [
+
+	| a b block |
+	a := 3.
+	block := [ 
+	         a := 1.
+	         b := 2.
+	         1 + 2 ].
+	b := block value.
+	^ 42
 ]
 
 { #category : #helpers }
@@ -161,7 +161,7 @@ SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsAfterInAnyContext [
 
 	| sdbg aimedNodeInContext aimedNodeOutsideContext |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithSeveralInstructionsInBlock ].
+		        self methodWithSeveralInstructionsInBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -189,7 +189,7 @@ SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsBeforeInAnyContext [
 
 	| sdbg aimedNodeInContext aimedNodeOutsideContext |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithSeveralInstructionsInBlock ].
+		        self methodWithSeveralInstructionsInBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -240,7 +240,7 @@ SindarinDebuggerTest >> testContinue [
 SindarinDebuggerTest >> testContinueEncoutersAnException [
 
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethodReturnWithException ].
+	scdbg := SindarinDebugger debug: [ self methodReturnWithException ].
 
 	"We step to the first assignement"
 	scdbg step.
@@ -472,7 +472,7 @@ SindarinDebuggerTest >> testSkipAssignmentWithStoreIntoBytecodePushesReplacement
 SindarinDebuggerTest >> testSkipBlockNode [
 
 	| scdbg targetContext |
-	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	scdbg := SindarinDebugger debug: [ self methodNonLocalReturn ].
 
 	scdbg
 		step;
@@ -489,7 +489,7 @@ SindarinDebuggerTest >> testSkipBlockNode [
 	self assert: scdbg context identicalTo: targetContext.
 	self assert: scdbg topStack equals: 42.
 
-	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	scdbg := SindarinDebugger debug: [ self methodNonLocalReturn ].
 
 	scdbg
 		step;
@@ -557,7 +557,7 @@ SindarinDebuggerTest >> testSkipStepsMethodNodes [
 
 	| scdbg realExecNode realExecPc realTopStack |
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithBlockWithNoReturn ].
+		         self methodWithBlockWithNoReturn ].
 
 	scdbg step.
 	scdbg stepOver.
@@ -567,7 +567,7 @@ SindarinDebuggerTest >> testSkipStepsMethodNodes [
 	realTopStack := scdbg topStack.
 
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithBlockWithNoReturn ].
+		         self methodWithBlockWithNoReturn ].
 
 	scdbg
 		step;
@@ -581,7 +581,7 @@ SindarinDebuggerTest >> testSkipStepsMethodNodes [
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipThroughNode [
 	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |
-	self skipOnPharoCITestingEnvironment.
+
 	dbg := SindarinDebugger
 		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.	
@@ -608,7 +608,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipToPC [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
-	self skipOnPharoCITestingEnvironment.
+
 	dbg := SindarinDebugger
 		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.
@@ -633,7 +633,7 @@ SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsAfterEndPc [
 
 	| sdbg aimedPc pcBeforeSkip |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithSeveralInstructionsInBlock ].
+		        self methodWithSeveralInstructionsInBlock ].
 	sdbg
 		step;
 		stepOver.
@@ -652,7 +652,7 @@ SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
 
 	| sdbg aimedPc pcBeforeSkip |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithSeveralInstructionsInBlock ].
+		        self methodWithSeveralInstructionsInBlock ].
 	sdbg
 		step;
 		stepOver.
@@ -670,7 +670,7 @@ SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNode [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
-	self skipOnPharoCITestingEnvironment.
+
 	dbg := SindarinDebugger
 		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.
@@ -695,7 +695,7 @@ SindarinDebuggerTest >> testSkipUpToNodeDoesNotLoopWhenAimedNodeIsBeforeCurrentN
 
 	| sdbg aimedNode nodeBeforeSkip |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithSeveralInstructionsInBlock ].
+		        self methodWithSeveralInstructionsInBlock ].
 	sdbg
 		step;
 		stepOver.
@@ -713,8 +713,7 @@ SindarinDebuggerTest >> testSkipUpToNodeDoesNotLoopWhenAimedNodeIsBeforeCurrentN
 SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 
 	| dbg realExecPC realExecNode realExecTopStack oldValueOfA valueOfBAfterSkipAndStep |
-	self skipOnPharoCITestingEnvironment.
-	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
+	dbg := SindarinDebugger debug: [ self methodWithEvaluatedBlock ].
 	"after stepping, we stop at the beginning of the block"
 	dbg
 		step;
@@ -736,7 +735,7 @@ SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 	realExecNode := dbg node.
 	realExecTopStack := dbg topStack.
 
-	dbg := SindarinDebugger debug: [ self helperMethodWithEvaluatedBlock ].
+	dbg := SindarinDebugger debug: [ self methodWithEvaluatedBlock ].
 
 	dbg
 		step;
@@ -761,7 +760,7 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturnIfAimedNodeCanStill
 
 	| scdbg implicitReturnPc implicitReturnNode realExecPc realExecNode |
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithBlockWithNoReturn ].
+		         self methodWithBlockWithNoReturn ].
 
 	scdbg
 		step;
@@ -781,7 +780,7 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturnIfAimedNodeCanStill
 	self assert: realExecPc ~= implicitReturnPc.
 
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithBlockWithNoReturn ].
+		         self methodWithBlockWithNoReturn ].
 
 	scdbg
 		step;
@@ -802,7 +801,7 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturnIfAimedNodeCanStill
 SindarinDebuggerTest >> testSkipUpToNodeStopsOnReturnNodes [
 
 	| scdbg returnInBlock realExecNode |
-	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	scdbg := SindarinDebugger debug: [ self methodNonLocalReturn ].
 
 
 	scdbg
@@ -817,7 +816,7 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnReturnNodes [
 	self assert: realExecNode isReturn.
 
 
-	scdbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	scdbg := SindarinDebugger debug: [ self methodNonLocalReturn ].
 	scdbg
 		step;
 		stepOver;
@@ -831,7 +830,7 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnReturnNodes [
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipWith [
 	| a p scdbg |
-	self skipOnPharoCITestingEnvironment.
+
 	a := 1.
 	scdbg := SindarinDebugger
 		debug: [ a := 2.
@@ -908,7 +907,7 @@ SindarinDebuggerTest >> testStepOverFinishedExecution [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToImplicitReturn [
 	| dbg |
-	self skipOnPharoCITestingEnvironment.
+
 	dbg := SindarinDebugger debug: [ self methodWithImplicitReturn ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
@@ -925,7 +924,7 @@ SindarinDebuggerTest >> testStepToImplicitReturn [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToMethodEntry [
 	| dbg |
-	self skipOnPharoCITestingEnvironment.
+
 	dbg := SindarinDebugger debug: [ self methodReturn: true with: 42].
 	dbg stepToMethodEntry.
 		
@@ -938,8 +937,8 @@ SindarinDebuggerTest >> testStepToMethodEntry [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToNonLocalReturn [
 	| dbg |
-	self skipOnPharoCITestingEnvironment.	
-	dbg := SindarinDebugger debug: [ self helperMethodNonLocalReturn ].
+	
+	dbg := SindarinDebugger debug: [ self methodNonLocalReturn ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
 	
@@ -955,7 +954,7 @@ SindarinDebuggerTest >> testStepToNonLocalReturn [
 SindarinDebuggerTest >> testStepToReturn [
 
 	| dbg |
-	self skipOnPharoCITestingEnvironment.
+
 	"First return node"
 	dbg := SindarinDebugger debug: [
 		       self methodReturn: true with: 42 ].
@@ -977,9 +976,9 @@ SindarinDebuggerTest >> testStepToReturn [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToReturnWithException [
 	| dbg |
-	self skipOnPharoCITestingEnvironment.
+
 	"First return node"
-	dbg := SindarinDebugger debug: [ self helperMethodReturnWithException ].
+	dbg := SindarinDebugger debug: [ self methodReturnWithException ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
 	
@@ -990,9 +989,8 @@ SindarinDebuggerTest >> testStepToReturnWithException [
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToReturnWithHalt [
 	| dbg |
-	self skipOnPharoCITestingEnvironment.
 	"First return node"
-	dbg := SindarinDebugger debug: [ self helperMethodReturnWithHalt ].
+	dbg := SindarinDebugger debug: [ self methodReturnWithHalt ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
 	
@@ -1064,7 +1062,7 @@ SindarinDebuggerTest >> testskipUpToNodeSkipTargetNode [
 	Variations of these two params are tested by testSkipUpToNode and testSkipThroughNode.
 	The following just test the remaining aspect of that API, that is we do not skip through a return node."
 	| dbg returnNode |	
-	self skipOnPharoCITestingEnvironment.
+
 	dbg := SindarinDebugger
 		debug: [ self methodWithTwoAssignments  ].
 		

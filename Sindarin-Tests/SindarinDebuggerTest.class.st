@@ -271,18 +271,15 @@ SindarinDebuggerTest >> runCaseManaged [
 { #category : #running }
 SindarinDebuggerTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
-	
+
 	super setUp.
-	breakpointsBeforeTest := VirtualBreakpoint all.
-	VirtualBreakpoint all removeAll.
-	testObjectPoint := Point x: 1 y: 2.
+
+	testObjectPoint := Point x: 1 y: 2
 ]
 
 { #category : #running }
 SindarinDebuggerTest >> tearDown [
 
-	VirtualBreakpoint all removeAll.
-	breakpointsBeforeTest do: [ :breakPoint | VirtualBreakpoint all add: breakPoint ].
 	super tearDown
 ]
 
@@ -397,39 +394,32 @@ SindarinDebuggerTest >> testContext [
 
 { #category : #tests }
 SindarinDebuggerTest >> testContinue [
+
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg
-		step;
-		step.
-	self assert: scdbg node isMessage.
-	self assert: scdbg node selector equals: #asInteger.
-	scdbg setBreakpoint.
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
+
+	"We step to the first assignement"
+	scdbg step.
+	self assert: scdbg node isAssignment.
+
+	"We continue the execution and it should terminate"
 	scdbg continue.
-	self assert: scdbg node isMessage.
-	self assert: scdbg node selector equals: #asInteger
+	self assert: scdbg isExecutionFinished
 ]
 
 { #category : #tests }
-SindarinDebuggerTest >> testContinueUntilTheEnd [
-	"Test the #continue method when no breakpoint/halt is set. It should step the execution until the end and NOT freeze the image"
+SindarinDebuggerTest >> testContinueEncoutersAnException [
 
-	| scdbg semaphore |
-	self flag: 'What is "setup code for the timeout?'.
-	"VVV Setup code for the timeout"
-	semaphore := Semaphore new.
-	[ "^^^ Setup code for the timeout"
-	scdbg := SindarinDebugger debug: [ self helperMethod20 ].
-	scdbg continue.
-	self assert: scdbg isExecutionFinished.
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self helperMethodReturnWithException ].
 
-	"VVV Code for the timeout"
-	semaphore signal ] fork.
-	semaphore
-		wait: 5 seconds
-		onCompletion: [ 'success' ]
-		onTimeout: [ "^^^ Setup code for the timeout" self assert: false description: 'Test timed out' ]
+	"We step to the first assignement"
+	scdbg step.
+	self assert: scdbg node isAssignment.
+
+	"We continue the execution and it should terminate"
+	scdbg continue.	
+	self assert: scdbg isAboutToSignalException
 ]
 
 { #category : #'tests - execution predicates' }
@@ -575,22 +565,6 @@ SindarinDebuggerTest >> testNode [
 ]
 
 { #category : #tests }
-SindarinDebuggerTest >> testOnceBreakpoint [
-	| breakpoint scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg step; step.
-	self assert: scdbg node isMessage.
-	self assert: scdbg node selector equals: #asInteger.
-	breakpoint := scdbg setBreakpoint.
-	breakpoint once.
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg continue.
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg continue.
-	self assert: scdbg isExecutionFinished
-]
-
-{ #category : #tests }
 SindarinDebuggerTest >> testPc [
 	| dbg |
 	dbg := SindarinDebugger
@@ -613,20 +587,6 @@ SindarinDebuggerTest >> testReceiver [
 ]
 
 { #category : #tests }
-SindarinDebuggerTest >> testRemoveBreakpoint [
-	| breakpoint scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg step; step.
-	self assert: scdbg node isMessage.
-	self assert: scdbg node selector equals: #asInteger.
-	breakpoint := scdbg setBreakpoint.
-	breakpoint remove.
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg continue.
-	self assert: scdbg isExecutionFinished
-]
-
-{ #category : #tests }
 SindarinDebuggerTest >> testSelector [
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self helperMethod9 ].
@@ -635,12 +595,6 @@ SindarinDebuggerTest >> testSelector [
 	self assert: scdbg selector equals: #helperMethod9.
 	scdbg step; step.
 	self assert: scdbg selector equals: #asInteger
-]
-
-{ #category : #tests }
-SindarinDebuggerTest >> testSetBreakpoint [
-	self flag: 'What is this test?'.
-	self testContinue
 ]
 
 { #category : #'tests - skipping' }
@@ -1263,21 +1217,6 @@ SindarinDebuggerTest >> testTopStack [
 	dbg := SindarinDebugger debug: [ a := 2 ].
 	dbg step.
 	self assert: dbg topStack equals: 2
-]
-
-{ #category : #tests }
-SindarinDebuggerTest >> testWhenHitBreakpoint [
-	| breakpoint toggle scdbg |
-	toggle := false.
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg step; step.
-	self assert: scdbg node isMessage.
-	self assert: scdbg node selector equals: #asInteger.
-	breakpoint := scdbg setBreakpoint.
-	breakpoint whenHit: [ toggle := true ].
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
-	scdbg continue.
-	self assert: toggle
 ]
 
 { #category : #'tests - skipping' }

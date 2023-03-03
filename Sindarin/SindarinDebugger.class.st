@@ -147,7 +147,7 @@ SindarinDebugger >> context [
 	^ self debugSession interruptedContext
 ]
 
-{ #category : #private }
+{ #category : #'execution predicates' }
 SindarinDebugger >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 
@@ -170,37 +170,11 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 { #category : #'stepping -  auto' }
 SindarinDebugger >> continue [
 	"Steps the execution until it:
-	- is about to signal a Halt exception. In this case return #halt.
-	- is about to signal a Break exception. In this case return #breakpoint.
-	- has reached a virtual breakpoint. In this case return the virtual breakpoint.
-	- has finished. In this case return nil."
+	- is about to signal an exception.
+	- has finished"
 
-	| signalMessageNode exceptionClassBeingSignalled stepHook |
-	self flag: 'Sorry, this is shit :)'.
-	stepHook := [ VirtualBreakpoint all
-		detect: [ :vbrkpt | vbrkpt hitTest: self node ]
-		ifFound: [ :vbrkpt | 
-			self removeStepHook: stepHook.
-			^ vbrkpt ] ].
-	self addStepHook: stepHook.
-	[ self isExecutionFinished
-		or: [ self contextIsAboutToSignalException: self context ] ]
-		whileFalse: [ self step ].
-	self isExecutionFinished
-		ifTrue: [ ^ nil ].
-	signalMessageNode := self node.
-	exceptionClassBeingSignalled := self context
-		at: self context size - signalMessageNode arguments size.
-	exceptionClassBeingSignalled == Halt
-		ifTrue: [ "Encountered a Halt (typically signalled by a 'self halt')"
-			self skip.
-			self removeStepHook: stepHook.
-			^ #halt ].
-	exceptionClassBeingSignalled == Break
-		ifTrue: [ "Encountered a Break (i.e. a breakpoint)"
-			self skip.
-			self removeStepHook: stepHook.
-			^ #breakpoint ]
+	[ self isExecutionFinished or: [ self isAboutToSignalException ] ]
+		whileFalse: [ self step ]
 ]
 
 { #category : #accessing }
@@ -242,7 +216,7 @@ SindarinDebugger >> debugSession [
 	^ sindarinSession debugSession
 ]
 
-{ #category : #private }
+{ #category : #'execution predicates' }
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
 	^ (#(#defaultAction #signal) includes: self selector ) and: [ self receiver isKindOf: Exception ]
@@ -275,13 +249,10 @@ SindarinDebugger >> isAboutToInstantiateClass [
 			  methodAboutToExecute primitive ]
 ]
 
-{ #category : #private }
+{ #category : #'execution predicates' }
 SindarinDebugger >> isAboutToSignalException [
-	"OLD METHOD. SEE #hasSignalledUnhandledException"
-	"Returns whether the debugged execution is about to signal an exception"
-	^ (self node isMessage
-		and: [ self messageSelector = #unhandledErrorDefaultAction:
-				and: [ self messageReceiver isKindOf: UIManager ] ])
+
+	^ self contextIsAboutToSignalException: self context
 ]
 
 { #category : #stackAccess }
@@ -480,24 +451,6 @@ SindarinDebugger >> selector [
 	"Returns the selector of the current stack-frame."
 
 	^ self context selector
-]
-
-{ #category : #breakpoints }
-SindarinDebugger >> setBreakpoint [
-	"Sets a breakpoint on the current node, returns an object reifying the breakpoint."
-
-	^ self setBreakpointOn: self node
-]
-
-{ #category : #breakpoints }
-SindarinDebugger >> setBreakpointOn: target [
-	"Sets a breakpoint on target (a node or a compiled method), returns an object reifying the breakpoint."
-
-	| astTarget |
-	astTarget := target.
-	(target isKindOf: CompiledMethod)
-		ifTrue: [ astTarget := target ast ].
-	^ VirtualBreakpoint newOnNode: astTarget setBy: self
 ]
 
 { #category : #asserting }

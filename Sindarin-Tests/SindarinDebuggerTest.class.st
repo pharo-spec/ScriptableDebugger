@@ -9,12 +9,6 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod18: anArg with: anotherArg [
-
-	Point x: 5 y: 7
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod21 [
 
 	self helperMethod22
@@ -40,15 +34,6 @@ SindarinDebuggerTest >> helperMethodNonLocalReturn [
 	block := [ ^ 42 ].
 	block value.
 	^ 43
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodReturn: bool [
-
-	| a |
-	a := bool.
-	a ifTrue: [ ^ 1 ].
-	^ 2
 ]
 
 { #category : #helpers }
@@ -101,6 +86,15 @@ SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
 	         1 + 2 ].
 	b := block value.
 	^ 42
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodReturn: bool with: anObject [
+
+	| a |
+	a := bool.
+	a ifTrue: [ ^ 1 ].
+	^ anObject
 ]
 
 { #category : #helpers }
@@ -158,7 +152,7 @@ SindarinDebuggerTest >> tearDown [
 SindarinDebuggerTest >> testArguments [
 	| p scdbg |
 	p := Point new.
-	scdbg := SindarinDebugger debug: [ self helperMethod18: 1 with: p ].
+	scdbg := SindarinDebugger debug: [ self methodReturn: 1 with: p ].
 	scdbg step.
 	self assert: scdbg arguments size equals: 2.
 	self assert: (scdbg arguments at: 1) equals: 1.
@@ -955,11 +949,11 @@ SindarinDebuggerTest >> testStepToImplicitReturn [
 SindarinDebuggerTest >> testStepToMethodEntry [
 	| dbg |
 	self skipOnPharoCITestingEnvironment.
-	dbg := SindarinDebugger debug: [ self helperMethodReturn: true ].
+	dbg := SindarinDebugger debug: [ self methodReturn: true with: 42].
 	dbg stepToMethodEntry.
 		
 	self assert: dbg pc equals: dbg method initialPC.
-	self assert: dbg method identicalTo: (self class >> #helperMethodReturn:).	
+	self assert: dbg method identicalTo: (self class >> #methodReturn:with:).	
 	
 	
 ]
@@ -982,24 +976,25 @@ SindarinDebuggerTest >> testStepToNonLocalReturn [
 
 { #category : #'tests - step return' }
 SindarinDebuggerTest >> testStepToReturn [
+
 	| dbg |
 	self skipOnPharoCITestingEnvironment.
 	"First return node"
-	dbg := SindarinDebugger debug: [ self helperMethodReturn: true ].
+	dbg := SindarinDebugger debug: [
+		       self methodReturn: true with: 42 ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
-	
+
 	self assert: dbg node isReturn.
 	self assert: dbg topStack equals: 1.
-	
+
 	"Second return node"
-	dbg := SindarinDebugger debug: [ self helperMethodReturn: false ].
+	dbg := SindarinDebugger debug: [ self methodReturn: false with: 2 ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
-	
+
 	self assert: dbg node isReturn.
 	self assert: dbg topStack equals: 2
-	
 ]
 
 { #category : #'tests - step return' }

@@ -9,18 +9,6 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod21 [
-
-	self helperMethod22
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod22 [
-
-	^ Point new
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod24 [
 
 	| p |
@@ -916,16 +904,13 @@ SindarinDebuggerTest >> testStepOver [
 ]
 
 { #category : #tests }
-SindarinDebuggerTest >> testStepOverReturnNode [
+SindarinDebuggerTest >> testStepOverFinishedExecution [
 	|scdbg|
-	scdbg := SindarinDebugger debug: [ self helperMethod21 ].
-	scdbg step; step.
-	scdbg stepOver.
-	self shouldnt: [scdbg stepOver] raise: SteppingATerminatingProcess.
-	self assert: scdbg selector equals: #helperMethod21.
-	self assert: scdbg node isMethod.
-	self flag: 'Why is the following commented? Should it be tested somehow?'
-"	self assert: scdbg node isBlock."
+	scdbg := SindarinDebugger debug: [ self methodWithImplicitReturn ].
+	
+	"Stepping until the implicit return of #methodWithImplicitReturn"
+	scdbg stepOver: 3.		
+	self should: [scdbg stepOver] raise: DebuggedExecutionIsFinished
 ]
 
 { #category : #'tests - step return' }

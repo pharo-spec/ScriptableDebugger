@@ -9,14 +9,6 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod24 [
-
-	| p |
-	p := Point new.
-	p sign
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethodNonLocalReturn [
 	| block |
 	block := [ ^ 42 ].
@@ -363,8 +355,8 @@ SindarinDebuggerTest >> testMessageTo [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageToInstanceOf [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod24 ].
-	scdbg step; stepOver: 2. "Step to <p sign> call"
+	scdbg := SindarinDebugger debug: [ self methodWithImplicitReturn ].
+	scdbg step. "Step to <testObjectPoint sign> call"
 	self assert: (scdbg message: #sign toInstanceOf: Point).
 	self assert: (scdbg message: #sign toInstanceOf: Object).
 	self deny: (scdbg message: #sign toInstanceOf: Rectangle).

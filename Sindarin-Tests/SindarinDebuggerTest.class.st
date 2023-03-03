@@ -18,14 +18,6 @@ SindarinDebuggerTest >> helperMethod1 [
 ]
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod10 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod11 [
 
 	| a |
@@ -41,30 +33,6 @@ SindarinDebuggerTest >> helperMethod12 [
 	| i |
 	i := 5.
 	[ i = 0 ] whileFalse: [ i := i - 1 ]
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod13 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod14 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod15 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
 ]
 
 { #category : #helpers }
@@ -87,23 +55,7 @@ SindarinDebuggerTest >> helperMethod18: anArg with: anotherArg [
 ]
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod19 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod2 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod20 [
 
 	| a |
 	a := 5.
@@ -136,62 +88,6 @@ SindarinDebuggerTest >> helperMethod24 [
 	| p |
 	p := Point new.
 	p sign
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod3 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod4 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod5 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod6 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod7 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod8 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod9 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
 ]
 
 { #category : #helpers }
@@ -322,7 +218,7 @@ SindarinDebuggerTest >> testAssignmentValue [
 { #category : #tests }
 SindarinDebuggerTest >> testAssignmentVariableName [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod3 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	scdbg step.
 	self assert: scdbg assignmentVariableName equals: #a
 ]
@@ -396,7 +292,7 @@ SindarinDebuggerTest >> testContext [
 SindarinDebuggerTest >> testContinue [
 
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod19 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 
 	"We step to the first assignement"
 	scdbg step.
@@ -478,7 +374,7 @@ SindarinDebuggerTest >> testIsExecutionFinished [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageArguments [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod4 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	scdbg step; step.
 	self assert: scdbg messageArguments isEmpty.
 	scdbg stepOver.
@@ -489,7 +385,7 @@ SindarinDebuggerTest >> testMessageArguments [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageReceiver [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod5 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	self assert: scdbg messageReceiver equals: self.
 	scdbg step; step.
 	self assert: scdbg messageReceiver equals: '3'
@@ -498,8 +394,8 @@ SindarinDebuggerTest >> testMessageReceiver [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageSelector [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod6 ].
-	self assert: scdbg messageSelector equals: #helperMethod6.
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	self assert: scdbg messageSelector equals: #helperMethod2.
 	scdbg step; step.
 	self assert: scdbg messageSelector equals: #asInteger.
 	scdbg stepOver.
@@ -538,10 +434,10 @@ SindarinDebuggerTest >> testMessageToInstanceOf [
 { #category : #tests }
 SindarinDebuggerTest >> testMethod [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod7 ].	
-	self assert: scdbg method equals: [ self helperMethod7 ] method.
+	scdbg := SindarinDebugger debug: [ self helperMethod2  ].	
+	self assert: scdbg method equals: [ self helperMethod2 ] method.
 	scdbg step.
-	self assert: scdbg method equals: SindarinDebuggerTest>>#helperMethod7.
+	self assert: scdbg method equals: SindarinDebuggerTest>>#helperMethod2.
 	scdbg step; step.
 	self assert: scdbg method equals: String>>#asInteger
 ]
@@ -578,7 +474,7 @@ SindarinDebuggerTest >> testPc [
 { #category : #tests }
 SindarinDebuggerTest >> testReceiver [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod8 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	self assert: scdbg receiver equals: self.
 	scdbg step.
 	self assert: scdbg receiver equals: self.
@@ -589,10 +485,10 @@ SindarinDebuggerTest >> testReceiver [
 { #category : #tests }
 SindarinDebuggerTest >> testSelector [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod9 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	self assert: scdbg selector equals: #testSelector.
 	scdbg step.
-	self assert: scdbg selector equals: #helperMethod9.
+	self assert: scdbg selector equals: #helperMethod2.
 	scdbg step; step.
 	self assert: scdbg selector equals: #asInteger
 ]
@@ -928,7 +824,7 @@ SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 	self assert: (dbg temporaryNamed: #b) equals: valueOfBAfterSkipAndStep 
 ]
 
-{ #category : #helpers }
+{ #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturnIfAimedNodeCanStillBeExecuted [
 
 	| scdbg implicitReturnPc implicitReturnNode realExecPc realExecNode |
@@ -970,7 +866,7 @@ SindarinDebuggerTest >> testSkipUpToNodeStopsOnImplicitReturnIfAimedNodeCanStill
 	self assert: scdbg node identicalTo: implicitReturnNode
 ]
 
-{ #category : #helpers }
+{ #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNodeStopsOnReturnNodes [
 
 	| scdbg returnInBlock realExecNode |
@@ -1034,7 +930,7 @@ SindarinDebuggerTest >> testStack [
 { #category : #tests }
 SindarinDebuggerTest >> testStep [
 	| node scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod13 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	scdbg step.
 	node := scdbg node.
 	self assert: node isAssignment.
@@ -1048,7 +944,7 @@ SindarinDebuggerTest >> testStep [
 { #category : #tests }
 SindarinDebuggerTest >> testStepOver [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod14 ].
+	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
 	scdbg step. "Enters the call of helperMethod14. Current node should be: a:=5"
 	scdbg stepOver. "After this, current node should be: '3' asInteger"
 	scdbg stepOver. "After this, current node should be: Point x:5 y:'3' asInteger"
@@ -1192,7 +1088,7 @@ SindarinDebuggerTest >> testSteppingAnExecutionSignalingExceptions [
 { #category : #tests }
 SindarinDebuggerTest >> testTemporaryNamed [
 	| dbg |
-	dbg := SindarinDebugger debug: [ self helperMethod10 ].
+	dbg := SindarinDebugger debug: [ self helperMethod2 ].
 	dbg step.
 	self assert: (dbg temporaryNamed: #a) equals: nil.
 	dbg step.

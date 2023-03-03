@@ -21,7 +21,6 @@ Class {
 	#classTraits : 'TDebugger classTrait',
 	#instVars : [
 		'process',
-		'stepHooks',
 		'sindarinSession',
 		'blockToDebug'
 	],
@@ -73,13 +72,6 @@ SindarinDebugger class >> debugSession: aDebugSession [
 SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
 	sindarinSession activateEventTriggering.
 	self refreshAttachedGraphicalDebugger
-]
-
-{ #category : #'step hook' }
-SindarinDebugger >> addStepHook: aBlock [
-	"Adds aBlock to the list of step hooks. Step hooks are executed after each step of the execution"
-
-	stepHooks add: aBlock
 ]
 
 { #category : #stackAccessHelpers }
@@ -220,11 +212,6 @@ SindarinDebugger >> debugSession [
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
 	^ (#(#defaultAction #signal) includes: self selector ) and: [ self receiver isKindOf: Exception ]
-]
-
-{ #category : #initialization }
-SindarinDebugger >> initialize [
-	stepHooks := OrderedCollection new
 ]
 
 { #category : #private }
@@ -419,13 +406,6 @@ SindarinDebugger >> receiver [
 { #category : #'graphical debugger' }
 SindarinDebugger >> refreshAttachedGraphicalDebugger [
 	sindarinSession refreshAttachedDebugger
-]
-
-{ #category : #'step hook' }
-SindarinDebugger >> removeStepHook: aBlock [
-	"Remove aBlock from the list of step hooks"
-
-	stepHooks remove: aBlock
 ]
 
 { #category : #stackAccess }
@@ -673,8 +653,7 @@ SindarinDebugger >> step [
 
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
 	self signalExceptionIfDebuggedExecutionIsFinished.
-	self debugSession stepInto.
-	stepHooks do: [ :aBlock | aBlock value ]
+	self debugSession stepInto
 ]
 
 { #category : #'stepping - steps' }
@@ -728,8 +707,7 @@ SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
 
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	self debugSession stepThrough.
-	stepHooks do: [ :aBlock | aBlock value ]
+	self debugSession stepThrough
 ]
 
 { #category : #'stepping - steps' }

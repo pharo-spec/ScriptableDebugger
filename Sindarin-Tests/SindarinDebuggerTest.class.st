@@ -9,33 +9,6 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod1 [
-
-	| a |
-	a := 1.
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod11 [
-
-	| a |
-	a := 5.
-	self helperMethod12.
-	self helperMethod12.
-	^ 3
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod12 [
-
-	| i |
-	i := 5.
-	[ i = 0 ] whileFalse: [ i := i - 1 ]
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod16 [
 
 	^ 1 + 1
@@ -55,14 +28,6 @@ SindarinDebuggerTest >> helperMethod18: anArg with: anotherArg [
 ]
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethod2 [
-
-	| a |
-	a := 5.
-	^ Point x: 5 y: '3' asInteger
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> helperMethod21 [
 
 	self helperMethod22
@@ -72,14 +37,6 @@ SindarinDebuggerTest >> helperMethod21 [
 SindarinDebuggerTest >> helperMethod22 [
 
 	^ Point new
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethod23 [
-
-	testObjectPoint sign.
-	testObjectPoint extent: (Point x: 3 y: 4).
-	Point new
 ]
 
 { #category : #helpers }
@@ -159,6 +116,31 @@ SindarinDebuggerTest >> helperMethodWithSeveralInstructionsInBlock [
 	^ 42
 ]
 
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithImplicitReturn [
+
+	testObjectPoint sign.
+	testObjectPoint extent: (Point x: 3 y: 4).
+	Point new
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithOneAssignment [
+
+	| a |
+	a := 5.
+	^ Point x: 5 y: '3' asInteger
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithTwoAssignments [
+
+	| a |
+	a := 1.
+	a := 5.
+	^ Point x: 5 y: '3' asInteger
+]
+
 { #category : #running }
 SindarinDebuggerTest >> runCaseManaged [
 	^ self runCase
@@ -180,22 +162,6 @@ SindarinDebuggerTest >> tearDown [
 ]
 
 { #category : #tests }
-SindarinDebuggerTest >> testAddStepHook [
-	| stepCounter stepHook scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod11 ].
-	stepCounter := 0.
-	stepHook := [ stepCounter := stepCounter + 1 ].
-	scdbg addStepHook: stepHook.
-	scdbg step.
-	self assert: stepCounter equals: 1.
-	scdbg step; stepOver.
-	self assert: stepCounter equals: 21.
-	scdbg removeStepHook: stepHook.
-	scdbg stepOver.
-	self assert: stepCounter equals: 21
-]
-
-{ #category : #tests }
 SindarinDebuggerTest >> testArguments [
 	| p scdbg |
 	p := Point new.
@@ -210,7 +176,7 @@ SindarinDebuggerTest >> testArguments [
 { #category : #tests }
 SindarinDebuggerTest >> testAssignmentValue [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	scdbg step.
 	self assert: scdbg assignmentValue equals: 5
 ]
@@ -218,7 +184,7 @@ SindarinDebuggerTest >> testAssignmentValue [
 { #category : #tests }
 SindarinDebuggerTest >> testAssignmentVariableName [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	scdbg step.
 	self assert: scdbg assignmentVariableName equals: #a
 ]
@@ -292,7 +258,7 @@ SindarinDebuggerTest >> testContext [
 SindarinDebuggerTest >> testContinue [
 
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 
 	"We step to the first assignement"
 	scdbg step.
@@ -374,7 +340,7 @@ SindarinDebuggerTest >> testIsExecutionFinished [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageArguments [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	scdbg step; step.
 	self assert: scdbg messageArguments isEmpty.
 	scdbg stepOver.
@@ -385,7 +351,7 @@ SindarinDebuggerTest >> testMessageArguments [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageReceiver [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	self assert: scdbg messageReceiver equals: self.
 	scdbg step; step.
 	self assert: scdbg messageReceiver equals: '3'
@@ -394,8 +360,8 @@ SindarinDebuggerTest >> testMessageReceiver [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageSelector [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
-	self assert: scdbg messageSelector equals: #helperMethod2.
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
+	self assert: scdbg messageSelector equals: #methodWithOneAssignment.
 	scdbg step; step.
 	self assert: scdbg messageSelector equals: #asInteger.
 	scdbg stepOver.
@@ -405,7 +371,7 @@ SindarinDebuggerTest >> testMessageSelector [
 { #category : #tests }
 SindarinDebuggerTest >> testMessageTo [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod23 ].
+	scdbg := SindarinDebugger debug: [ self methodWithImplicitReturn ].
 	scdbg step.	"Step to <testObjectPoint sign.> call"
 	self assert: (scdbg message: #sign to: testObjectPoint).
 	scdbg
@@ -434,10 +400,10 @@ SindarinDebuggerTest >> testMessageToInstanceOf [
 { #category : #tests }
 SindarinDebuggerTest >> testMethod [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2  ].	
-	self assert: scdbg method equals: [ self helperMethod2 ] method.
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment  ].	
+	self assert: scdbg method equals: [ self methodWithOneAssignment ] method.
 	scdbg step.
-	self assert: scdbg method equals: SindarinDebuggerTest>>#helperMethod2.
+	self assert: scdbg method equals: SindarinDebuggerTest>>#methodWithOneAssignment.
 	scdbg step; step.
 	self assert: scdbg method equals: String>>#asInteger
 ]
@@ -445,10 +411,10 @@ SindarinDebuggerTest >> testMethod [
 { #category : #tests }
 SindarinDebuggerTest >> testNode [
 	| node scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	node := scdbg node.
 	self assert: node isMessage.
-	self assert: node selector equals: #helperMethod1.
+	self assert: node selector equals: #methodWithTwoAssignments.
 	scdbg step.
 	node := scdbg node.
 	self assert: node isAssignment.
@@ -474,7 +440,7 @@ SindarinDebuggerTest >> testPc [
 { #category : #tests }
 SindarinDebuggerTest >> testReceiver [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	self assert: scdbg receiver equals: self.
 	scdbg step.
 	self assert: scdbg receiver equals: self.
@@ -485,10 +451,10 @@ SindarinDebuggerTest >> testReceiver [
 { #category : #tests }
 SindarinDebuggerTest >> testSelector [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	self assert: scdbg selector equals: #testSelector.
 	scdbg step.
-	self assert: scdbg selector equals: #helperMethod2.
+	self assert: scdbg selector equals: #methodWithOneAssignment.
 	scdbg step; step.
 	self assert: scdbg selector equals: #asInteger
 ]
@@ -651,7 +617,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 	| dbg realExecPC realValueOfA targetExecNode realExecTopStack nodeAfterSkipThrough |
 	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.	
 	targetExecNode := dbg node.
 	realValueOfA := (dbg temporaryNamed: #a).	
@@ -661,7 +627,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 	realExecPC := dbg pc.
 	
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 	
 	dbg step; stepOver; skipThroughNode: targetExecNode.
 		
@@ -678,7 +644,7 @@ SindarinDebuggerTest >> testSkipToPC [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
 	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.
 	realExecPC := dbg pc.
 	realExecNode := dbg node.
@@ -686,7 +652,7 @@ SindarinDebuggerTest >> testSkipToPC [
 	realExecTopStack := dbg topStack.
 
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 
 	dbg step; stepOver; skipToPC: realExecPC. 
 	self assert: dbg pc equals: realExecPC.
@@ -740,7 +706,7 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
 	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.
 	realExecPC := dbg pc.
 	realExecNode := dbg node.
@@ -748,7 +714,7 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	realExecTopStack := dbg topStack.
 	
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 	
 	dbg step; stepOver; skipUpToNode: realExecNode. 
 	self assert: dbg pc equals: realExecPC.
@@ -930,7 +896,7 @@ SindarinDebuggerTest >> testStack [
 { #category : #tests }
 SindarinDebuggerTest >> testStep [
 	| node scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	scdbg step.
 	node := scdbg node.
 	self assert: node isAssignment.
@@ -944,7 +910,7 @@ SindarinDebuggerTest >> testStep [
 { #category : #tests }
 SindarinDebuggerTest >> testStepOver [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod2 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	scdbg step. "Enters the call of helperMethod14. Current node should be: a:=5"
 	scdbg stepOver. "After this, current node should be: '3' asInteger"
 	scdbg stepOver. "After this, current node should be: Point x:5 y:'3' asInteger"
@@ -969,7 +935,7 @@ SindarinDebuggerTest >> testStepOverReturnNode [
 SindarinDebuggerTest >> testStepToImplicitReturn [
 	| dbg |
 	self skipOnPharoCITestingEnvironment.
-	dbg := SindarinDebugger debug: [ self helperMethod23 ].
+	dbg := SindarinDebugger debug: [ self methodWithImplicitReturn ].
 	dbg stepToMethodEntry.
 	dbg stepToReturn.
 	
@@ -1088,7 +1054,7 @@ SindarinDebuggerTest >> testSteppingAnExecutionSignalingExceptions [
 { #category : #tests }
 SindarinDebuggerTest >> testTemporaryNamed [
 	| dbg |
-	dbg := SindarinDebugger debug: [ self helperMethod2 ].
+	dbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	dbg step.
 	self assert: (dbg temporaryNamed: #a) equals: nil.
 	dbg step.
@@ -1125,9 +1091,9 @@ SindarinDebuggerTest >> testskipUpToNodeSkipTargetNode [
 	| dbg returnNode |	
 	self skipOnPharoCITestingEnvironment.
 	dbg := SindarinDebugger
-		debug: [ self helperMethod1  ].
+		debug: [ self methodWithTwoAssignments  ].
 		
-	returnNode := (self class >> #helperMethod1) ast statements last.
+	returnNode := (self class >> #methodWithTwoAssignments) ast statements last.
 	dbg step; skipThroughNode: returnNode.
 	self assert: dbg node equals: returnNode.
 	self assert: dbg topStack equals: Point

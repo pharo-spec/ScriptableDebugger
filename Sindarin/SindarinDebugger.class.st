@@ -132,6 +132,13 @@ SindarinDebugger >> canStillExecute: aProgramNode [
 	^ rightContext pc < lastPcForNode
 ]
 
+{ #category : #cleaning }
+SindarinDebugger >> cleanStack [
+
+	[ self context stackPtr > self context numTemps ] whileTrue: [ 
+		self context pop ]
+]
+
 { #category : #stackAccess }
 SindarinDebugger >> context [
 	"Returns a reification of the current stack-frame."
@@ -208,6 +215,12 @@ SindarinDebugger >> debugSession [
 	^ sindarinSession debugSession
 ]
 
+{ #category : #accessing }
+SindarinDebugger >> firstPCOfStatement: aStatementNode [
+
+	^ self methodNode firstPCOfStatement: aStatementNode
+]
+
 { #category : #'execution predicates' }
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -247,6 +260,25 @@ SindarinDebugger >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ process isTerminated
+]
+
+{ #category : #'API - changes' }
+SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
+
+	"Moves to targetNode that must be in aBlockNode, which should be a recursive child"
+
+	| blockClosure newContext firstPCForNode |
+	"To jump into a block, we change pc to the block creation pc and we step it to get the block closure and create a new context for it. Then, we call moveToNode: recursively to go to the correct pc in the new context (or to create even more contexts if we want to enter embedded blocks)"
+	firstPCForNode := self methodNode firstPcForNode: aBlockNode.
+	self pc: firstPCForNode.
+	self stepBytecode.
+	blockClosure := self context top.
+	newContext := blockClosure asContextWithSender: self context.
+
+	"we need to change the suspended context and do the same in its debug session to see what we do in the debugger"
+	self currentProcess suspendedContext: newContext.
+	self debugSession suspendedContext: newContext.
+	^ self moveToNode: targetNode
 ]
 
 { #category : #stackAccessHelpers }
@@ -343,11 +375,45 @@ SindarinDebugger >> methodNode [
 	^ self method ast
 ]
 
+{ #category : #'API - changes' }
+SindarinDebugger >> moveToNode: aNode [
+
+	"Allows to jump to the first bytecode offset associated to aNode, as long as aNode is in the same lexical context as the suspended context"
+
+	| firstPCForNode |
+	firstPCForNode := self methodNode firstPcForNode: aNode.
+
+	firstPCForNode ifNil: [ "If a node does not have any associated pc and if it is not a child in the method node then, aNode may be identical to the method node or its body, in which case, we move to the endPC. Otherwise, we check if it is a child in the home context's method node. If this is the case, this means we want to exit a block context. Otherwise, aNode is not a child in the home context's method node"
+		(self methodNode parentOfIdenticalSubtree: aNode)
+			ifNil: [ 
+				(aNode == self methodNode or: [ aNode == self methodNode body ])
+					ifTrue: [ firstPCForNode := self method endPC ]
+					ifFalse: [ 
+						self context ~~ self context home
+							ifTrue: [ ^ self tryMoveToNodeInHomeContext: aNode ]
+							ifFalse: [ ^ NodeNotInASTError signal ] ] ]
+			ifNotNil: [ :parent | 
+				| nextNode |
+				"If a node does not have any associated pc but this node is a child in the method node then, we go to the next node that will be executed (so in pre-order) and that has an associated pc in this context."
+				nextNode := self nextExecutedNodeAfter: aNode.
+				firstPCForNode := self methodNode firstPcForNode: nextNode.
+				nextNode isBlock ifTrue: [ "If the node after aNode is a block node, then this means we want to enter a block." 
+					^ self jumpIntoBlock: nextNode toNode: aNode ] ] ].
+
+	self pc: firstPCForNode
+]
+
 { #category : #'accessing - bytes' }
 SindarinDebugger >> nextBytecode [
 
 	^ self currentBytecode detect: [ :each | 
 		  each offset = self context pc ]
+]
+
+{ #category : #'API - changes' }
+SindarinDebugger >> nextExecutedNodeAfter: aNode [
+
+	^ self methodNode nextExecutedNodeAfter: aNode
 ]
 
 { #category : #astAndAstMapping }
@@ -387,6 +453,31 @@ SindarinDebugger >> outerMostContextOf: aContext [
 { #category : #accessing }
 SindarinDebugger >> pc [
 	^ self context pc
+]
+
+{ #category : #accessing }
+SindarinDebugger >> pc: anInteger [
+
+	"Allows to move to the first PC associated to the node to which anInteger is associated. anInteger must be a valid pc in the suspended context"
+
+	| nextNode methodNode firstPCOfStatementNode |
+	"If aimedPC is outside the context PCs range, then an error is signaled"
+	(anInteger < self method initialPC or: [ 
+		 anInteger > self method endPC ]) ifTrue: [ 
+		^ NotValidPcError signal ].
+	methodNode := self methodNode.
+	nextNode := methodNode sourceNodeForPC: anInteger.
+	"If the aimed node is associated to the method node or its body, then we suppose that it is wanted and we'll get there directly"
+	(nextNode == methodNode or: [ nextNode == methodNode body ])
+		ifTrue: [ firstPCOfStatementNode := anInteger ]
+		ifFalse: [ "If not, we skip to the wanted node, from the first (recursive) pc of the first statement node. We don't skip from the method node initial pc, otherwise we would create again the temp variables and lose their values."
+			firstPCOfStatementNode := self firstPCOfStatement:
+				                          methodNode statements first.
+			self cleanStack ].
+	self context pc: firstPCOfStatementNode.
+	self debugSession stepToFirstInterestingBytecodeIn:
+		self debugSession interruptedProcess.
+	self skipUpToNode: nextNode
 ]
 
 { #category : #'stepping -  auto' }
@@ -489,21 +580,16 @@ SindarinDebugger >> sindarinSession: aSindarinDebugSession [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skip [
-	
-	| nextBytecode |
-	"If it is a message send or assignment, skips the execution of the current instruction, and puts nil on the execution stack."
-	self node isAssignment ifTrue: [ ^ self skipAssignmentNodeCompletely ].
-  self node isMessage ifTrue: [ ^ self skipMessageNode ].
-  self node isMethod ifTrue: [ ^ self step ].
-  self node isBlock ifTrue: [ self skipBlockNode ].
-	nextBytecode := self currentBytecode detect: [ :each | 
-		                each offset = self pc ].
-	(self node isReturn or: [ 
-		 nextBytecode bytes first between: 88 and: 94 ]) ifTrue: [ 
-		^ self skipReturnNode ].
-	self node isSequence ifTrue: [ ^ self step ].
 
-	self skipWith: nil
+	| instructionStream |
+	instructionStream := self context instructionStream.
+
+	"We need to treat jumps before messages because if it is associated to a message node, it would pop the arguments of the message, that aren't on the stack if they are jumps"
+	instructionStream willJump ifTrue: [ ^ self skipJump ].
+	"A return bytecode can be on any node so have to treat it here systematically"
+	instructionStream willReturn ifTrue: [ ^ self skipReturnNode ].
+
+	self node skipWithDebugger: self
 ]
 
 { #category : #'stepping -  skip' }
@@ -524,7 +610,7 @@ SindarinDebugger >> skipAssignmentNodeCompletely [
 	"Increase the pc to go over the assignment"
 	self context pc: self context pc + currentBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession stepToFirstInterestingBytecodeIn:
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
 
@@ -537,18 +623,37 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 	self step.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
 	self debugSession
-		stepToFirstInterestingBytecodeIn: self debugSession interruptedProcess
+		stepToFirstInterestingBytecodeWithJumpIn: self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipBlockNode [
 
 	| nextBytecode |
-	nextBytecode := self currentBytecode detect: [ :bytecode | bytecode offset = self pc ].
-	
+	nextBytecode := self currentBytecode detect: [ :bytecode | 
+		                bytecode offset = self pc ].
+
 	self context pc: self pc + nextBytecode bytes size.
-	
-	self context push: nil
+
+	self context push: nil.
+  
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
+]
+
+{ #category : #'stepping - skip' }
+SindarinDebugger >> skipJump [
+
+	| instructionStream nextBytecode |
+	instructionStream := self context instructionStream.
+	"If the next bytecode is a jumpTrue: or a jumpFalse: bytecode, then it expects one argument on the stack. As we skip the jump bytecode, we pop it."
+	(instructionStream willJumpIfFalse or: [ 
+		 instructionStream willJumpIfTrue ]) ifTrue: [ self context pop ].
+	nextBytecode := self currentBytecode detect: [ :each | 
+		                each offset = self pc ].
+	self context pc: self context pc + nextBytecode bytes size.
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping - skip' }
@@ -559,7 +664,7 @@ SindarinDebugger >> skipMessageNode [
 	"Increase the pc to go over the message send"
 	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession stepToFirstInterestingBytecodeIn:
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
 
@@ -574,7 +679,7 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 	"Increase the pc to go over the message send"
 	self context pc: self context pc + self nextBytecode bytes size.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession stepToFirstInterestingBytecodeIn:
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
 
@@ -645,6 +750,23 @@ SindarinDebugger >> stack [
 	"Returns a list of context objects representing the current call stack."
 
 	^ self debugSession stack
+]
+
+{ #category : #API }
+SindarinDebugger >> statementNodeContaining: aNode [
+
+	| method statementNode parentOfStatementNode |
+	method := self methodNode.
+	statementNode := aNode.
+	parentOfStatementNode := method parentOfIdenticalSubtree:
+		                         statementNode.
+	parentOfStatementNode
+		ifNil: [ ^ NodeNotInASTError signal ]
+		ifNotNil: [ 
+			[ parentOfStatementNode isSequence ] whileFalse: [ 
+				statementNode := parentOfStatementNode.
+				parentOfStatementNode := parentOfStatementNode parent ] ].
+	^ statementNode
 ]
 
 { #category : #'stepping - steps' }
@@ -756,4 +878,21 @@ SindarinDebugger >> terminate [
 { #category : #stackAccessHelpers }
 SindarinDebugger >> topStack [
 	^self context top
+]
+
+{ #category : #'API - changes' }
+SindarinDebugger >> tryMoveToNodeInHomeContext: aNode [
+
+	"Moves to node aNode if aNode is in the lexical context. Otherwise, the program state goes back to how it was before trying and signals an error as the node is not in AST"
+
+	| oldContext |
+	oldContext := self context.
+	self currentProcess suspendedContext: oldContext home.
+	self debugSession suspendedContext: oldContext home.
+	[ self moveToNode: aNode ]
+		on: NodeNotInASTError
+		do: [ 
+			self currentProcess suspendedContext: oldContext.
+			self debugSession suspendedContext: oldContext.
+			^ NodeNotInASTError signal ]
 ]

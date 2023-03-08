@@ -2,7 +2,6 @@ Class {
 	#name : #SindarinDebuggerTest,
 	#superclass : #TestCase,
 	#instVars : [
-		'breakpointsBeforeTest',
 		'testObjectPoint'
 	],
 	#category : #'Sindarin-Tests-Base'

@@ -240,6 +240,23 @@ SindarinDebuggerTest >> helperMethodWithBlockWithNoReturn [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithDoubleAssignment [
+
+	| b a |
+	a := b :=  1
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithEmbeddedBlock [
+
+	| a |
+	a := 1.
+	[ :each | a := a + each. [ a := a + 1 ]. a * 42 ].
+	a := a + 2.
+	^ a * 42
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
 
 	| a b block |
@@ -248,6 +265,36 @@ SindarinDebuggerTest >> helperMethodWithEvaluatedBlock [
 	block value.
 	^ 42
 	
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithIfTrueBlock [
+
+	| a |
+	a := 1.
+	a = 2 ifTrue: [ a := 3 ].
+	a := 4
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> helperMethodWithIfTrueIfFalse [
+
+	| a |
+	a := true.
+	a
+		ifFalse: [ a := 1 ]
+		ifTrue: [ a := 2 ].
+	a := 3
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> helperMethodWithNotEvaluatedBlock [
+
+	| a |
+	a := 1.
+	[ a := a + 1 ].
+	a := a + 2.
+	^ a * 42
 ]
 
 { #category : #helpers }
@@ -384,6 +431,156 @@ SindarinDebuggerTest >> testCanStillExecuteWhenAimedNodePcIsBeforeInAnyContext [
 		< (sdbg node methodNode lastPcForNode:
 				 aimedNodeOutsideContext).
 	self deny: (sdbg canStillExecute: aimedNodeOutsideContext)
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcAssociatedToMethodOrSequenceNodeKeepsStackAsItIs [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithDoubleAssignment ].
+
+	scdbg
+		step;
+		stepOver.
+	newNode := scdbg methodNode.
+	newPc := scdbg methodNode firstPcForNode: newNode.
+	expectedStackTop := scdbg topStack.
+
+	scdbg pc: newPc.
+
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcInTheMiddleOfStatementSkipsTheBeginningOfStatement [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver.
+	"pc of Point x: y:"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	
+	self assert: (scdbg temporaryNamed: #a) equals: 1.
+
+	scdbg pc: newPc.
+	"It should skip the assignment a:=5 AND skip the beginning of the statement ('3' asInteger)"
+
+	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self deny: scdbg topStack equals: expectedStackTop.
+	self assert: scdbg topStack equals: '3' "topStack is nil because the message send asInteger to the receiver '3' has been skipped"
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnStack [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+	scdbg
+		stepOver;
+		stepOver.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+
+	scdbg pc: newPc.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsGreaterThanEndPC [
+
+	| oldPC sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldPC := sdbg pc.
+	self
+		shouldnt: [ sdbg pc: sdbg method endPC ] raise: NotValidPcError;
+		deny: sdbg pc equals: oldPC.
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldPC := sdbg pc.
+	self
+		should: [ sdbg pc: sdbg method endPC + 1 ] raise: NotValidPcError;
+		assert: sdbg pc equals: oldPC
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsLowerThanInitialPC [
+
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver.
+	
+	self shouldnt: [ scdbg pc: scdbg method initialPC ] raise: NotValidPcError.
+	
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver.
+
+	self should: [ scdbg pc: scdbg method initialPC - 1 ] raise: NotValidPcError.
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testChangingPcToNonExistingBytecodeOffsetGoesToPreviousPcWithExistingBytecodeOffset [
+
+	| scdbg newPc newNode |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithDoubleAssignment ].
+
+	scdbg step.
+	"pc of b := 1 from `a:= b:= 1` This is associated to the pc of a storeIntoTemp bytecode, of length 2 bytes. So we add 1 to get a pc that is in the middle of the bytecode"
+	newNode := scdbg methodNode statements first value.
+	newPc := (scdbg methodNode firstPcForNode: newNode) + 1.
+
+	self assert: (scdbg methodNode sourceNodeForPC: newPc) identicalTo: newNode.
+	
+	scdbg pc: newPc.
+
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc - 1.
 ]
 
 { #category : #tests }
@@ -554,6 +751,581 @@ SindarinDebuggerTest >> testMethod [
 	self assert: scdbg method equals: SindarinDebuggerTest>>#helperMethod7.
 	scdbg step; step.
 	self assert: scdbg method equals: String>>#asInteger
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeInTheMiddleOfStatementSkipsTheBeginningOfStatement [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver.
+	"pc of Point x: y:"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	
+	self assert: (scdbg temporaryNamed: #a) equals: 1.
+
+	scdbg moveToNode: newNode.
+	"It should skip the assignment a:=5 AND skip the beginning of the statement ('3' asInteger)"
+
+	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self deny: scdbg topStack equals: expectedStackTop.
+	self assert: scdbg topStack equals: '3' "topStack is nil because the message send asInteger to the receiver '3' has been skipped"
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeKeepsSameStateAndPushesCorrectElementsOnStack [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg node.
+	newPc := scdbg pc.
+	expectedStackTop := scdbg topStack.
+	scdbg
+		stepOver;
+		stepOver.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+
+	scdbg moveToNode: newNode.
+
+	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNode [
+
+	| scdbg newPc newNode expectedStackTop |
+	scdbg := SindarinDebugger debug: [ 
+		         self helperMethodWithDoubleAssignment ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg methodNode.
+	newPc := scdbg methodNode firstPcForNode: scdbg methodNode.
+	expectedStackTop := scdbg topStack.
+
+	scdbg moveToNode: newNode.
+
+	self assert: scdbg node equals: newNode.
+	self assert: scdbg pc equals: newPc.
+	self assert: scdbg topStack equals: expectedStackTop
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNodeThatDoesNotHaveAssociatedPC [
+
+	| scdbg newPc newNode realPC realNode |
+	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+
+	scdbg
+		step;
+		stepOver.
+	"pc of a := 5"
+	newNode := scdbg methodNode.
+	newPc := scdbg methodNode firstPcForNode: scdbg methodNode.
+
+
+	self assert: newPc isNil.
+
+	scdbg moveToNode: newNode.
+
+	realPC := scdbg pc.
+	realNode := scdbg node.
+
+	self assert: scdbg pc equals: scdbg method endPC.
+	self
+		assert: scdbg node
+		identicalTo: (scdbg methodNode sourceNodeForPC: scdbg pc)
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeInMethod [
+
+	| oldNode sdbg aimedNode |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver.
+	aimedNode := sdbg node.
+	sdbg
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		shouldnt: [ sdbg moveToNode: aimedNode ] raise: NodeNotInASTError;
+		assert: sdbg node equals: aimedNode.
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		should: [ sdbg moveToNode: (RBLiteralValueNode value: 1) ]
+		raise: NodeNotInASTError;
+		assert: sdbg node equals: oldNode
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotInMethod [
+
+	| oldNode sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		shouldnt: [ sdbg moveToNode: sdbg methodNode statements last ]
+		raise: NodeNotInASTError;
+		deny: sdbg node equals: oldNode.
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+	oldNode := sdbg node.
+	self
+		should: [ sdbg moveToNode: (RBLiteralValueNode value: 2) ]
+		raise: NodeNotInASTError;
+		assert: sdbg node equals: oldNode
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedBlockToOuterContext [
+
+	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithNotEvaluatedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+
+	"stops on block creation"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+	methodNode := sdbg methodNode.
+
+	"We want to move to node 'a + 1' in [a := a +1]"
+	aimedNode := sdbg methodNode statements second statements first value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg context home identicalTo: oldContext.
+	self
+		assert: sdbg methodNode
+		identicalTo: methodNode statements second.
+
+	sdbg stepOver.
+
+	"2 is going to be assigned to a"
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: sdbg topStack equals: 2.
+
+	sdbg moveToNode: methodNode statements third.
+	"We jump to node outside of block"
+	self assert: sdbg methodNode identicalTo: methodNode.
+	self assert: sdbg node identicalTo: methodNode statements third.
+	"We went back to the home context"
+	self assert: sdbg context identicalTo: oldContext.
+	"2 has not been assigned to a"
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: sdbg topStack equals: 1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToHomeContext [
+
+	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithEmbeddedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+
+	"stops on block creation"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+	methodNode := sdbg methodNode.
+
+	"We want to move to node 'a + 1' in [a := a +1]"
+	aimedNode := sdbg methodNode statements second statements second statements first value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg context home identicalTo: oldContext.
+	self
+		assert: sdbg methodNode
+		identicalTo: methodNode statements second statements second.
+
+	sdbg stepOver.
+
+	"2 is going to be assigned to a"
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: sdbg topStack equals: 2.
+
+	sdbg moveToNode: methodNode statements third.
+	"We jump to node in home context of embedded block"
+	self assert: sdbg methodNode identicalTo: methodNode.
+	self assert: sdbg node identicalTo: methodNode statements third.
+	"We went back to the home context"
+	self assert: sdbg context identicalTo: oldContext.
+	"2 has not been assigned to a"
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: sdbg topStack equals: 1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatIsNotInHomeContext [
+
+	| oldNode oldPC sdbg aimedNode oldContext aimedPC methodNode |
+	sdbg := SindarinDebugger debug: [ self helperMethodWithEmbeddedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver.
+
+	"stops on block creation"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+	methodNode := sdbg methodNode.
+
+	"We want to move to node 'a + 1' in [a := a +1]"
+	aimedNode := sdbg methodNode statements second statements second
+		             statements first value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg context home identicalTo: oldContext.
+	self
+		assert: sdbg methodNode
+		identicalTo: methodNode statements second statements second.
+
+	sdbg stepOver.
+
+	"2 is going to be assigned to a"
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: sdbg topStack equals: 2.
+
+	oldNode := sdbg node.
+	oldPC := sdbg pc.
+	oldContext := sdbg context.
+
+	self
+		should: [ sdbg moveToNode: (RBLiteralValueNode value: 1) ]
+		raise: NodeNotInASTError.
+	"We jump to node in home context of embedded block"
+	self assert: sdbg node identicalTo: oldNode.
+	"We went back to the home context"
+	self assert: sdbg context identicalTo: oldContext.
+	"2 has not been assigned to a"
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: sdbg topStack equals: 2
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockHasBeenCreated [
+
+	| oldNode sdbg aimedNode oldContext aimedPC |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithNotEvaluatedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver.
+
+	sdbg moveToNode: sdbg methodNode statements first.
+
+	"It is going to execute the comparison a := 1"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+
+	"We want to enter the block, to get to execute a + 1 in the block"
+	aimedNode := sdbg methodNode statements second body statements first
+		             value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg context sender identicalTo: oldContext.
+
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
+	self assert: sdbg node identicalTo: sdbg methodNode statements third value.
+	self assert: sdbg context identicalTo: oldContext.
+	self assert: sdbg topStack equals: 2
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockHasBeenCreatedBackward [
+
+	| oldNode sdbg aimedNode oldContext aimedPC |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithNotEvaluatedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver;
+		stepOver;
+		stepOver.
+
+	"It is going to execute a := a + 2"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+
+	"We want to enter the block, to get to execute a + 1 in the block"
+	aimedNode := sdbg methodNode statements second body statements first
+		             value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg context sender identicalTo: oldContext.
+
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
+	self assert: sdbg node identicalTo: oldNode value.
+	self assert: sdbg context identicalTo: oldContext.
+	self assert: sdbg topStack equals: 2
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
+
+	| oldNode sdbg aimedNode oldContext aimedPC |
+	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueBlock ].
+	sdbg
+		step;
+		stepOver.
+
+	"It is going to execute the comparison a = 2"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+
+	"We want to enter the block, to get to execute a:=3"
+	aimedNode := sdbg methodNode statements second arguments first body
+		             statements first.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	self assert: aimedPC isNotNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg pc identicalTo: aimedPC.
+	self assert: sdbg context identicalTo: oldContext.
+
+	sdbg stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 3.
+
+	sdbg stepOver.
+	"When you perform a stepOver, you quit the block and continue just after the ifTrue: message"
+	self assert: (sdbg temporaryNamed: #a) equals: 4
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableExecutesAssociatedBytecodesBecauseRelatedToStack [
+
+	| oldNode sdbg aimedNode siblingsAfterAimedNode indexOfAimedNode realNode indexOfRealNode |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step.
+	oldNode := sdbg node.
+	"This is the literal variable Point from `Point x: 5 y: '3' asInteger"
+	aimedNode := sdbg methodNode statements last value receiver.
+	indexOfAimedNode := sdbg methodNode allChildrenPostOrder identityIndexOf: aimedNode.
+	siblingsAfterAimedNode := sdbg methodNode allChildrenPostOrder
+		                          withIndexSelect: [ :value :index | 
+		                          index > indexOfAimedNode ].
+
+	self deny: (sdbg methodNode pcsForNode: aimedNode) isEmpty.
+	self assert: aimedNode isVariable.
+
+	sdbg moveToNode: aimedNode.
+
+	realNode := sdbg node.
+	indexOfRealNode := siblingsAfterAimedNode indexOf: realNode.
+
+	self deny: realNode identicalTo: aimedNode.
+	siblingsAfterAimedNode
+		from: 1
+		to: indexOfRealNode - 1
+		do: [ :each | 
+		self assert: (each isVariable or: [ each isLiteralNode ]) ].
+
+	self deny: (realNode isLiteralNode or: [ realNode isVariable ])
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableThatHasNoAssociatedBytecodesMovesToNextNodeThatIsNotLiteralNorVariableThatHasAnAssociatedPC [
+
+	| oldNode sdbg aimedNode siblingsAfterAimedNode indexOfAimedNode realNode indexOfRealNode |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithDoubleAssignment ].
+	sdbg step.
+	oldNode := sdbg node.
+	"This is the variable node b from `a:= b:= 1`"
+	aimedNode := sdbg methodNode statements first value variable.
+	indexOfAimedNode := sdbg methodNode allChildrenPostOrder identityIndexOf:
+		                    aimedNode.
+	siblingsAfterAimedNode := sdbg methodNode allChildrenPostOrder 
+		                          withIndexSelect: [ :value :index | 
+		                          index > indexOfAimedNode ].
+
+	self assert: (sdbg methodNode pcsForNode: aimedNode) isEmpty.
+
+	sdbg moveToNode: aimedNode.
+
+	realNode := sdbg node.
+	indexOfRealNode := siblingsAfterAimedNode identityIndexOf: realNode.
+
+	self deny: realNode identicalTo: aimedNode.
+	siblingsAfterAimedNode
+		from: 1
+		to: indexOfRealNode - 1
+		do: [ :each | 
+			self assert: (each isVariable or: [ 
+					 each isLiteralNode or: [ 
+						 (sdbg methodNode pcsForNode: each) isEmpty ] ]) ].
+
+	" Why doesn't it work ??
+	self deny: (realNode isLiteralNode or: [   realNode isVariable or: [   (sdbg methodNode pcsForNode: realNode) isEmpty  ] ]) "
+	
+	self
+		deny: realNode isLiteralNode;
+		deny: realNode isVariable;
+		deny: (sdbg methodNode pcsForNode: realNode) isEmpty
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsNonInlinedAndEmbeddedInNonInlinedBlock [
+
+	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
+	sdbg := SindarinDebugger debug: [ 
+		        self helperMethodWithEmbeddedBlock ].
+	sdbg
+		step;
+		stepOver;
+		stepOver. 
+		
+	"stops on outer block creation"
+	oldNode := sdbg node.
+	oldContext := sdbg context.
+	methodNode := sdbg methodNode.
+	
+	"We want to move to node 'a + 1' in [a := a +1] (embedded block)"
+	aimedNode := sdbg methodNode statements second statements second statements first value.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+	
+	self assert: aimedPC isNil.
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	sdbg moveToNode: aimedNode.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 1.
+
+	self assert: sdbg node identicalTo: aimedNode.
+	self assert: sdbg context home identicalTo: oldContext.
+	self assert: sdbg methodNode identicalTo: methodNode statements second statements second.
+
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform a stepOver, you quit the block and continue after the embedded block creation in the embedding block context"
+	self assert: sdbg methodNode identicalTo: methodNode statements second.
+	self assert: sdbg node identicalTo: methodNode statements second statements third.
+	self assert: sdbg context sender identicalTo: oldContext.
+	
+	sdbg
+		stepOver;
+		stepOver;
+		stepOver.
+		
+	self assert: (sdbg temporaryNamed: #a) equals: 2.
+
+	"When you perform stepOver again, you quit the embedding block and continue after the embedding block creation in the old context"
+	self assert: sdbg methodNode identicalTo: methodNode.
+	self assert: sdbg node identicalTo: sdbg methodNode statements third.
+	self assert: sdbg context identicalTo: oldContext.
 ]
 
 { #category : #tests }
@@ -885,6 +1657,59 @@ SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
 	self assert: sdbg pc equals: pcBeforeSkip.
 ]
 
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipUpToIgnoresJumps [
+
+	| sdbg aimedNode aimedPC a |
+	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueIfFalse ].
+
+	sdbg step.
+
+	aimedNode := sdbg methodNode statements second arguments first
+		             statements first.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	a := sdbg temporaryNamed: #a.
+
+	self assert: a isNil.
+
+	sdbg skipUpToNode: aimedNode.
+
+	self
+		assert: a isNil;
+		assert: sdbg node identicalTo: aimedNode;
+		assert: sdbg pc equals: aimedPC.
+
+	aimedNode := sdbg methodNode statements second arguments second
+		             statements first.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	a := sdbg temporaryNamed: #a.
+
+	self assert: a isNil.
+
+	sdbg skipUpToNode: aimedNode .
+
+	self
+		assert: a isNil;
+		assert: sdbg node identicalTo: aimedNode;
+		assert: sdbg pc equals: aimedPC.
+
+	aimedNode := sdbg methodNode statements third.
+	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
+
+	a := sdbg temporaryNamed: #a.
+
+	self assert: a isNil.
+
+	sdbg skipUpToNode: aimedNode.
+
+	self
+		assert: a isNil;
+		assert: sdbg node identicalTo: aimedNode;
+		assert: sdbg pc equals: aimedPC
+]
+
 { #category : #'tests - skipping' }
 SindarinDebuggerTest >> testSkipUpToNode [
 	| dbg realExecPC realValueOfA realExecNode realExecTopStack |
@@ -1075,6 +1900,41 @@ SindarinDebuggerTest >> testStack [
 		stepOver.
 	self assert: scdbg stack first equals: context2.
 	self assert: (scdbg stack at: 2) equals: context1
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testStatementNodeContaining [
+
+	| sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step; stepOver; stepOver; stepOver. "pc of Point x: y:"
+	
+	self assert: (sdbg statementNodeContaining: sdbg node) identicalTo: sdbg methodNode statements last
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testStatementNodeContainingReturnsStatementNodeThatContainsTheIdenticalSubtree [
+
+	| sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step.
+
+	"1 is in the tree but it should return its parent only if we provide the exact literal node"
+	self
+		should: [ sdbg statementNodeContaining: (RBLiteralNode value: 1) ]
+		raise: NodeNotInASTError
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testStatementNodeContainingWhenNodeIsNotInAST [
+
+	| sdbg |
+	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg step.
+
+	self
+		should: [ sdbg statementNodeContaining: (RBLiteralNode value: 2) ]
+		raise: NodeNotInASTError
 ]
 
 { #category : #tests }

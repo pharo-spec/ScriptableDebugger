@@ -9,53 +9,6 @@ Class {
 }
 
 { #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithDoubleAssignment [
-
-	| b a |
-	a := b :=  1
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithEmbeddedBlock [
-
-	| a |
-	a := 1.
-	[ :each | a := a + each. [ a := a + 1 ]. a * 42 ].
-	a := a + 2.
-	^ a * 42
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithIfTrueBlock [
-
-	| a |
-	a := 1.
-	a = 2 ifTrue: [ a := 3 ].
-	a := 4
-]
-
-{ #category : #tests }
-SindarinDebuggerTest >> helperMethodWithIfTrueIfFalse [
-
-	| a |
-	a := true.
-	a
-		ifFalse: [ a := 1 ]
-		ifTrue: [ a := 2 ].
-	a := 3
-]
-
-{ #category : #helpers }
-SindarinDebuggerTest >> helperMethodWithNotEvaluatedBlock [
-
-	| a |
-	a := 1.
-	[ a := a + 1 ].
-	a := a + 2.
-	^ a * 42
-]
-
-{ #category : #helpers }
 SindarinDebuggerTest >> methodNonLocalReturn [
 	| block |
 	block := [ ^ 42 ].
@@ -107,6 +60,23 @@ SindarinDebuggerTest >> methodWithContextPassedToBlockParameter: storeContextBlo
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> methodWithDoubleAssignment [
+
+	| b a |
+	a := b :=  1
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithEmbeddedBlock [
+
+	| a |
+	a := 1.
+	[ :each | a := a + each. [ a := a + 1 ]. a * 42 ].
+	a := a + 2.
+	^ a * 42
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> methodWithEvaluatedBlock [
 
 	| a b block |
@@ -118,11 +88,41 @@ SindarinDebuggerTest >> methodWithEvaluatedBlock [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> methodWithIfTrueBlock [
+
+	| a |
+	a := 1.
+	a = 2 ifTrue: [ a := 3 ].
+	a := 4
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> methodWithIfTrueIfFalse [
+
+	| a |
+	a := true.
+	a
+		ifFalse: [ a := 1 ]
+		ifTrue: [ a := 2 ].
+	a := 3
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> methodWithImplicitReturn [
 
 	testObjectPoint sign.
 	testObjectPoint extent: (Point x: 3 y: 4).
 	Point new
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> methodWithNotEvaluatedBlock [
+
+	| a |
+	a := 1.
+	[ a := a + 1 ].
+	a := a + 2.
+	^ a * 42
 ]
 
 { #category : #helpers }
@@ -264,7 +264,7 @@ SindarinDebuggerTest >> testChangingPcAssociatedToMethodOrSequenceNodeKeepsStack
 
 	| scdbg newPc newNode expectedStackTop |
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithDoubleAssignment ].
+		         self methodWithDoubleAssignment ].
 
 	scdbg
 		step;
@@ -284,7 +284,7 @@ SindarinDebuggerTest >> testChangingPcAssociatedToMethodOrSequenceNodeKeepsStack
 SindarinDebuggerTest >> testChangingPcInTheMiddleOfStatementSkipsTheBeginningOfStatement [
 
 	| scdbg newPc newNode expectedStackTop |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
@@ -296,13 +296,13 @@ SindarinDebuggerTest >> testChangingPcInTheMiddleOfStatementSkipsTheBeginningOfS
 	newPc := scdbg pc.
 	expectedStackTop := scdbg topStack.
 
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
 		stepOver.
 	"pc of a := 5"
-	
+
 	self assert: (scdbg temporaryNamed: #a) equals: 1.
 
 	scdbg pc: newPc.
@@ -319,7 +319,7 @@ SindarinDebuggerTest >> testChangingPcInTheMiddleOfStatementSkipsTheBeginningOfS
 SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnStack [
 
 	| scdbg newPc newNode expectedStackTop |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
@@ -394,7 +394,7 @@ SindarinDebuggerTest >> testChangingPcToNonExistingBytecodeOffsetGoesToPreviousP
 
 	| scdbg newPc newNode |
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithDoubleAssignment ].
+		         self methodWithDoubleAssignment ].
 
 	scdbg step.
 	"pc of b := 1 from `a:= b:= 1` This is associated to the pc of a storeIntoTemp bytecode, of length 2 bytes. So we add 1 to get a pc that is in the middle of the bytecode"
@@ -575,7 +575,7 @@ SindarinDebuggerTest >> testMethod [
 SindarinDebuggerTest >> testMoveToNodeInTheMiddleOfStatementSkipsTheBeginningOfStatement [
 
 	| scdbg newPc newNode expectedStackTop |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
@@ -587,13 +587,13 @@ SindarinDebuggerTest >> testMoveToNodeInTheMiddleOfStatementSkipsTheBeginningOfS
 	newPc := scdbg pc.
 	expectedStackTop := scdbg topStack.
 
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
 		stepOver.
 	"pc of a := 5"
-	
+
 	self assert: (scdbg temporaryNamed: #a) equals: 1.
 
 	scdbg moveToNode: newNode.
@@ -610,7 +610,7 @@ SindarinDebuggerTest >> testMoveToNodeInTheMiddleOfStatementSkipsTheBeginningOfS
 SindarinDebuggerTest >> testMoveToNodeKeepsSameStateAndPushesCorrectElementsOnStack [
 
 	| scdbg newPc newNode expectedStackTop |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
@@ -638,7 +638,7 @@ SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNode [
 
 	| scdbg newPc newNode expectedStackTop |
 	scdbg := SindarinDebugger debug: [ 
-		         self helperMethodWithDoubleAssignment ].
+		         self methodWithDoubleAssignment ].
 
 	scdbg
 		step;
@@ -741,7 +741,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedBlockToOuterContext [
 
 	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithNotEvaluatedBlock ].
+		        self methodWithNotEvaluatedBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -790,7 +790,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToHomeConte
 
 	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithEmbeddedBlock ].
+		        self methodWithEmbeddedBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -838,7 +838,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToHomeConte
 SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatIsNotInHomeContext [
 
 	| oldNode oldPC sdbg aimedNode oldContext aimedPC methodNode |
-	sdbg := SindarinDebugger debug: [ self helperMethodWithEmbeddedBlock ].
+	sdbg := SindarinDebugger debug: [ self methodWithEmbeddedBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -893,7 +893,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 
 	| oldNode sdbg aimedNode oldContext aimedPC |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithNotEvaluatedBlock ].
+		        self methodWithNotEvaluatedBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -939,7 +939,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 
 	| oldNode sdbg aimedNode oldContext aimedPC |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithNotEvaluatedBlock ].
+		        self methodWithNotEvaluatedBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -983,7 +983,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
 
 	| oldNode sdbg aimedNode oldContext aimedPC |
-	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueBlock ].
+	sdbg := SindarinDebugger debug: [ self methodWithIfTrueBlock ].
 	sdbg
 		step;
 		stepOver.
@@ -1021,7 +1021,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
 SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableExecutesAssociatedBytecodesBecauseRelatedToStack [
 
 	| oldNode sdbg aimedNode siblingsAfterAimedNode indexOfAimedNode realNode indexOfRealNode |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg step.
 	oldNode := sdbg node.
 	"This is the literal variable Point from `Point x: 5 y: '3' asInteger"
@@ -1054,7 +1054,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsLiteralOrVariableThatHasNoAssoci
 
 	| oldNode sdbg aimedNode siblingsAfterAimedNode indexOfAimedNode realNode indexOfRealNode |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithDoubleAssignment ].
+		        self methodWithDoubleAssignment ].
 	sdbg step.
 	oldNode := sdbg node.
 	"This is the variable node b from `a:= b:= 1`"
@@ -1095,7 +1095,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsNonInlinedAndEmbeddedInNonInline
 
 	| oldNode sdbg aimedNode oldContext aimedPC methodNode |
 	sdbg := SindarinDebugger debug: [ 
-		        self helperMethodWithEmbeddedBlock ].
+		        self methodWithEmbeddedBlock ].
 	sdbg
 		step;
 		stepOver;
@@ -1443,7 +1443,7 @@ SindarinDebuggerTest >> testSkipToPcDoesNotLoopWhenAimedPcIsBeforeCurrentPc [
 SindarinDebuggerTest >> testSkipUpToIgnoresJumps [
 
 	| sdbg aimedNode aimedPC a |
-	sdbg := SindarinDebugger debug: [ self helperMethodWithIfTrueIfFalse ].
+	sdbg := SindarinDebugger debug: [ self methodWithIfTrueIfFalse ].
 
 	sdbg step.
 
@@ -1698,7 +1698,7 @@ SindarinDebuggerTest >> testStack [
 SindarinDebuggerTest >> testStatementNodeContaining [
 
 	| sdbg |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg step; stepOver; stepOver; stepOver. "pc of Point x: y:"
 	
 	self assert: (sdbg statementNodeContaining: sdbg node) identicalTo: sdbg methodNode statements last

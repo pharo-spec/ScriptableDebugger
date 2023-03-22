@@ -302,12 +302,12 @@ SindarinDebuggerTest >> testChangingPcInTheMiddleOfStatementSkipsTheBeginningOfS
 		stepOver.
 	"pc of a := 5"
 
-	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: (scdbg readVariableNamed: #a) equals: 1.
 
 	scdbg pc: newPc.
 	"It should skip the assignment a:=5 AND skip the beginning of the statement ('3' asInteger)"
 
-	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: (scdbg readVariableNamed: #a) equals: 1.
 	self assert: scdbg node equals: newNode.
 	self assert: scdbg pc equals: newPc.
 	self deny: scdbg topStack equals: expectedStackTop.
@@ -331,11 +331,11 @@ SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnSt
 		stepOver;
 		stepOver.
 
-	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: (scdbg readVariableNamed: #a) equals: 5.
 
 	scdbg pc: newPc.
 
-	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: (scdbg readVariableNamed: #a) equals: 5.
 	self assert: scdbg node equals: newNode.
 	self assert: scdbg pc equals: newPc.
 	self assert: scdbg topStack equals: expectedStackTop
@@ -593,12 +593,12 @@ SindarinDebuggerTest >> testMoveToNodeInTheMiddleOfStatementSkipsTheBeginningOfS
 		stepOver.
 	"pc of a := 5"
 
-	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: (scdbg readVariableNamed: #a) equals: 1.
 
 	scdbg moveToNode: newNode.
 	"It should skip the assignment a:=5 AND skip the beginning of the statement ('3' asInteger)"
 
-	self assert: (scdbg temporaryNamed: #a) equals: 1.
+	self assert: (scdbg readVariableNamed: #a) equals: 1.
 	self assert: scdbg node equals: newNode.
 	self assert: scdbg pc equals: newPc.
 	self deny: scdbg topStack equals: expectedStackTop.
@@ -622,11 +622,11 @@ SindarinDebuggerTest >> testMoveToNodeKeepsSameStateAndPushesCorrectElementsOnSt
 		stepOver;
 		stepOver.
 
-	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: (scdbg readVariableNamed: #a) equals: 5.
 
 	scdbg moveToNode: newNode.
 
-	self assert: (scdbg temporaryNamed: #a) equals: 5.
+	self assert: (scdbg readVariableNamed: #a) equals: 5.
 	self assert: scdbg node equals: newNode.
 	self assert: scdbg pc equals: newPc.
 	self assert: scdbg topStack equals: expectedStackTop
@@ -756,11 +756,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedBlockToOuterContext [
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg context home identicalTo: oldContext.
 	self
@@ -770,7 +770,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedBlockToOuterContext [
 	sdbg stepOver.
 
 	"2 is going to be assigned to a"
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 2.
 
 	sdbg moveToNode: methodNode statements third.
@@ -780,7 +780,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedBlockToOuterContext [
 	"We went back to the home context"
 	self assert: sdbg context identicalTo: oldContext.
 	"2 has not been assigned to a"
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 1
 ]
 
@@ -805,11 +805,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToHomeConte
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg context home identicalTo: oldContext.
 	self
@@ -819,7 +819,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToHomeConte
 	sdbg stepOver.
 
 	"2 is going to be assigned to a"
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 2.
 
 	sdbg moveToNode: methodNode statements third.
@@ -829,7 +829,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToHomeConte
 	"We went back to the home context"
 	self assert: sdbg context identicalTo: oldContext.
 	"2 has not been assigned to a"
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 1
 ]
 
@@ -854,11 +854,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatI
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg context home identicalTo: oldContext.
 	self
@@ -868,7 +868,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatI
 	sdbg stepOver.
 
 	"2 is going to be assigned to a"
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 2.
 
 	oldNode := sdbg node.
@@ -883,7 +883,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatI
 	"We went back to the home context"
 	self assert: sdbg context identicalTo: oldContext.
 	"2 has not been assigned to a"
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 2
 ]
 
@@ -911,11 +911,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg node identicalTo: aimedNode.
 	self assert: sdbg context sender identicalTo: oldContext.
@@ -925,7 +925,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 		stepOver;
 		stepOver.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 2.
+	self assert: (sdbg readVariableNamed: #a) equals: 2.
 
 	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
 	self assert: sdbg node identicalTo: sdbg methodNode statements third value.
@@ -956,11 +956,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg node identicalTo: aimedNode.
 	self assert: sdbg context sender identicalTo: oldContext.
@@ -970,7 +970,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBloc
 		stepOver;
 		stepOver.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 2.
+	self assert: (sdbg readVariableNamed: #a) equals: 2.
 
 	"When you perform a stepOver, you quit the block and continue right where you were before moving to caret"
 	self assert: sdbg node identicalTo: oldNode value.
@@ -997,11 +997,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
 	self assert: aimedPC isNotNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg node identicalTo: aimedNode.
 	self assert: sdbg pc identicalTo: aimedPC.
@@ -1009,11 +1009,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
 
 	sdbg stepOver.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 3.
+	self assert: (sdbg readVariableNamed: #a) equals: 3.
 
 	sdbg stepOver.
 	"When you perform a stepOver, you quit the block and continue just after the ifTrue: message"
-	self assert: (sdbg temporaryNamed: #a) equals: 4
+	self assert: (sdbg readVariableNamed: #a) equals: 4
 ]
 
 { #category : #tests }
@@ -1110,11 +1110,11 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsNonInlinedAndEmbeddedInNonInline
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 	
 	self assert: aimedPC isNil.
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	sdbg moveToNode: aimedNode.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 1.
+	self assert: (sdbg readVariableNamed: #a) equals: 1.
 
 	self assert: sdbg node identicalTo: aimedNode.
 	self assert: sdbg context home identicalTo: oldContext.
@@ -1125,7 +1125,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsNonInlinedAndEmbeddedInNonInline
 		stepOver;
 		stepOver.
 
-	self assert: (sdbg temporaryNamed: #a) equals: 2.
+	self assert: (sdbg readVariableNamed: #a) equals: 2.
 
 	"When you perform a stepOver, you quit the block and continue after the embedded block creation in the embedding block context"
 	self assert: sdbg methodNode identicalTo: methodNode statements second.
@@ -1137,7 +1137,7 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsNonInlinedAndEmbeddedInNonInline
 		stepOver;
 		stepOver.
 		
-	self assert: (sdbg temporaryNamed: #a) equals: 2.
+	self assert: (sdbg readVariableNamed: #a) equals: 2.
 
 	"When you perform stepOver again, you quit the embedding block and continue after the embedding block creation in the old context"
 	self assert: sdbg methodNode identicalTo: methodNode.
@@ -1357,7 +1357,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 		debug: [ self methodWithTwoAssignments  ].
 	dbg step; stepOver; stepOver.	
 	targetExecNode := dbg node.
-	realValueOfA := (dbg temporaryNamed: #a).	
+	realValueOfA := (dbg readVariableNamed: #a).	
 	dbg stepOver.
 	nodeAfterSkipThrough := dbg node.
 	realExecTopStack := dbg topStack.
@@ -1371,7 +1371,7 @@ SindarinDebuggerTest >> testSkipThroughNode [
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node identicalTo: nodeAfterSkipThrough.
 	self assert: realValueOfA equals: 5.
-	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: (dbg readVariableNamed: #a) equals: 1.
 	self assert: realExecTopStack equals: 3.
 	self assert: dbg topStack equals: '3'
 ]
@@ -1385,7 +1385,7 @@ SindarinDebuggerTest >> testSkipToPC [
 	dbg step; stepOver; stepOver.
 	realExecPC := dbg pc.
 	realExecNode := dbg node.
-	realValueOfA := (dbg temporaryNamed: #a).
+	realValueOfA := (dbg readVariableNamed: #a).
 	realExecTopStack := dbg topStack.
 
 	dbg := SindarinDebugger
@@ -1395,7 +1395,7 @@ SindarinDebuggerTest >> testSkipToPC [
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node equals: realExecNode.
 	self assert: realValueOfA equals: 5.
-	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: (dbg readVariableNamed: #a) equals: 1.
 	self assert: dbg topStack equals: realExecTopStack
 ]
 
@@ -1450,7 +1450,7 @@ SindarinDebuggerTest >> testSkipUpToIgnoresJumps [
 		             statements first.
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
-	a := sdbg temporaryNamed: #a.
+	a := sdbg readVariableNamed: #a.
 
 	self assert: a isNil.
 
@@ -1465,7 +1465,7 @@ SindarinDebuggerTest >> testSkipUpToIgnoresJumps [
 		             statements first.
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
-	a := sdbg temporaryNamed: #a.
+	a := sdbg readVariableNamed: #a.
 
 	self assert: a isNil.
 
@@ -1479,7 +1479,7 @@ SindarinDebuggerTest >> testSkipUpToIgnoresJumps [
 	aimedNode := sdbg methodNode statements third.
 	aimedPC := sdbg methodNode firstPcForNode: aimedNode.
 
-	a := sdbg temporaryNamed: #a.
+	a := sdbg readVariableNamed: #a.
 
 	self assert: a isNil.
 
@@ -1500,7 +1500,7 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	dbg step; stepOver; stepOver.
 	realExecPC := dbg pc.
 	realExecNode := dbg node.
-	realValueOfA := (dbg temporaryNamed: #a).
+	realValueOfA := (dbg readVariableNamed: #a).
 	realExecTopStack := dbg topStack.
 	
 	dbg := SindarinDebugger
@@ -1510,7 +1510,7 @@ SindarinDebuggerTest >> testSkipUpToNode [
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node identicalTo: realExecNode.
 	self assert: realValueOfA equals: 5.
-	self assert: (dbg temporaryNamed: #a) equals: 1.
+	self assert: (dbg readVariableNamed: #a) equals: 1.
 	self assert: dbg topStack equals: realExecTopStack
 ]
 
@@ -1546,7 +1546,7 @@ SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 		stepOver;
 		stepOver;
 		stepThrough.
-	oldValueOfA := dbg temporaryNamed: #a.
+	oldValueOfA := dbg readVariableNamed: #a.
 	"after stepping, we stop on  b: = 3 + 2 assignment node"
 	dbg stepOver.
 
@@ -1571,12 +1571,12 @@ SindarinDebuggerTest >> testSkipUpToNodeInEvaluatedBlock [
 		skipUpToNode: realExecNode.
 	self assert: dbg pc equals: realExecPC.
 	self assert: dbg node identicalTo: realExecNode.
-	self assert: (dbg temporaryNamed: #a) equals: oldValueOfA.
+	self assert: (dbg readVariableNamed: #a) equals: oldValueOfA.
 	self assert: dbg topStack equals: valueOfBAfterSkipAndStep.
 
 	dbg stepOver.
 	"3 is on the stack so stepping over the assignment should put 3 into b"
-	self assert: (dbg temporaryNamed: #b) equals: valueOfBAfterSkipAndStep 
+	self assert: (dbg readVariableNamed: #b) equals: valueOfBAfterSkipAndStep 
 ]
 
 { #category : #'tests - skipping' }
@@ -1888,9 +1888,9 @@ SindarinDebuggerTest >> testTemporaryNamed [
 	| dbg |
 	dbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	dbg step.
-	self assert: (dbg temporaryNamed: #a) equals: nil.
+	self assert: (dbg readVariableNamed: #a) equals: nil.
 	dbg step.
-	self assert: (dbg temporaryNamed: #a) equals: 5
+	self assert: (dbg readVariableNamed: #a) equals: 5
 ]
 
 { #category : #tests }

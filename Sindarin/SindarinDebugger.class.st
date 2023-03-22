@@ -68,14 +68,6 @@ SindarinDebugger class >> debugSession: aDebugSession [
 	
 ]
 
-{ #category : #'graphical debugger' }
-SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
-
-	self flag: 'unused. What was it used for?'.
-	sindarinSession activateEventTriggering.
-	self refreshAttachedGraphicalDebugger
-]
-
 { #category : #stackAccessHelpers }
 SindarinDebugger >> arguments [
 	"Returns the arguments of the current stack-frame."
@@ -195,12 +187,6 @@ SindarinDebugger >> currentContextStackSize [
 SindarinDebugger >> currentProcess [
 
 	^ process
-]
-
-{ #category : #'graphical debugger' }
-SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
-	self flag: 'unused. What was it used for?'.
-	sindarinSession deactivateEventTriggering
 ]
 
 { #category : #start }
@@ -429,15 +415,6 @@ SindarinDebugger >> nodeForContext: aContext [
 	^ aContext method sourceNodeForPC: aContext pc
 ]
 
-{ #category : #'graphical debugger' }
-SindarinDebugger >> openInGraphicalDebugger [
-
-	self flag: 'unused. What was it used for?'.
-	sindarinSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
-	self flag:
-		'Should be an extension of DebuggerSelector and handled by its sole instance'
-]
-
 { #category : #'accessing - context' }
 SindarinDebugger >> outerMostContextOf: aContext [
 
@@ -488,6 +465,12 @@ SindarinDebugger >> proceed [
 ]
 
 { #category : #stackAccessHelpers }
+SindarinDebugger >> readVariableNamed: aSymbol [
+
+	^ self context readVariableNamed: aSymbol
+]
+
+{ #category : #stackAccessHelpers }
 SindarinDebugger >> receiver [
 	"Returns the receiver of the current stack-frame."
 
@@ -513,14 +496,6 @@ SindarinDebugger >> restart [
 SindarinDebugger >> resume [
 
 	sindarinSession resumeAndClear
-]
-
-{ #category : #scripts }
-SindarinDebugger >> run: aSindarinScript [
-
-	self flag:
-		'missing method for scripts. Scripts are not loaded by default so this method shouldn''t be loaded neither'.
-	aSindarinScript executeWith: self
 ]
 
 { #category : #stackAccessHelpers }
@@ -795,18 +770,6 @@ SindarinDebugger >> step: anInt [
 	anInt timesRepeat: [ self step ]
 ]
 
-{ #category : #'stepping - echo' }
-SindarinDebugger >> stepBatchAndReturnNodeHashAndStackSize [
-	"For EchoDebugger"
-	| nodesHashAndStackSize count |
-	self flag: 'What''s that? If it is for the echo debugger, then it should be an extension method of the echo debugger'.
-	count := 0.
-	nodesHashAndStackSize := OrderedCollection new.
-	[ [ count <= 1000] whileTrue: [ count := count + 1. nodesHashAndStackSize add: {self node dictionaryRepresentation hash. self stack size}. self step ]] on: DebuggedExecutionException do: [ "when debugged execution is over or signals exception, stop and return the result data" ^ nodesHashAndStackSize ].
-	^ nodesHashAndStackSize
-	
-]
-
 { #category : #'stepping - steps' }
 SindarinDebugger >> stepBytecode [
 	"Executes the next bytecode"
@@ -872,14 +835,6 @@ SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 
 	aBlock whileFalse: [ self step ]
-]
-
-{ #category : #stackAccessHelpers }
-SindarinDebugger >> temporaryNamed: aSymbol [
-
-	self flag:
-		'Why not. But wouldn''t it be more interesting to have an helper for Context>>#readVariableNamed: , to get the value of the variable?'.
-	^ self context tempNamed: aSymbol
 ]
 
 { #category : #process }

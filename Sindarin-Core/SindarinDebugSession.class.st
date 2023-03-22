@@ -11,7 +11,7 @@ Class {
 		'canBeTerminated',
 		'debugSession'
 	],
-	#category : #'Sindarin-Base'
+	#category : #'Sindarin-Core'
 }
 
 { #category : #'instance creation' }

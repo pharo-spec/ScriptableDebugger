@@ -70,6 +70,8 @@ SindarinDebugger class >> debugSession: aDebugSession [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> activateAutoRefreshOfAttachedGraphicalDebugger [
+
+	self flag: 'unused. What was it used for?'.
 	sindarinSession activateEventTriggering.
 	self refreshAttachedGraphicalDebugger
 ]
@@ -85,8 +87,8 @@ SindarinDebugger >> arguments [
 SindarinDebugger >> assignmentValue [
 	"Returns the value about to be assigned, if the current node is an assignment node. Otherwise, returns nil"
 
-	self node isAssignment
-		ifFalse: [ ^ nil	"Error signal: 'Not about to perform a assignment'" ].
+	self node isAssignment ifFalse: [
+		^ nil "Error signal: 'Not about to perform a assignment'" ].
 	^ self context at: self currentContextStackSize
 ]
 
@@ -94,8 +96,8 @@ SindarinDebugger >> assignmentValue [
 SindarinDebugger >> assignmentVariableName [
 	"Returns the variable name about to be assigned to, if the current node is an assignment node. Otherwise, returns nil"
 
-	self node isAssignment
-		ifFalse: [ ^ nil	"Error signal: 'Not about to perform a assignment'" ].
+	self node isAssignment ifFalse: [
+		^ nil "Error signal: 'Not about to perform a assignment'" ].
 	^ self node variable name
 ]
 
@@ -110,23 +112,23 @@ SindarinDebugger >> attachTo: aDebugSession [
 
 { #category : #astAndAstMapping }
 SindarinDebugger >> bestNodeFor: anInterval [
-	^self node methodNode bestNodeFor: anInterval
+
+	^ self node methodNode bestNodeFor: anInterval
 ]
 
 { #category : #'ast manipulation' }
 SindarinDebugger >> canStillExecute: aProgramNode [
-
 	"returns true if the last pc mapped to aProgramNode is greater than `self pc` in the right context "
 
 	| lastPcForNode rightContext |
 	rightContext := self context.
 
-	[ 
-	rightContext == rightContext outerMostContext or: [ 
-		rightContext method ast allChildren identityIncludes: aProgramNode ] ] 
+	[
+	rightContext == rightContext outerMostContext or: [
+		rightContext method ast allChildren identityIncludes: aProgramNode ] ]
 		whileFalse: [ rightContext := rightContext sender ].
 
-	lastPcForNode := (rightContext method ast lastPcForNode: aProgramNode) 
+	lastPcForNode := (rightContext method ast lastPcForNode: aProgramNode)
 		                 ifNil: [ 0 ].
 
 	^ rightContext pc < lastPcForNode
@@ -151,18 +153,17 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 
 	| node |
-	node := aContext method methodNode bcToASTCache nodeForPC: aContext pc.
-	node isMessage
-		ifFalse: [ ^ false ].
-	node selector = #signal
-		ifFalse: [ ^ false ].
-	aContext basicSize >= 1
-		ifFalse: [ ^ false ].
+	node := aContext method methodNode bcToASTCache nodeForPC:
+		        aContext pc.
+	node isMessage ifFalse: [ ^ false ].
+	self flag:
+		'What about `#signalIn:`? We will have the same problem as in the debugger, right?'.
+	node selector = #signal ifFalse: [ ^ false ].
+	aContext basicSize >= 1 ifFalse: [ ^ false ].
 	(Exception allSubclasses includes: (aContext at: aContext basicSize))
-		ifTrue: [ ^ true ].	"#signal sent to a subclass of Exception"
-	(Exception allSubclasses
-		includes: (aContext at: aContext basicSize) class)
-		ifTrue: [ ^ true ].	"#signal sent to an instance of a subclass of Exception"
+		ifTrue: [ ^ true ]. "#signal sent to a subclass of Exception"
+	(Exception allSubclasses includes:
+		 (aContext at: aContext basicSize) class) ifTrue: [ ^ true ]. "#signal sent to an instance of a subclass of Exception"
 	^ false
 ]
 
@@ -178,31 +179,39 @@ SindarinDebugger >> continue [
 
 { #category : #accessing }
 SindarinDebugger >> currentBytecode [
+
+	self flag:
+		'This method has a really confusing name as, from its name, we expect that it returns a bytecode. But actually, it returns the entire list of symbolic bytecodes'.
 	^ self context method symbolicBytecodes
 ]
 
 { #category : #private }
 SindarinDebugger >> currentContextStackSize [
+
 	^ self context basicSize
 ]
 
 { #category : #process }
 SindarinDebugger >> currentProcess [
-	^process
+
+	^ process
 ]
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> deactivateAutoRefreshOfAttachedGraphicalDebugger [
+	self flag: 'unused. What was it used for?'.
 	sindarinSession deactivateEventTriggering
 ]
 
 { #category : #start }
 SindarinDebugger >> debug: aBlock [
+
 	blockToDebug := aBlock.
-	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
+	process := aBlock newProcess name:
+		           'ExecutionDebuggedByScriptableDebugger'.
 	sindarinSession := SindarinDebugSession
-		newWithName: 'ScriptableDebuggerDebugSession'
-		forProcess: process.
+		                   newWithName: 'ScriptableDebuggerDebugSession'
+		                   forProcess: process.
 	sindarinSession deactivateEventTriggering.
 	"Step the process until it enters the block for which a process was created"
 	[ self context closure == blockToDebug ] whileFalse: [ self step ]
@@ -224,7 +233,10 @@ SindarinDebugger >> firstPCOfStatement: aStatementNode [
 { #category : #'execution predicates' }
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
-	^ (#(#defaultAction #signal) includes: self selector ) and: [ self receiver isKindOf: Exception ]
+
+	self flag: 'And `#signalIn:`?'.
+	^ (#( #defaultAction #signal ) includes: self selector) and: [
+		  self receiver isKindOf: Exception ]
 ]
 
 { #category : #private }
@@ -234,7 +246,9 @@ SindarinDebugger >> instanceCreationPrimitives [
 	/* 79 */ primitiveNewMethod,
 	/* 148 */ primitiveClone,
 	/* 160 */ primitiveAdoptInstance"
-	^#(70 71 79 148 160)
+
+	self flag: 'These numbers may have changed. This is to be checked'.
+	^ #( 70 71 79 148 160 )
 ]
 
 { #category : #'execution predicates' }
@@ -264,7 +278,6 @@ SindarinDebugger >> isExecutionFinished [
 
 { #category : #'API - changes' }
 SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
-
 	"Moves to targetNode that must be in aBlockNode, which should be a recursive child"
 
 	| blockClosure newContext firstPCForNode |
@@ -272,7 +285,7 @@ SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
 	firstPCForNode := self methodNode firstPcForNode: aBlockNode.
 	self pc: firstPCForNode.
 	self stepBytecode.
-	blockClosure := self context top.
+	blockClosure := self topStack.
 	newContext := blockClosure asContextWithSender: self context.
 
 	"we need to change the suspended context and do the same in its debug session to see what we do in the debugger"
@@ -285,28 +298,16 @@ SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
 SindarinDebugger >> message: aSelector [
 	"Returns whether the execution is about to send a message of selector @aSelector to any object"
 
-	| node |
-	node := self node.
-	node isMessage
-		ifFalse: [ ^ false ].
-	node selector = aSelector
-		ifFalse: [ ^ false ].
-	^ true
+	[ ^ self messageSelector = aSelector ]
+		on: Error
+		do: [ ^ false ]
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> message: aSelector to: anObject [
 	"Returns whether the execution is about to send a message of selector @aSelector to @anObject"
 
-	| node |
-	node := self node.
-	node isMessage
-		ifFalse: [ ^ false ].
-	node selector = aSelector
-		ifFalse: [ ^ false ].
-	self messageReceiver == anObject
-		ifFalse: [ ^ false ].
-	^ true
+	^ (self message: aSelector) and: [ self messageReceiver == anObject ]
 ]
 
 { #category : #stackAccessHelpers }
@@ -329,17 +330,15 @@ SindarinDebugger >> messageArguments [
 	"Returns the arguments of the message about to be sent, if the current node is a message node."
 
 	| argumentNumber arguments i |
-	self node isMessage
-		ifFalse: [ Error signal: 'Not about to send a message' ].
+	self node isMessage ifFalse: [
+		Error signal: 'Not about to send a message' ].
 	argumentNumber := self node arguments size.
 	arguments := OrderedCollection new.
 	i := 0.
-	[ i = argumentNumber ]
-		whileFalse: [ arguments
-				add:
-					(self context
-						at: self currentContextStackSize - argumentNumber + i + 1).
-			i := i + 1 ].
+	[ i = argumentNumber ] whileFalse: [
+		arguments add: (self context at:
+				 self currentContextStackSize - argumentNumber + i + 1).
+		i := i + 1 ].
 	^ arguments
 ]
 
@@ -407,7 +406,7 @@ SindarinDebugger >> moveToNode: aNode [
 SindarinDebugger >> nextBytecode [
 
 	^ self currentBytecode detect: [ :each | 
-		  each offset = self context pc ]
+		  each offset = self pc ]
 ]
 
 { #category : #'API - changes' }
@@ -420,7 +419,7 @@ SindarinDebugger >> nextExecutedNodeAfter: aNode [
 SindarinDebugger >> node [
 	"Returns the AST node about to be executed by the top context of the execution"
 
-	^ self context method sourceNodeForPC: self context pc
+	^ self nodeForContext: self context
 ]
 
 { #category : #astAndAstMapping }
@@ -432,10 +431,11 @@ SindarinDebugger >> nodeForContext: aContext [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> openInGraphicalDebugger [
-	sindarinSession canBeTerminated: false.	"Prevents the graphical debugger from terminating the debug session when it's closed."
-	self
-		flag:
-			'Should be an extension of DebuggerSelector and handled by its sole instance'
+
+	self flag: 'unused. What was it used for?'.
+	sindarinSession canBeTerminated: false. "Prevents the graphical debugger from terminating the debug session when it's closed."
+	self flag:
+		'Should be an extension of DebuggerSelector and handled by its sole instance'
 ]
 
 { #category : #'accessing - context' }
@@ -496,14 +496,17 @@ SindarinDebugger >> receiver [
 
 { #category : #'graphical debugger' }
 SindarinDebugger >> refreshAttachedGraphicalDebugger [
+
+	'only used by an unused method. What was it used for?'.
 	sindarinSession refreshAttachedDebugger
 ]
 
 { #category : #stackAccess }
 SindarinDebugger >> restart [
 	"Resets this debugger on a new execution of the block passed as argument to the initial call to #debug:"
+
 	self initialize.
-	self debug: blockToDebug.
+	self debug: blockToDebug
 ]
 
 { #category : #'stepping -  auto' }
@@ -514,6 +517,9 @@ SindarinDebugger >> resume [
 
 { #category : #scripts }
 SindarinDebugger >> run: aSindarinScript [
+
+	self flag:
+		'missing method for scripts. Scripts are not loaded by default so this method shouldn''t be loaded neither'.
 	aSindarinScript executeWith: self
 ]
 
@@ -526,22 +532,23 @@ SindarinDebugger >> selector [
 
 { #category : #asserting }
 SindarinDebugger >> shouldStepIntoInMethod: aRBMethodNode [
+	"used by #stpeToReturn to know if it should stepInto or stepOver. It should stepInto to get to non-local returns"
 
 	| messageNode childrenOfMessageNode |
 	messageNode := self node.
 	messageNode isMessage ifFalse: [ ^ false ].
 	childrenOfMessageNode := messageNode children.
 	childrenOfMessageNode := childrenOfMessageNode
-		                         select: [ :child | 
-			                         child isBlock or: [ 
-				                         child isVariable and: [ 
+		                         select: [ :child |
+			                         child isBlock or: [
+				                         child isVariable and: [
 					                         (child variableValueInContext:
 						                          self context) isBlock ] ] ]
-		                         thenCollect: [ :child | 
-			                         child isVariable ifTrue: [ 
+		                         thenCollect: [ :child |
+			                         child isVariable ifTrue: [
 				                         (child variableValueInContext:
 					                          self context) startpcOrOuterCode ast ] ].
-	^ childrenOfMessageNode anySatisfy: [ :child | 
+	^ childrenOfMessageNode anySatisfy: [ :child |
 		  (RBBlockDefinitionSearchingVisitor newToSearch: child) visitNode:
 			  aRBMethodNode ]
 ]
@@ -596,14 +603,15 @@ SindarinDebugger >> skip [
 SindarinDebugger >> skipAssignmentNodeCompletely [
 
 	| currentBytecode |
-	currentBytecode := self currentBytecode detect: [ :each | 
-		                   each offset = self context pc ].
+	currentBytecode := self nextBytecode.
 
 	"Pop the value that will be assigned"
 	self context pop.
 
 	"If the assignment is a store bytecode and not a pop bytecode, we push the current value of the variable that was going to be assigned."
-	(#( 243 244 245 252 ) includes: currentBytecode bytes first) ifTrue: [ 
+	self flag:
+		'Maybe this should be an extension method on the InstructionStream or elsewhere'.
+	(#( 243 244 245 252 ) includes: currentBytecode bytes first) ifTrue: [
 		self context push:
 			(self node variable variableValueInContext: self context) ].
 
@@ -616,27 +624,28 @@ SindarinDebugger >> skipAssignmentNodeCompletely [
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
+	"I think this method could be removed."
+
 	self context pop.
 	"Pop the value to be assigned"
 	"Push the replacement value on the context's value stack, to simulate that the assignment happened and had value nil"
 	self context push: replacementValue.
 	self step.
 	"Execute bytecodes the debugger usually executes without stopping the execution (for example popping the return value of the just executed message send if it is not used afterwards)"
-	self debugSession
-		stepToFirstInterestingBytecodeWithJumpIn: self debugSession interruptedProcess
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipBlockNode [
 
 	| nextBytecode |
-	nextBytecode := self currentBytecode detect: [ :bytecode | 
-		                bytecode offset = self pc ].
+	nextBytecode := self nextBytecode.
 
 	self context pc: self pc + nextBytecode bytes size.
 
 	self context push: nil.
-  
+
 	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
 ]
@@ -647,10 +656,10 @@ SindarinDebugger >> skipJump [
 	| instructionStream nextBytecode |
 	instructionStream := self context instructionStream.
 	"If the next bytecode is a jumpTrue: or a jumpFalse: bytecode, then it expects one argument on the stack. As we skip the jump bytecode, we pop it."
-	(instructionStream willJumpIfFalse or: [ 
+	(instructionStream willJumpIfFalse or: [
 		 instructionStream willJumpIfTrue ]) ifTrue: [ self context pop ].
-	nextBytecode := self currentBytecode detect: [ :each | 
-		                each offset = self pc ].
+	nextBytecode := self nextBytecode.
+	self flag: 'This could be extracted as a #skipBytecode method'.
 	self context pc: self context pc + nextBytecode bytes size.
 	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
 		self debugSession interruptedProcess
@@ -686,6 +695,7 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 { #category : #'stepping - skip' }
 SindarinDebugger >> skipReturnNode [
 
+	self flag: 'We should be able to skip a return node as long as it''s not the last one in the method'.
 	^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node'
 ]
 
@@ -789,6 +799,7 @@ SindarinDebugger >> step: anInt [
 SindarinDebugger >> stepBatchAndReturnNodeHashAndStackSize [
 	"For EchoDebugger"
 	| nodesHashAndStackSize count |
+	self flag: 'What''s that? If it is for the echo debugger, then it should be an extension method of the echo debugger'.
 	count := 0.
 	nodesHashAndStackSize := OrderedCollection new.
 	[ [ count <= 1000] whileTrue: [ count := count + 1. nodesHashAndStackSize add: {self node dictionaryRepresentation hash. self stack size}. self step ]] on: DebuggedExecutionException do: [ "when debugged execution is over or signals exception, stop and return the result data" ^ nodesHashAndStackSize ].
@@ -834,6 +845,7 @@ SindarinDebugger >> stepThrough [
 
 { #category : #'stepping - steps' }
 SindarinDebugger >> stepToMethodEntry [
+	self flag: 'Maybe all the instructionStream API should be in Sindarin, as helpers'.
 	self stepUntil: [ self context instructionStream willSend ].
 	process step: self context.
 	self debugSession updateContextTo: process suspendedContext
@@ -846,16 +858,13 @@ SindarinDebugger >> stepToReturn [
 	oldContext := self outerMostContextOf: self context.
 	methodAST := self context method ast.
 
-	[ 
-	((self outerMostContextOf: self context) = oldContext and: [ 
-		 self context instructionStream willReturn ]) or: [ 
-		self hasSignalledUnhandledException ] ] whileFalse: [ 
+	[
+	((self outerMostContextOf: self context) = oldContext and: [
+		 self context instructionStream willReturn ]) or: [
+		self hasSignalledUnhandledException ] ] whileFalse: [
 		(self shouldStepIntoInMethod: methodAST)
 			ifTrue: [ self debugSession stepInto ]
 			ifFalse: [ self debugSession stepOver ] ]
-	"[ 
-	self context instructionStream willReturn or: [ self hasSignalledUnhandledException ] ] 
-		whileFalse: [ self debugSession stepOver ]"
 ]
 
 { #category : #'stepping - steps' }
@@ -867,22 +876,26 @@ SindarinDebugger >> stepUntil: aBlock [
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> temporaryNamed: aSymbol [
-	^self context tempNamed: aSymbol
+
+	self flag:
+		'Why not. But wouldn''t it be more interesting to have an helper for Context>>#readVariableNamed: , to get the value of the variable?'.
+	^ self context tempNamed: aSymbol
 ]
 
 { #category : #process }
 SindarinDebugger >> terminate [
+
 	sindarinSession terminate
 ]
 
 { #category : #stackAccessHelpers }
 SindarinDebugger >> topStack [
-	^self context top
+
+	^ self context top
 ]
 
 { #category : #'API - changes' }
 SindarinDebugger >> tryMoveToNodeInHomeContext: aNode [
-
 	"Moves to node aNode if aNode is in the lexical context. Otherwise, the program state goes back to how it was before trying and signals an error as the node is not in AST"
 
 	| oldContext |
@@ -891,7 +904,7 @@ SindarinDebugger >> tryMoveToNodeInHomeContext: aNode [
 	self debugSession suspendedContext: oldContext home.
 	[ self moveToNode: aNode ]
 		on: NodeNotInASTError
-		do: [ 
+		do: [
 			self currentProcess suspendedContext: oldContext.
 			self debugSession suspendedContext: oldContext.
 			^ NodeNotInASTError signal ]

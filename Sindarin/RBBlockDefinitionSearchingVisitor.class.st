@@ -5,7 +5,7 @@ Class {
 		'blockToSearch',
 		'isBlockFound'
 	],
-	#category : #Sindarin
+	#category : #'Sindarin-Base'
 }
 
 { #category : #'instance creation' }

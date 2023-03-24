@@ -264,13 +264,12 @@ SindarinDebugger >> nextExecutedNodeAfter: aNode [
 
 { #category : #'*Sindarin' }
 SindarinDebugger >> pc: anInteger [
-
 	"Allows to move to the first PC associated to the node to which anInteger is associated. anInteger must be a valid pc in the suspended context"
 
 	| nextNode methodNode firstPCOfStatementNode |
 	"If aimedPC is outside the context PCs range, then an error is signaled"
-	(anInteger < self method initialPC or: [ 
-		 anInteger > self method endPC ]) ifTrue: [ 
+	(anInteger < self method initialPC or: [
+		 anInteger > self method endPC ]) ifTrue: [
 		^ NotValidPcError signal ].
 	methodNode := self methodNode.
 	nextNode := methodNode sourceNodeForPC: anInteger.
@@ -282,6 +281,12 @@ SindarinDebugger >> pc: anInteger [
 				                          methodNode statements first.
 			self cleanStack ].
 	self context pc: firstPCOfStatementNode.
+
+	"If the first pc of the first statement is mapped to a block creation. That means that it needs the associated temp vector on top of the stack. The bytecode that pushes this vector on the stack precedes the block creation. So, here, this bytecode is mapped to the method node and has been skipped. Thus, we go back to the previous bytecode to execute it."
+	self instructionStream willCreateBlock ifTrue: [
+		self context pc: self instructionStream previousPc.
+		self stepBytecode ].
+
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess.
 	self skipUpToNode: nextNode

@@ -146,6 +146,15 @@ SindarinDebuggerTest >> methodWithSeveralInstructionsInBlock [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> methodWithSeveralReturns [
+	"There is only one explicit return  but there is also an implicit return after `a := 3`. In that sense, there are several returns in this method"
+	| a |
+	a := true.
+	a ifFalse: [ ^ a := 1 ] ifTrue: [ a := 2 ].
+	a := 3 
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> methodWithTwoAssignments [
 
 	| a |
@@ -1277,6 +1286,52 @@ SindarinDebuggerTest >> testSkipBlockNode [
 
 	self assert: scdbg context identicalTo: targetContext.
 	self assert: scdbg topStack equals: 43
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipCanSkipReturnIfItIsNotTheLastReturn [
+
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self methodWithSeveralReturns ].
+
+	"we step until we arrive on the node `^ a := 1` in `SindarinDebuggerTest>>#methodWithSeveralReturns`."
+	scdbg
+		step;
+		skip;
+		skip;
+		step.
+
+	self assert: scdbg node isReturn.
+	self assert: scdbg topStack equals: 1.
+
+	"We skip the return node"
+	self shouldnt: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+
+	"We should be on the `a := 2` node"
+	self assert: scdbg node isAssignment.
+	self assert: scdbg node value value equals: 2
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipCannotSkipReturnIfItIsTheLastReturn [
+
+	| scdbg nodeWithImplicitReturn |
+	scdbg := SindarinDebugger debug: [ self methodWithSeveralReturns ].
+
+	"we step until we arrive on the method node in `SindarinDebuggerTest>>#methodWithSeveralReturns`, which is mapped to the implicit return bycode."
+	scdbg step.
+	nodeWithImplicitReturn := scdbg methodNode.
+	3 timesRepeat: [ scdbg step ].
+
+	self assert: scdbg node identicalTo: nodeWithImplicitReturn.
+	self assert: scdbg instructionStream willReturn.
+
+	"We skip the return node"
+	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+
+	"We should still be on the method node"
+	self assert: scdbg node identicalTo: nodeWithImplicitReturn.
+	self assert: scdbg instructionStream willReturn.
 ]
 
 { #category : #tests }

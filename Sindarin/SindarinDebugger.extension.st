@@ -439,14 +439,16 @@ SindarinDebugger >> skipReturnNode [
 	allReturnNodes := self method ir children flatCollect: [ :irSequence |
 		                  irSequence sequence
 			                  select: [ :irInstruction |
-				                  irInstruction isReturn ]
+			                  irInstruction isReturn ]
 			                  thenCollect: [ :irInstruction |
 			                  irInstruction sourceNode ] ].
 	"If this is the last node of the method that is mapped to a return bytecode, we can't skip it and we stop there."
 	node == allReturnNodes last ifTrue: [
 		^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node' ].
 
-	self skipPcToNextBytecode
+	self skipPcToNextBytecode.
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'*Sindarin' }

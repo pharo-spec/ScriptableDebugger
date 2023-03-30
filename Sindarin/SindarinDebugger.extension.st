@@ -515,7 +515,7 @@ SindarinDebugger >> step [
 
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
 	self signalExceptionIfDebuggedExecutionIsFinished.
-	self debugSession stepInto
+	self basicStep
 ]
 
 { #category : #'*Sindarin' }
@@ -538,6 +538,7 @@ SindarinDebugger >> stepBytecode [
 { #category : #'*Sindarin' }
 SindarinDebugger >> stepOver [
 	| startContext |
+	self flag: 'Why don''t we use the stepOver from the debug session? Do we really need to use the #step that performs exception check and termination check every time?'.
 	startContext := self context.
 	self step.
 	[ self context == startContext
@@ -558,7 +559,7 @@ SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
 
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	self debugSession stepThrough
+	self basicStepThrough
 ]
 
 { #category : #'*Sindarin' }
@@ -583,8 +584,8 @@ SindarinDebugger >> stepToReturn [
 		 self instructionStream willReturn ]) or: [
 		self hasSignalledUnhandledException ] ] whileFalse: [
 		(self shouldStepIntoInMethod: methodAST)
-			ifTrue: [ self debugSession stepInto ]
-			ifFalse: [ self debugSession stepOver ] ]
+			ifTrue: [ self basicStep ]
+			ifFalse: [ self basicStepOver ] ]
 ]
 
 { #category : #'*Sindarin' }

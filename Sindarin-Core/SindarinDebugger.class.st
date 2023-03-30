@@ -75,6 +75,24 @@ SindarinDebugger >> arguments [
 	^ self context arguments
 ]
 
+{ #category : #'debug - stepping' }
+SindarinDebugger >> basicStep [
+
+	self debugSession stepInto
+]
+
+{ #category : #'debug - stepping' }
+SindarinDebugger >> basicStepOver [
+
+	^ self debugSession stepOver
+]
+
+{ #category : #'debug - stepping' }
+SindarinDebugger >> basicStepThrough [
+
+	self debugSession stepThrough
+]
+
 { #category : #cleaning }
 SindarinDebugger >> cleanStack [
 

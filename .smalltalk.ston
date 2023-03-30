@@ -2,7 +2,7 @@ SmalltalkCISpec {
   #loading : [
     SCIMetacelloLoadSpec {
       #baseline : 'Sindarin',
-      #directory : '.',
+      #directory : 'src',
       #load : 'default',
       #onConflict : #useIncoming,
       #onUpgrade : #useIncoming,

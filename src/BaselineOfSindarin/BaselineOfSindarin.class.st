@@ -12,12 +12,11 @@ BaselineOfSindarin >> baseline: spec [
 		for: #common
 		do: [
 			spec
-				package: 'Sindarin-Core';
 				package: 'Sindarin';
 				package: 'Sindarin-Tests';
 				package: 'Sindarin-Experiments' ].
 			
 	spec 
-		group: 'default' with: #( 'Sindarin-Core' 'Sindarin' 'Sindarin-Tests');
+		group: 'default' with: #( 'Sindarin' 'Sindarin-Tests');
 		group: 'experiments' with: #('default' 'Sindarin-Experiments')
 ]

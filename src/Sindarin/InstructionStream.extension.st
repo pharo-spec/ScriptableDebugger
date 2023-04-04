@@ -8,13 +8,6 @@ InstructionStream >> willJump [
 ]
 
 { #category : #'*Sindarin' }
-InstructionStream >> willJumpIfFalse [
-	"Answer whether the next bytecode is a jump-if-false."
-
-	^ self method encoderClass isBranchIfFalseAt: pc in: self method
-]
-
-{ #category : #'*Sindarin' }
 InstructionStream >> willJumpIfTrue [
 	"Answer whether the next bytecode is a jump-if-false."
 

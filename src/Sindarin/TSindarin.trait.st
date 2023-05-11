@@ -93,7 +93,7 @@ TSindarin >> cleanStack [
 		self context pop ]
 ]
 
-{ #category : #stackAccess }
+{ #category : #'stack access' }
 TSindarin >> context [
 	"Returns a reification of the current stack-frame."
 
@@ -151,7 +151,7 @@ TSindarin >> instructionStream [
 	^ self context instructionStream
 ]
 
-{ #category : #stackAccess }
+{ #category : #'stack access' }
 TSindarin >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
@@ -255,7 +255,7 @@ TSindarin >> skipPcToNextBytecode [
 	self context pc: self context pc + currentBytecode bytes size
 ]
 
-{ #category : #stackAccess }
+{ #category : #'stack access' }
 TSindarin >> stack [
 	"Returns a list of context objects representing the current call stack."
 

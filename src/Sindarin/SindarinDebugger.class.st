@@ -144,9 +144,7 @@ SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
 SindarinDebugger >> message: aSelector [
 	"Returns whether the execution is about to send a message of selector @aSelector to any object"
 
-	[ ^ self messageSelector = aSelector ]
-		on: Error
-		do: [ ^ false ]
+	^ self isMessageSend and: [ self messageSelector = aSelector ]
 ]
 
 { #category : #stackAccessHelpers }

@@ -524,6 +524,14 @@ SindarinDebuggerTest >> testIsMessageSend [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testMessage [
+
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
+	self assert: (scdbg message: #methodWithOneAssignment)
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testMessageArguments [
 	| scdbg |
 	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].

@@ -488,6 +488,18 @@ SindarinDebuggerTest >> testIsAboutToInstantiateClass [
 ]
 
 { #category : #tests }
+SindarinDebuggerTest >> testIsAssignment [
+
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
+	self deny: scdbg isAssignment.
+	scdbg step.
+	self assert: scdbg isAssignment.
+	scdbg step.
+	self deny: scdbg isAssignment
+]
+
+{ #category : #tests }
 SindarinDebuggerTest >> testIsExecutionFinished [
 
 	| scdbg |
@@ -497,6 +509,18 @@ SindarinDebuggerTest >> testIsExecutionFinished [
 	[ scdbg isExecutionFinished ] whileFalse: [ scdbg stepOver ].
 
 	self assert: scdbg currentProcess isTerminated
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testIsMessageSend [
+
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
+	self assert: scdbg isMessageSend.
+	scdbg step.
+	self deny: scdbg isMessageSend.
+	scdbg step.
+	self assert: scdbg isMessageSend
 ]
 
 { #category : #tests }

@@ -151,11 +151,21 @@ TSindarin >> instructionStream [
 	^ self context instructionStream
 ]
 
+{ #category : #'stack access - testing' }
+TSindarin >> isAssignment [
+	^self node isAssignment 
+]
+
 { #category : #'stack access' }
 TSindarin >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ process isTerminated
+]
+
+{ #category : #'stack access - testing' }
+TSindarin >> isMessageSend [
+	^self node isMessage
 ]
 
 { #category : #'stack access - helpers' }

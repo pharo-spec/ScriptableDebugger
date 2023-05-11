@@ -52,7 +52,7 @@ TSindarin classSide >> debugSession: aDebugSession [
 	
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> arguments [
 	"Returns the arguments of the current stack-frame."
 
@@ -158,7 +158,7 @@ TSindarin >> isExecutionFinished [
 	^ process isTerminated
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> method [
 	"Returns the method of the current stack-frame."
 
@@ -207,13 +207,13 @@ TSindarin >> pc [
 	^ self context pc
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> readVariableNamed: aSymbol [
 
 	^ self context readVariableNamed: aSymbol
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> receiver [
 	"Returns the receiver of the current stack-frame."
 
@@ -234,7 +234,7 @@ TSindarin >> resume [
 	sindarinSession resumeAndClear
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> selector [
 	"Returns the selector of the current stack-frame."
 
@@ -274,7 +274,7 @@ TSindarin >> terminate [
 	sindarinSession terminate
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> topStack [
 
 	^ self context top

@@ -277,12 +277,6 @@ SindarinDebugger >> proceed [
 	^ self continue
 ]
 
-{ #category : #scripts }
-SindarinDebugger >> run: aSindarinScript [
-
-	aSindarinScript executeWith: self
-]
-
 { #category : #asserting }
 SindarinDebugger >> shouldStepIntoInMethod: aRBMethodNode [
 	"used by #stpeToReturn to know if it should stepInto or stepOver. It should stepInto to get to non-local returns"

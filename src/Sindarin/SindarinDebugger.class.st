@@ -159,13 +159,9 @@ SindarinDebugger >> message: aSelector toInstanceOf: aClass [
 
 	| node |
 	node := self node.
-	self isMessageSend
-		ifFalse: [ ^ false ].
-	node selector = aSelector
-		ifFalse: [ ^ false ].
-	(self messageReceiver isKindOf: aClass)
-		ifFalse: [ ^ false ].
-	^ true
+	self isMessageSend ifFalse: [ ^ false ].
+	node selector = aSelector ifFalse: [ ^ false ].
+	^ self messageReceiver isKindOf: aClass
 ]
 
 { #category : #stackAccessHelpers }

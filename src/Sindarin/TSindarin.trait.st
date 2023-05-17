@@ -35,24 +35,10 @@ TSindarin classSide >> debug: aBlock [
 { #category : #'instance creation' }
 TSindarin classSide >> debugSession: aDebugSession [
 
-	| debugger exception sindarinPointCutExceptionClass |
-	debugger := self attachTo: aDebugSession.
-	
-	exception := aDebugSession exception.
-	sindarinPointCutExceptionClass := Smalltalk at: #SindarinPointcutException ifAbsent:[nil].
-	exception class == sindarinPointCutExceptionClass ifFalse: [ 
-		aDebugSession resume; clear.
-		^ self ].
-	
-	"Stepping to return to the context requesting the execution of a Sindarin script"
-	debugger step.
-	debugger step.
-	exception script executeWith: debugger.
-	aDebugSession resume; clear; terminate
-	
+	^ self attachTo: aDebugSession
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> arguments [
 	"Returns the arguments of the current stack-frame."
 
@@ -93,7 +79,7 @@ TSindarin >> cleanStack [
 		self context pop ]
 ]
 
-{ #category : #stackAccess }
+{ #category : #'stack access' }
 TSindarin >> context [
 	"Returns a reification of the current stack-frame."
 
@@ -151,14 +137,24 @@ TSindarin >> instructionStream [
 	^ self context instructionStream
 ]
 
-{ #category : #stackAccess }
+{ #category : #'stack access - testing' }
+TSindarin >> isAssignment [
+	^self node isAssignment 
+]
+
+{ #category : #'stack access' }
 TSindarin >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ process isTerminated
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - testing' }
+TSindarin >> isMessageSend [
+	^self node isMessage
+]
+
+{ #category : #'stack access - helpers' }
 TSindarin >> method [
 	"Returns the method of the current stack-frame."
 
@@ -207,13 +203,13 @@ TSindarin >> pc [
 	^ self context pc
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> readVariableNamed: aSymbol [
 
 	^ self context readVariableNamed: aSymbol
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> receiver [
 	"Returns the receiver of the current stack-frame."
 
@@ -234,7 +230,7 @@ TSindarin >> resume [
 	sindarinSession resumeAndClear
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> selector [
 	"Returns the selector of the current stack-frame."
 
@@ -255,7 +251,7 @@ TSindarin >> skipPcToNextBytecode [
 	self context pc: self context pc + currentBytecode bytes size
 ]
 
-{ #category : #stackAccess }
+{ #category : #'stack access' }
 TSindarin >> stack [
 	"Returns a list of context objects representing the current call stack."
 
@@ -274,7 +270,7 @@ TSindarin >> terminate [
 	sindarinSession terminate
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : #'stack access - helpers' }
 TSindarin >> topStack [
 
 	^ self context top

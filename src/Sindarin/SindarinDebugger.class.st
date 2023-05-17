@@ -25,8 +25,8 @@ Class {
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentValue [
 	"Returns the value about to be assigned, if the current node is an assignment node. Otherwise, returns nil"
-
-	self node isAssignment ifFalse: [
+	self flag: 'Why there is no error raised here, while for the case of message sends there is an error?'.
+	self isAssignment ifFalse: [
 		^ nil "Error signal: 'Not about to perform a assignment'" ].
 	^ self context at: self currentContextStackSize
 ]
@@ -34,8 +34,8 @@ SindarinDebugger >> assignmentValue [
 { #category : #stackAccessHelpers }
 SindarinDebugger >> assignmentVariableName [
 	"Returns the variable name about to be assigned to, if the current node is an assignment node. Otherwise, returns nil"
-
-	self node isAssignment ifFalse: [
+	self flag: 'Why there is no error raised in the case of assignemnts, while there is one for message sends?'.
+	self isAssignment ifFalse: [
 		^ nil "Error signal: 'Not about to perform a assignment'" ].
 	^ self node variable name
 ]
@@ -70,14 +70,13 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 
 	| node |
 	node := self node.
-	node isMessage ifFalse: [ ^ false ].
+	self isMessageSend ifFalse: [ ^ false ].
 	(#( #signal #signalIn: ) includes: node selector) ifFalse: [ ^ false ].
 	aContext basicSize >= 1 ifFalse: [ ^ false ].
 	(Exception allSubclasses includes: (aContext at: aContext basicSize))
 		ifTrue: [ ^ true ]. "#signal sent to a subclass of Exception"
-	(Exception allSubclasses includes:
-		 (aContext at: aContext basicSize) class) ifTrue: [ ^ true ]. "#signal sent to an instance of a subclass of Exception"
-	^ false
+	^(Exception allSubclasses includes: (aContext at: aContext basicSize) class) "#signal sent to an instance of a subclass of Exception"
+
 ]
 
 { #category : #'stepping - auto' }
@@ -108,7 +107,7 @@ SindarinDebugger >> hasSignalledUnhandledException [
 SindarinDebugger >> isAboutToInstantiateClass [
 
 	| methodAboutToExecute |
-	self node isMessage ifFalse: [ ^ false ].
+	self isMessageSend ifFalse: [ ^ false ].
 	methodAboutToExecute := self receiver class lookupSelector:
 		                        self node selector.
 	^ methodAboutToExecute notNil and: [ 
@@ -144,9 +143,7 @@ SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
 SindarinDebugger >> message: aSelector [
 	"Returns whether the execution is about to send a message of selector @aSelector to any object"
 
-	[ ^ self messageSelector = aSelector ]
-		on: Error
-		do: [ ^ false ]
+	^ self isMessageSend and: [ self messageSelector = aSelector ]
 ]
 
 { #category : #stackAccessHelpers }
@@ -162,13 +159,9 @@ SindarinDebugger >> message: aSelector toInstanceOf: aClass [
 
 	| node |
 	node := self node.
-	node isMessage
-		ifFalse: [ ^ false ].
-	node selector = aSelector
-		ifFalse: [ ^ false ].
-	(self messageReceiver isKindOf: aClass)
-		ifFalse: [ ^ false ].
-	^ true
+	self isMessageSend ifFalse: [ ^ false ].
+	node selector = aSelector ifFalse: [ ^ false ].
+	^ self messageReceiver isKindOf: aClass
 ]
 
 { #category : #stackAccessHelpers }
@@ -176,7 +169,7 @@ SindarinDebugger >> messageArguments [
 	"Returns the arguments of the message about to be sent, if the current node is a message node."
 
 	| argumentNumber arguments i |
-	self node isMessage ifFalse: [
+	self isMessageSend ifFalse: [
 		Error signal: 'Not about to send a message' ].
 	argumentNumber := self node arguments size.
 	arguments := OrderedCollection new.
@@ -192,7 +185,7 @@ SindarinDebugger >> messageArguments [
 SindarinDebugger >> messageReceiver [
 	"Returns the receiver of the message about to be sent, if the current node is a message node."
 
-	self node isMessage
+	self isMessageSend
 		ifFalse: [ Error signal: 'Not about to send a message' ].
 	^ self context
 		at: self currentContextStackSize - self node arguments size
@@ -202,7 +195,7 @@ SindarinDebugger >> messageReceiver [
 SindarinDebugger >> messageSelector [
 	"Returns the selector of the message about to be sent, if the current node is a message node."
 
-	self node isMessage
+	self isMessageSend
 		ifFalse: [ Error signal: 'Not about to send a message' ].
 	^ self node selector
 ]
@@ -280,19 +273,13 @@ SindarinDebugger >> proceed [
 	^ self continue
 ]
 
-{ #category : #scripts }
-SindarinDebugger >> run: aSindarinScript [
-
-	aSindarinScript executeWith: self
-]
-
 { #category : #asserting }
 SindarinDebugger >> shouldStepIntoInMethod: aRBMethodNode [
 	"used by #stpeToReturn to know if it should stepInto or stepOver. It should stepInto to get to non-local returns"
 
 	| messageNode childrenOfMessageNode |
 	messageNode := self node.
-	messageNode isMessage ifFalse: [ ^ false ].
+	self isMessageSend ifFalse: [ ^ false ].
 	childrenOfMessageNode := messageNode children.
 	childrenOfMessageNode := childrenOfMessageNode
 		                         select: [ :child |
@@ -488,13 +475,12 @@ SindarinDebugger >> skipWith: replacementValue [
 
 	"If the current node is a message send or assignment"
 
-	(self node isMessage not
-		and: [ self node isAssignment not ])
-		ifTrue: [ ^ self ].
-	self node isMessage
-		ifTrue: [ ^ self skipMessageNodeWith: replacementValue ].
-	self node isAssignment
-		ifTrue: [ ^	self skipAssignmentNodeWith: replacementValue ]
+	(self isMessageSend not and: [ self isAssignment not ]) ifTrue: [
+		^ self ].
+	self node isMessage ifTrue: [
+		^ self skipMessageNodeWith: replacementValue ].
+	self node isAssignment ifTrue: [
+		^ self skipAssignmentNodeWith: replacementValue ]
 ]
 
 { #category : #'ast manipulation' }

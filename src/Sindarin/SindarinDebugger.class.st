@@ -214,9 +214,9 @@ SindarinDebugger >> moveToNode: aNode [
 				(aNode == self methodNode or: [ aNode == self methodNode body ])
 					ifTrue: [ firstPCForNode := self method endPC ]
 					ifFalse: [ 
-						self context ~~ self context home
-							ifTrue: [ ^ self tryMoveToNodeInHomeContext: aNode ]
-							ifFalse: [ ^ NodeNotInASTError signal ] ] ]
+						^ self context ~~ self context home
+							ifTrue: [ self tryMoveToNodeInHomeContext: aNode ]
+							ifFalse: [ NodeNotInASTError signal ] ] ]
 			ifNotNil: [ :parent | 
 				| nextNode |
 				"If a node does not have any associated pc but this node is a child in the method node then, we go to the next node that will be executed (so in pre-order) and that has an associated pc in this context."

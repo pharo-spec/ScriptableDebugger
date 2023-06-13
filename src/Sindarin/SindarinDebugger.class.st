@@ -437,7 +437,11 @@ SindarinDebugger >> skipReturnNode [
 	"If this is the last node of the method that is mapped to a return bytecode, we can't skip it and we stop there."
 	node == allReturnNodes last ifTrue: [
 		^ SindarinSkippingReturnWarning signal:
-			  'Cannot skip the last return in the method' ]
+			  'Cannot skip the last return in the method' ].
+
+	self skipPcToNextBytecode.
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }

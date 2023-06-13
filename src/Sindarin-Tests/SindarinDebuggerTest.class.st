@@ -345,6 +345,7 @@ SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnSt
 SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsGreaterThanEndPC [
 
 	| oldPC sdbg |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	sdbg
 		step;
@@ -369,6 +370,7 @@ SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsGreaterThanEndPC [
 SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsLowerThanInitialPC [
 
 	| scdbg |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
 
 	scdbg
@@ -411,6 +413,7 @@ SindarinDebuggerTest >> testChangingPcToNonExistingBytecodeOffsetGoesToPreviousP
 { #category : #tests }
 SindarinDebuggerTest >> testContext [
 	| scdbg |
+	<ignoreNotImplementedSelectors: #(helperMethod15)>
 	scdbg := SindarinDebugger debug: [ self helperMethod15 ].
 	self assert: scdbg context equals: scdbg debugSession interruptedContext.
 	scdbg step.
@@ -690,6 +693,7 @@ SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNode [
 SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNodeThatDoesNotHaveAssociatedPC [
 
 	| scdbg newPc newNode realPC realNode |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
 
 	scdbg
@@ -717,6 +721,7 @@ SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNodeThatDoe
 SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeInMethod [
 
 	| oldNode sdbg aimedNode |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	sdbg
 		step;
@@ -745,6 +750,7 @@ SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeIn
 SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotInMethod [
 
 	| oldNode sdbg |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	sdbg
 		step;
@@ -1739,6 +1745,7 @@ SindarinDebuggerTest >> testStatementNodeContaining [
 SindarinDebuggerTest >> testStatementNodeContainingReturnsStatementNodeThatContainsTheIdenticalSubtree [
 
 	| sdbg |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	sdbg step.
 
@@ -1752,6 +1759,7 @@ SindarinDebuggerTest >> testStatementNodeContainingReturnsStatementNodeThatConta
 SindarinDebuggerTest >> testStatementNodeContainingWhenNodeIsNotInAST [
 
 	| sdbg |
+	<ignoreNotImplementedSelectors: #(helperMethod1)>
 	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
 	sdbg step.
 

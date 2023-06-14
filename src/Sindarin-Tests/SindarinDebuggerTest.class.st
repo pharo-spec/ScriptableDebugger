@@ -125,6 +125,16 @@ SindarinDebuggerTest >> methodWithNotEvaluatedBlock [
 ]
 
 { #category : #helpers }
+SindarinDebuggerTest >> methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement [
+
+	| a block |
+ 	block := [ a := a + 1 ].
+ 	a := 1.
+ 	a := a + 2.
+ 	^ a * 42
+]
+
+{ #category : #helpers }
 SindarinDebuggerTest >> methodWithOneAssignment [
 
 	| a |
@@ -917,6 +927,43 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatI
 	"2 has not been assigned to a"
 	self assert: (sdbg readVariableNamed: #a) equals: 1.
 	self assert: sdbg topStack equals: 2
+]
+
+{ #category : #helpers }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockCreationIsFirstBytecodeInFirstStatement [
+
+	| aimedBlock sdbg aimedNode |
+	sdbg := SindarinDebugger debug: [
+		        self
+			        methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement ].
+	"We step until the `a * 42` node"
+	sdbg step.
+	6 timesRepeat: [ sdbg stepOver ].
+
+	self assert: sdbg method identicalTo: self class
+		>>
+		#methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement.
+	self assert: (sdbg readVariableNamed: #a) identicalTo: 3.
+
+	"We jump to the node `a + 1` inside the block"
+	aimedBlock := sdbg methodNode statements first value.
+	aimedNode := aimedBlock body statements first value.
+	sdbg moveToNode: aimedNode.
+
+	"We are in the block context"
+	self assert: sdbg method ast identicalTo: aimedBlock.
+	"The block context can also read #a"
+	self assert: (sdbg readVariableNamed: #a) identicalTo: 3.
+
+	"We step the entire block"
+	3 timesRepeat: [ sdbg stepOver ].
+
+	"We are back in the context method"
+	self assert: sdbg method identicalTo: self class
+		>>
+		#methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement.
+	"We can still read #a in the method context"
+	self assert: (sdbg readVariableNamed: #a) identicalTo: 4
 ]
 
 { #category : #tests }

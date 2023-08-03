@@ -345,7 +345,7 @@ SindarinDebuggerTest >> testChangingPcKeepsSameStateAndPushesCorrectElementsOnSt
 SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsGreaterThanEndPC [
 
 	| oldPC sdbg |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg
 		step;
 		stepOver;
@@ -354,7 +354,7 @@ SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsGreaterThanEndPC [
 	self
 		shouldnt: [ sdbg pc: sdbg method endPC ] raise: NotValidPcError;
 		deny: sdbg pc equals: oldPC.
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg
 		step;
 		stepOver;
@@ -369,23 +369,27 @@ SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsGreaterThanEndPC [
 SindarinDebuggerTest >> testChangingPcRaisesErrorWhenPcIsLowerThanInitialPC [
 
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
-
-	scdbg
-		step;
-		stepOver;
-		stepOver.
-	
-	self shouldnt: [ scdbg pc: scdbg method initialPC ] raise: NotValidPcError.
-	
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
 		stepOver;
 		stepOver.
 
-	self should: [ scdbg pc: scdbg method initialPC - 1 ] raise: NotValidPcError.
+	self
+		shouldnt: [ scdbg pc: scdbg method initialPC ]
+		raise: NotValidPcError.
+
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
+
+	scdbg
+		step;
+		stepOver;
+		stepOver.
+
+	self
+		should: [ scdbg pc: scdbg method initialPC - 1 ]
+		raise: NotValidPcError
 ]
 
 { #category : #tests }
@@ -411,7 +415,7 @@ SindarinDebuggerTest >> testChangingPcToNonExistingBytecodeOffsetGoesToPreviousP
 { #category : #tests }
 SindarinDebuggerTest >> testContext [
 	| scdbg |
-	scdbg := SindarinDebugger debug: [ self helperMethod15 ].
+	scdbg := SindarinDebugger debug: [ self methodWithOneAssignment ].
 	self assert: scdbg context equals: scdbg debugSession interruptedContext.
 	scdbg step.
 	self assert: scdbg context equals: scdbg debugSession interruptedContext
@@ -658,7 +662,7 @@ SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNode [
 SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNodeThatDoesNotHaveAssociatedPC [
 
 	| scdbg newPc newNode realPC realNode |
-	scdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 
 	scdbg
 		step;
@@ -685,7 +689,7 @@ SindarinDebuggerTest >> testMoveToNodeKeepsStackWhenAimedNodeIsMethodNodeThatDoe
 SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeInMethod [
 
 	| oldNode sdbg aimedNode |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg
 		step;
 		stepOver.
@@ -697,7 +701,7 @@ SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeIn
 	self
 		shouldnt: [ sdbg moveToNode: aimedNode ] raise: NodeNotInASTError;
 		assert: sdbg node equals: aimedNode.
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg
 		step;
 		stepOver;
@@ -713,7 +717,7 @@ SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotIdenticalToANodeIn
 SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotInMethod [
 
 	| oldNode sdbg |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg
 		step;
 		stepOver;
@@ -723,7 +727,7 @@ SindarinDebuggerTest >> testMoveToNodeRaisesErrorWhenNodeIsNotInMethod [
 		shouldnt: [ sdbg moveToNode: sdbg methodNode statements last ]
 		raise: NodeNotInASTError;
 		deny: sdbg node equals: oldNode.
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg
 		step;
 		stepOver;
@@ -1707,7 +1711,7 @@ SindarinDebuggerTest >> testStatementNodeContaining [
 SindarinDebuggerTest >> testStatementNodeContainingReturnsStatementNodeThatContainsTheIdenticalSubtree [
 
 	| sdbg |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg step.
 
 	"1 is in the tree but it should return its parent only if we provide the exact literal node"
@@ -1720,7 +1724,7 @@ SindarinDebuggerTest >> testStatementNodeContainingReturnsStatementNodeThatConta
 SindarinDebuggerTest >> testStatementNodeContainingWhenNodeIsNotInAST [
 
 	| sdbg |
-	sdbg := SindarinDebugger debug: [ self helperMethod1 ].
+	sdbg := SindarinDebugger debug: [ self methodWithTwoAssignments ].
 	sdbg step.
 
 	self

@@ -506,8 +506,10 @@ SindarinDebuggerTest >> testIsExecutionFinished [
 	scdbg := SindarinDebugger debug: [ self methodWithTwoAssignments  ].
 	self deny: scdbg isExecutionFinished.
 
-	[ scdbg isExecutionFinished ] whileFalse: [ scdbg stepOver ].
-
+	self 
+		should: [ [ scdbg isExecutionFinished ] whileFalse: [ scdbg stepOver ]	] 
+		raise: DebuggedExecutionIsFinished.
+	
 	self assert: scdbg currentProcess isTerminated
 ]
 

@@ -1787,11 +1787,13 @@ SindarinDebuggerTest >> testStepOver [
 
 { #category : #tests }
 SindarinDebuggerTest >> testStepOverFinishedExecution [
+	"This test tries to show is that using Sindarin on a block, it should raise an exception if you continue stepping over that code in your Sindarin script while the execution of that code is already finished (nothing more to step)"
+
 	|scdbg|
 	scdbg := SindarinDebugger debug: [ self methodWithImplicitReturn ].
 	
 	"Stepping until the implicit return of #methodWithImplicitReturn"
-	scdbg stepOver: 3.		
+	scdbg stepOver: 2.		
 	self should: [scdbg stepOver] raise: DebuggedExecutionIsFinished
 ]
 

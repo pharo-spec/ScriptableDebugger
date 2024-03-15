@@ -686,7 +686,25 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 { #category : #'stepping - skip' }
 SindarinDebugger >> skipReturnNode [
 
-	^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node'
+	| node allReturnNodes currentBytecode |
+	node := self node.
+
+	"We collect the list of nodes associated to a return bytecode, via the IR"
+	allReturnNodes := self method ir children flatCollect: [ :irSequence |
+		                  irSequence sequence
+			                  select: [ :irInstruction |
+			                  irInstruction isReturn ]
+			                  thenCollect: [ :irInstruction |
+			                  irInstruction sourceNode ] ].
+	"If this is the last node of the method that is mapped to a return bytecode, we can't skip it and we stop there."
+	node == allReturnNodes last ifTrue: [
+		^ SindarinSkippingReturnWarning signal:
+			  'Cannot skip the last return in the method' ].
+
+	currentBytecode := self nextBytecode.
+	self context pc: self context pc + currentBytecode bytes size.
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }

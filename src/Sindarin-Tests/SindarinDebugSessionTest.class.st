@@ -1,14 +1,16 @@
 Class {
-	#name : #SindarinDebugSessionTest,
-	#superclass : #TestCase,
+	#name : 'SindarinDebugSessionTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'debugSession',
 		'sindarinSession'
 	],
-	#category : #'Sindarin-Tests-Base'
+	#category : 'Sindarin-Tests-Base',
+	#package : 'Sindarin-Tests',
+	#tag : 'Base'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 SindarinDebugSessionTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	
@@ -17,13 +19,13 @@ SindarinDebugSessionTest >> setUp [
 	sindarinSession := debugSession asSindarinDebugSession
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinDebugSessionTest >> testDebugSessionAsSindarinDebugSession [
 
 	self assert: sindarinSession debugSession identicalTo: debugSession
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinDebugSessionTest >> testSindarinSessionAsSindarinDebugSession [
 
 	self
@@ -31,7 +33,7 @@ SindarinDebugSessionTest >> testSindarinSessionAsSindarinDebugSession [
 		identicalTo: sindarinSession
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinDebugSessionTest >> testSindarinSessionInstantiation [
 
 	| sessionName process |

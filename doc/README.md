@@ -16,10 +16,26 @@ dbg currentNode inspect.
 ...
 ```
 
+### Jump to caret VS skip command usage
+
+[See here](./jump-to-caret.md)
+
 ## Install
+
+### For Pharo 12 or +
+
 ```Smalltalk
 Metacello new
     baseline: 'Sindarin';
-    repository: 'github://dupriezt/ScriptableDebugger';
+    repository: 'github://pharo-spec/ScriptableDebugger';
+    load.
+```
+
+### For Pharo 11 or -
+
+```Smalltalk
+Metacello new
+    baseline: 'Sindarin';
+    repository: 'github://pharo-spec/ScriptableDebugger:Pharo-11';
     load.
 ```

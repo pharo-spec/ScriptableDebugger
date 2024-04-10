@@ -127,6 +127,17 @@ SindarinDebuggerTest >> methodWithNotEvaluatedBlock [
 ]
 
 { #category : 'helpers' }
+SindarinDebuggerTest >> methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement [
+
+	| a block |
+ 	block := [ a := a + 1 ].
+ 	a := 1.
+ 	a := a + 2.
+ 	^ a * 42
+]
+
+
+{ #category : 'helpers' }
 SindarinDebuggerTest >> methodWithOneAssignment [
 
 	| a |
@@ -145,6 +156,18 @@ SindarinDebuggerTest >> methodWithSeveralInstructionsInBlock [
 	         1 + 2 ].
 	b := block value.
 	^ 42
+]
+
+{ #category : 'helpers' }
+SindarinDebuggerTest >> methodWithSeveralReturns [
+	"There is only one explicit return  but there is also an implicit return after `a := 3`. In that sense, there are several returns in this method"
+
+	| a |
+	a := true.
+	a
+		ifFalse: [ ^ a := 1 ]
+		ifTrue: [ a := 2 ].
+	a := 3
 ]
 
 { #category : 'helpers' }
@@ -923,6 +946,43 @@ SindarinDebuggerTest >> testMoveToNodeWhenFromNonInlinedEmbeddedBlockToNodeThatI
 	self assert: sdbg topStack equals: 2
 ]
 
+{ #category : 'helpers' }
+SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockCreationIsFirstBytecodeInFirstStatement [
+
+	| aimedBlock sdbg aimedNode |
+	sdbg := SindarinDebugger debug: [
+		        self
+			        methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement ].
+	"We step until the `a * 42` node"
+	sdbg step.
+	6 timesRepeat: [ sdbg stepOver ].
+
+	self assert: sdbg method identicalTo: self class
+		>>
+		#methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement.
+	self assert: (sdbg readVariableNamed: #a) identicalTo: 3.
+
+	"We jump to the node `a + 1` inside the block"
+	aimedBlock := sdbg methodNode statements first value.
+	aimedNode := aimedBlock body statements first value.
+	sdbg moveToNode: aimedNode.
+
+	"We are in the block context"
+	self assert: sdbg method ast identicalTo: aimedBlock.
+	"The block context can also read #a"
+	self assert: (sdbg readVariableNamed: #a) identicalTo: 3.
+
+	"We step the entire block"
+	3 timesRepeat: [ sdbg stepOver ].
+
+	"We are back in the context method"
+	self assert: sdbg method identicalTo: self class
+		>>
+		#methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeInFirstStatement.
+	"We can still read #a in the method context"
+	self assert: (sdbg readVariableNamed: #a) identicalTo: 4
+]
+
 { #category : 'tests' }
 SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInBlockThatCreatesContextAndBlockHasBeenCreated [
 
@@ -1313,6 +1373,52 @@ SindarinDebuggerTest >> testSkipBlockNode [
 
 	self assert: scdbg context identicalTo: targetContext.
 	self assert: scdbg topStack equals: 43
+]
+
+{ #category : 'tests' }
+SindarinDebuggerTest >> testSkipCanSkipReturnIfItIsNotTheLastReturn [
+
+	| scdbg |
+	scdbg := SindarinDebugger debug: [ self methodWithSeveralReturns ].
+
+	"we step until we arrive on the node `^ a := 1` in `SindarinDebuggerTest>>#methodWithSeveralReturns`."
+	scdbg
+		step;
+		skip;
+		skip;
+		step.
+
+	self assert: scdbg node isReturn.
+	self assert: scdbg topStack equals: 1.
+
+	"We skip the return node"
+	self shouldnt: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+
+	"We should be on the `a := 2` node"
+	self assert: scdbg node isAssignment.
+	self assert: scdbg node value value equals: 2
+]
+
+{ #category : #tests }
+SindarinDebuggerTest >> testSkipCannotSkipReturnIfItIsTheLastReturn [
+
+	| scdbg nodeWithImplicitReturn |
+	scdbg := SindarinDebugger debug: [ self methodWithSeveralReturns ].
+
+	"we step until we arrive on the method node in `SindarinDebuggerTest>>#methodWithSeveralReturns`, which is mapped to the implicit return bycode."
+	scdbg step.
+	nodeWithImplicitReturn := scdbg methodNode.
+	3 timesRepeat: [ scdbg step ].
+
+	self assert: scdbg node identicalTo: nodeWithImplicitReturn.
+	self assert: scdbg instructionStream willReturn.
+
+	"We skip the return node"
+	self should: [ scdbg skip ] raise: SindarinSkippingReturnWarning.
+
+	"We should still be on the method node"
+	self assert: scdbg node identicalTo: nodeWithImplicitReturn.
+	self assert: scdbg instructionStream willReturn
 ]
 
 { #category : 'tests' }

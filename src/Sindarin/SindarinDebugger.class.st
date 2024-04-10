@@ -243,13 +243,12 @@ SindarinDebugger >> nextExecutedNodeAfter: aNode [
 
 { #category : #'API - changes' }
 SindarinDebugger >> pc: anInteger [
-
 	"Allows to move to the first PC associated to the node to which anInteger is associated. anInteger must be a valid pc in the suspended context"
 
 	| nextNode methodNode firstPCOfStatementNode |
 	"If aimedPC is outside the context PCs range, then an error is signaled"
-	(anInteger < self method initialPC or: [ 
-		 anInteger > self method endPC ]) ifTrue: [ 
+	(anInteger < self method initialPC or: [
+		 anInteger > self method endPC ]) ifTrue: [
 		^ NotValidPcError signal ].
 	methodNode := self methodNode.
 	nextNode := methodNode sourceNodeForPC: anInteger.
@@ -261,6 +260,12 @@ SindarinDebugger >> pc: anInteger [
 				                          methodNode statements first.
 			self cleanStack ].
 	self context pc: firstPCOfStatementNode.
+
+	"If the first pc of the first statement is mapped to a block creation. That means that it needs the associated temp vector on top of the stack. The bytecode that pushes this vector on the stack precedes the block creation. So, here, this bytecode is mapped to the method node and has been skipped. Thus, we go back to the previous bytecode to execute it."
+	self instructionStream willCreateBlock ifTrue: [
+		self context pc: self instructionStream previousPc.
+		self stepBytecode ].
+
 	self debugSession stepToFirstInterestingBytecodeIn:
 		self debugSession interruptedProcess.
 	self skipUpToNode: nextNode
@@ -424,8 +429,24 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 { #category : #'stepping -  skip' }
 SindarinDebugger >> skipReturnNode [
 
-	self flag: 'We should be able to skip a return node as long as it''s not the last one in the method'.
-	^ SindarinSkippingReturnWarning signal: 'Cannot skip a return node'
+	| node allReturnNodes |
+	node := self node.
+
+	"We collect the list of nodes associated to a return bytecode, via the IR"
+	allReturnNodes := self method ir children flatCollect: [ :irSequence |
+		                  irSequence sequence
+			                  select: [ :irInstruction |
+			                  irInstruction isReturn ]
+			                  thenCollect: [ :irInstruction |
+			                  irInstruction sourceNode ] ].
+	"If this is the last node of the method that is mapped to a return bytecode, we can't skip it and we stop there."
+	node == allReturnNodes last ifTrue: [
+		^ SindarinSkippingReturnWarning signal:
+			  'Cannot skip the last return in the method' ].
+
+	self skipPcToNextBytecode.
+	self debugSession stepToFirstInterestingBytecodeWithJumpIn:
+		self debugSession interruptedProcess
 ]
 
 { #category : #'stepping -  skip' }

@@ -2,80 +2,82 @@
 I mock sindarin debug sessions to control it finely during tests
 "
 Class {
-	#name : #SindarinDebugSessionMock,
-	#superclass : #Object,
+	#name : 'SindarinDebugSessionMock',
+	#superclass : 'Object',
 	#instVars : [
 		'isMessage',
 		'selector',
 		'receiver'
 	],
-	#category : #'Sindarin-Tests-Mocks'
+	#category : 'Sindarin-Tests-Mocks',
+	#package : 'Sindarin-Tests',
+	#tag : 'Mocks'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> context [
 	 ^self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> debugSession [
 	 ^self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> interruptedContext [
 	 ^self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> isMessage [
 	 ^isMessage ifNil:[false]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> isMessage: anObject [
 
 	isMessage := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> method [
 	 ^self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> pc [
 	 ^self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> receiver [
 	 ^receiver
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> receiver: anObject [
 
 	receiver := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> selector [
 	^selector 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> selector: anObject [
 
 	selector := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> sourceNodeExecuted [
 	 ^self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSessionMock >> sourceNodeForPC: pc [
 	 ^self
 ]

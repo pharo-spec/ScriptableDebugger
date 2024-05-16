@@ -1,14 +1,16 @@
 Class {
-	#name : #RBBlockDefinitionSearchingVisitor,
-	#superclass : #RBProgramNodeVisitor,
+	#name : 'RBBlockDefinitionSearchingVisitor',
+	#superclass : 'RBProgramNodeVisitor',
 	#instVars : [
 		'blockToSearch',
 		'isBlockFound'
 	],
-	#category : #'Sindarin-Base'
+	#category : 'Sindarin-Base',
+	#package : 'Sindarin',
+	#tag : 'Base'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 RBBlockDefinitionSearchingVisitor class >> newToSearch: aBlockNode [
 
 	^ self new
@@ -16,26 +18,26 @@ RBBlockDefinitionSearchingVisitor class >> newToSearch: aBlockNode [
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 RBBlockDefinitionSearchingVisitor >> blockToSearch: aBlockNode [
 
 	blockToSearch := aBlockNode.
 	isBlockFound := false
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 RBBlockDefinitionSearchingVisitor >> initialize [
 
 	isBlockFound := false
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 RBBlockDefinitionSearchingVisitor >> isBlockFound [
 
 	^ isBlockFound
 ]
 
-{ #category : #visiting }
+{ #category : 'visiting' }
 RBBlockDefinitionSearchingVisitor >> visitNode: aNode [
 
 	super visitNode: aNode.

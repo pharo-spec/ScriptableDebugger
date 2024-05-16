@@ -1,11 +1,11 @@
-Extension { #name : #DebugSession }
+Extension { #name : 'DebugSession' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 DebugSession >> asSindarinDebugSession [
 	^ SindarinDebugSession new debugSession: self
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 DebugSession >> stepToFirstInterestingBytecodeWithJumpIn: aProcess [
 	"After a restart of a method activation step to the first 
 	bytecode instruction that is of interest for the debugger.
@@ -24,7 +24,7 @@ DebugSession >> stepToFirstInterestingBytecodeWithJumpIn: aProcess [
 	^ aProcess stepToSendOrReturnOrJump
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 DebugSession >> suspendedContext: aContext [ 
 	
 	interruptedContext := aContext

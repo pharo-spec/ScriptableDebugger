@@ -136,7 +136,6 @@ SindarinDebuggerTest >> methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeI
  	^ a * 42
 ]
 
-
 { #category : 'helpers' }
 SindarinDebuggerTest >> methodWithOneAssignment [
 
@@ -1399,7 +1398,7 @@ SindarinDebuggerTest >> testSkipCanSkipReturnIfItIsNotTheLastReturn [
 	self assert: scdbg node value value equals: 2
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinDebuggerTest >> testSkipCannotSkipReturnIfItIsTheLastReturn [
 
 	| scdbg nodeWithImplicitReturn |
@@ -2041,8 +2040,8 @@ SindarinDebuggerTest >> testTemporaryNamed [
 SindarinDebuggerTest >> testTerminate [
 	| dbg |
 	dbg := SindarinDebugger debug: [ self helperMethod13 ].
-	self assert: dbg debugSession interruptedContext notNil.
-	self assert: dbg debugSession interruptedProcess notNil.
+	self assert: dbg debugSession interruptedContext isNotNil.
+	self assert: dbg debugSession interruptedProcess isNotNil.
 	dbg terminate.
 	self assert: dbg debugSession interruptedContext isNil.
 	self assert: dbg debugSession interruptedProcess isNil.

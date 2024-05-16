@@ -1,13 +1,15 @@
 Class {
-	#name : #UnhandledExceptionSignalledByADebuggedExecution,
-	#superclass : #DebuggedExecutionException,
+	#name : 'UnhandledExceptionSignalledByADebuggedExecution',
+	#superclass : 'DebuggedExecutionException',
 	#instVars : [
 		'unhandledException'
 	],
-	#category : #'Sindarin-Exceptions'
+	#category : 'Sindarin-Exceptions',
+	#package : 'Sindarin',
+	#tag : 'Exceptions'
 }
 
-{ #category : #signalling }
+{ #category : 'signalling' }
 UnhandledExceptionSignalledByADebuggedExecution class >> signalWithException: anException [
 
 	self new
@@ -16,13 +18,13 @@ UnhandledExceptionSignalledByADebuggedExecution class >> signalWithException: an
 			'An execution debugged by a scriptable debugger signalled an exception that it did not handle itself. You can find this exception is in the #unhandledException instance variable of this object.'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 UnhandledExceptionSignalledByADebuggedExecution >> unhandledException [
 
 	^ unhandledException
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 UnhandledExceptionSignalledByADebuggedExecution >> unhandledException: anException [
 
 	unhandledException := anException

@@ -1,6 +1,6 @@
-Extension { #name : #OCBytecodeToASTCache }
+Extension { #name : 'OCBytecodeToASTCache' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 OCBytecodeToASTCache >> firstRecursiveBcOffsetForStatementNode: aStatementNode [
 
 	^ self methodOrBlockNode bcToASTCache bcToASTMap keys sorted detect: [ 

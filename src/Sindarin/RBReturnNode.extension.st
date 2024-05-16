@@ -1,6 +1,6 @@
-Extension { #name : #RBReturnNode }
+Extension { #name : 'RBReturnNode' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBReturnNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger skipReturnNode

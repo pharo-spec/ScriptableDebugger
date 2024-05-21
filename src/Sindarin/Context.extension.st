@@ -1,6 +1,6 @@
-Extension { #name : #Context }
+Extension { #name : 'Context' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 Context >> stepToSendOrReturnOrJump [
 
 	"Simulate the execution of bytecodes until either sending a message or 

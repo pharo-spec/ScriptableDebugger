@@ -1,6 +1,6 @@
-Extension { #name : #RBMethodNode }
+Extension { #name : 'RBMethodNode' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBMethodNode >> executedNodesAfter: aNode [
 
 	"Gives all nodes that are executed after aNode. Assuming that aNode is a recursive child, then all nodes executed after it are all nodes after it in allChildrenPostOrder"
@@ -13,13 +13,13 @@ RBMethodNode >> executedNodesAfter: aNode [
 	^ nodesAfter
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBMethodNode >> firstPCOfStatement: aStatementNode [
 
 	^ self bcToASTCache firstRecursiveBcOffsetForStatementNode: aStatementNode
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBMethodNode >> nextExecutedNodeAfter: aNode [
 
 	"Find first node that is after aNode that has an associated pc in method node all children (post-order)"
@@ -31,7 +31,7 @@ RBMethodNode >> nextExecutedNodeAfter: aNode [
 	^ nodesAfter at: indexOfNextNode
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBMethodNode >> parentOfIdenticalSubtree: subtree [
 
 	^ self allChildren reversed
@@ -40,7 +40,7 @@ RBMethodNode >> parentOfIdenticalSubtree: subtree [
 		  ifNone: [ nil ]
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBMethodNode >> statementNodeContaining: aNode [
 
 	| statementNode parentOfStatementNode |

@@ -42,7 +42,7 @@ SindarinDebugSessionTest >> testSindarinSessionInstantiation [
 	sindarinSession := SindarinDebugSession
 		                   newWithName: sessionName
 		                   forProcess: process.
-	self assert: sindarinSession debugSession notNil.
+	self assert: sindarinSession debugSession isNotNil.
 	self assert: sindarinSession debugSession name equals: sessionName.
 	self
 		assert: sindarinSession debugSession process

@@ -15,14 +15,16 @@ Virtual breakpoints were introduced because due to technical limitations, normal
 - stepHooks: OrderedCollection<Block>. A list of blocks to be evaluated after each step of the debugged execution
 "
 Class {
-	#name : #SindarinDebugger,
-	#superclass : #Object,
+	#name : 'SindarinDebugger',
+	#superclass : 'Object',
 	#traits : 'TDebugger + TSindarin',
 	#classTraits : 'TDebugger classTrait + TSindarin classTrait',
-	#category : #'Sindarin-Base'
+	#category : 'Sindarin-Base',
+	#package : 'Sindarin',
+	#tag : 'Base'
 }
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> assignmentValue [
 	"Returns the value about to be assigned, if the current node is an assignment node. Otherwise, returns nil"
 	self flag: 'Why there is no error raised here, while for the case of message sends there is an error?'.
@@ -31,7 +33,7 @@ SindarinDebugger >> assignmentValue [
 	^ self context at: self currentContextStackSize
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> assignmentVariableName [
 	"Returns the variable name about to be assigned to, if the current node is an assignment node. Otherwise, returns nil"
 	self flag: 'Why there is no error raised in the case of assignemnts, while there is one for message sends?'.
@@ -40,13 +42,13 @@ SindarinDebugger >> assignmentVariableName [
 	^ self node variable name
 ]
 
-{ #category : #astAndAstMapping }
+{ #category : 'astAndAstMapping' }
 SindarinDebugger >> bestNodeFor: anInterval [
 
 	^ self node methodNode bestNodeFor: anInterval
 ]
 
-{ #category : #'ast manipulation' }
+{ #category : 'ast manipulation' }
 SindarinDebugger >> canStillExecute: aProgramNode [
 	"returns true if the last pc mapped to aProgramNode is greater than `self pc` in the right context "
 
@@ -64,7 +66,7 @@ SindarinDebugger >> canStillExecute: aProgramNode [
 	^ rightContext pc < lastPcForNode
 ]
 
-{ #category : #'execution predicates' }
+{ #category : 'execution predicates' }
 SindarinDebugger >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 
@@ -79,7 +81,7 @@ SindarinDebugger >> contextIsAboutToSignalException: aContext [
 
 ]
 
-{ #category : #'stepping - auto' }
+{ #category : 'stepping - auto' }
 SindarinDebugger >> continue [
 	"Steps the execution until it:
 	- is about to signal an exception.
@@ -89,13 +91,13 @@ SindarinDebugger >> continue [
 		whileFalse: [ self step ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugger >> firstPCOfStatement: aStatementNode [
 
 	^ self methodNode firstPCOfStatement: aStatementNode
 ]
 
-{ #category : #'execution predicates' }
+{ #category : 'execution predicates' }
 SindarinDebugger >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
 
@@ -103,25 +105,25 @@ SindarinDebugger >> hasSignalledUnhandledException [
 		  self receiver isKindOf: Exception ]
 ]
 
-{ #category : #'execution predicates' }
+{ #category : 'execution predicates' }
 SindarinDebugger >> isAboutToInstantiateClass [
 
 	| methodAboutToExecute |
 	self isMessageSend ifFalse: [ ^ false ].
 	methodAboutToExecute := self receiver class lookupSelector:
 		                        self node selector.
-	^ methodAboutToExecute notNil and: [ 
+	^ methodAboutToExecute isNotNil and: [ 
 		  self instanceCreationPrimitives includes:
 			  methodAboutToExecute primitive ]
 ]
 
-{ #category : #'execution predicates' }
+{ #category : 'execution predicates' }
 SindarinDebugger >> isAboutToSignalException [
 
 	^ self contextIsAboutToSignalException: self context
 ]
 
-{ #category : #'API - changes' }
+{ #category : 'API - changes' }
 SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
 	"Moves to targetNode that must be in aBlockNode, which should be a recursive child"
 
@@ -139,21 +141,21 @@ SindarinDebugger >> jumpIntoBlock: aBlockNode toNode: targetNode [
 	^ self moveToNode: targetNode
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> message: aSelector [
 	"Returns whether the execution is about to send a message of selector @aSelector to any object"
 
 	^ self isMessageSend and: [ self messageSelector = aSelector ]
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> message: aSelector to: anObject [
 	"Returns whether the execution is about to send a message of selector @aSelector to @anObject"
 
 	^ (self message: aSelector) and: [ self messageReceiver == anObject ]
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> message: aSelector toInstanceOf: aClass [
 	"Returns whether the execution is about to send a message of selector @aSelector to an instance of class @aClass"
 
@@ -164,7 +166,7 @@ SindarinDebugger >> message: aSelector toInstanceOf: aClass [
 	^ self messageReceiver isKindOf: aClass
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> messageArguments [
 	"Returns the arguments of the message about to be sent, if the current node is a message node."
 
@@ -181,7 +183,7 @@ SindarinDebugger >> messageArguments [
 	^ arguments
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> messageReceiver [
 	"Returns the receiver of the message about to be sent, if the current node is a message node."
 
@@ -191,7 +193,7 @@ SindarinDebugger >> messageReceiver [
 		at: self currentContextStackSize - self node arguments size
 ]
 
-{ #category : #stackAccessHelpers }
+{ #category : 'stackAccessHelpers' }
 SindarinDebugger >> messageSelector [
 	"Returns the selector of the message about to be sent, if the current node is a message node."
 
@@ -200,7 +202,7 @@ SindarinDebugger >> messageSelector [
 	^ self node selector
 ]
 
-{ #category : #'API - changes' }
+{ #category : 'API - changes' }
 SindarinDebugger >> moveToNode: aNode [
 
 	"Allows to jump to the first bytecode offset associated to aNode, as long as aNode is in the same lexical context as the suspended context"
@@ -228,20 +230,20 @@ SindarinDebugger >> moveToNode: aNode [
 	self pc: firstPCForNode
 ]
 
-{ #category : #'accessing - bytes' }
+{ #category : 'accessing - bytes' }
 SindarinDebugger >> nextBytecode [
 
 	^ self symbolicBytecodesForCurrent detect: [ :each | 
 		  each offset = self pc ]
 ]
 
-{ #category : #'API - changes' }
+{ #category : 'API - changes' }
 SindarinDebugger >> nextExecutedNodeAfter: aNode [
 
 	^ self methodNode nextExecutedNodeAfter: aNode
 ]
 
-{ #category : #'API - changes' }
+{ #category : 'API - changes' }
 SindarinDebugger >> pc: anInteger [
 	"Allows to move to the first PC associated to the node to which anInteger is associated. anInteger must be a valid pc in the suspended context"
 
@@ -271,14 +273,14 @@ SindarinDebugger >> pc: anInteger [
 	self skipUpToNode: nextNode
 ]
 
-{ #category : #'stepping - auto' }
+{ #category : 'stepping - auto' }
 SindarinDebugger >> proceed [
 	"alias of #continue"
 
 	^ self continue
 ]
 
-{ #category : #asserting }
+{ #category : 'asserting' }
 SindarinDebugger >> shouldStepIntoInMethod: aRBMethodNode [
 	"used by #stpeToReturn to know if it should stepInto or stepOver. It should stepInto to get to non-local returns"
 
@@ -301,7 +303,7 @@ SindarinDebugger >> shouldStepIntoInMethod: aRBMethodNode [
 			  aRBMethodNode ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledException [
 
 	| unhandledException |
@@ -321,7 +323,7 @@ SindarinDebugger >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledExcep
 				signalWithException: unhandledException ]"
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 SindarinDebugger >> signalExceptionIfDebuggedExecutionIsFinished [
 	"Signals an DebuggedExecutionIsFinished exception if the debugged execution is finished"
 
@@ -329,7 +331,7 @@ SindarinDebugger >> signalExceptionIfDebuggedExecutionIsFinished [
 		DebuggedExecutionIsFinished signal ]
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skip [
 
 	| instructionStream |
@@ -343,7 +345,7 @@ SindarinDebugger >> skip [
 	self node skipWithDebugger: self
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeCompletely [
 	
 	"Pop the value that will be assigned"
@@ -361,7 +363,7 @@ SindarinDebugger >> skipAssignmentNodeCompletely [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 
 	"Pop the value to be assigned"
@@ -375,7 +377,7 @@ SindarinDebugger >> skipAssignmentNodeWith: replacementValue [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipBlockNode [
 
 	self skipPcToNextBytecode.
@@ -386,7 +388,7 @@ SindarinDebugger >> skipBlockNode [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipJump [
 
 	| instructionStream |
@@ -399,7 +401,7 @@ SindarinDebugger >> skipJump [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipMessageNode [
 
 	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"
@@ -411,7 +413,7 @@ SindarinDebugger >> skipMessageNode [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipMessageNodeWith: replacementValue [
 
 	self node arguments do: [ :arg | self context pop ]. "Pop the arguments of the message send from the context's value stack"
@@ -426,7 +428,7 @@ SindarinDebugger >> skipMessageNodeWith: replacementValue [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipReturnNode [
 
 	| node allReturnNodes |
@@ -449,7 +451,7 @@ SindarinDebugger >> skipReturnNode [
 		self debugSession interruptedProcess
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipThroughNode: aProgramNode [
 	"Skips execution until program counter reaches aProgramNode.
 	Also skip the target node."
@@ -457,7 +459,7 @@ SindarinDebugger >> skipThroughNode: aProgramNode [
 	self skipUpToNode: aProgramNode skipTargetNode: true
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipToPC: aPC [
 
 	"Skips execution until program counter reaches aPC."
@@ -467,7 +469,7 @@ SindarinDebugger >> skipToPC: aPC [
 		do: [ ^ self ]
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipUpToNode: aProgramNode [
 	"Skips execution until program counter reaches aProgramNode.
 	Does not skip the target node."
@@ -475,7 +477,7 @@ SindarinDebugger >> skipUpToNode: aProgramNode [
 	self skipUpToNode: aProgramNode skipTargetNode: false
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
 
 	"Skips execution until program counter reaches aProgramNode."
@@ -490,7 +492,7 @@ SindarinDebugger >> skipUpToNode: aProgramNode skipTargetNode: skipTargetNode [
 	skipTargetNode ifTrue: [ self skip ]
 ]
 
-{ #category : #'stepping -  skip' }
+{ #category : 'stepping -  skip' }
 SindarinDebugger >> skipWith: replacementValue [
 	"If it is a message-send or assignment, skips the execution of the current instruction, and puts the replacementValue on the execution stack."
 
@@ -504,7 +506,7 @@ SindarinDebugger >> skipWith: replacementValue [
 		^ self skipAssignmentNodeWith: replacementValue ]
 ]
 
-{ #category : #'ast manipulation' }
+{ #category : 'ast manipulation' }
 SindarinDebugger >> statementNodeContaining: aNode [
 
 	| method statementNode parentOfStatementNode |
@@ -521,7 +523,7 @@ SindarinDebugger >> statementNodeContaining: aNode [
 	^ statementNode
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> step [
 	"Executes the next instruction. If the instruction is a message-send, step inside it."
 
@@ -530,14 +532,14 @@ SindarinDebugger >> step [
 	self basicStep
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> step: anInt [
 	"Call the #step method @anInt times"
 
 	anInt timesRepeat: [ self step ]
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepBytecode [
 	"Executes the next bytecode"
 
@@ -547,7 +549,7 @@ SindarinDebugger >> stepBytecode [
 	self debugSession updateContextTo: process suspendedContext
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepOver [
 	| startContext |
 	self flag: 'Why don''t we use the stepOver from the debug session? Do we really need to use the #step that performs exception check and termination check every time?'.
@@ -559,14 +561,14 @@ SindarinDebugger >> stepOver [
 		whileFalse: [ self step ]
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepOver: anInt [
 	"Call the #stepOver method @anInt times"
 
 	anInt timesRepeat: [ self stepOver ]
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepThrough [
 	"Hacked for demonstration purposes to have a stepThrough"
 
@@ -574,7 +576,7 @@ SindarinDebugger >> stepThrough [
 	self basicStepThrough
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepToMethodEntry [
 
 	self flag:
@@ -584,7 +586,7 @@ SindarinDebugger >> stepToMethodEntry [
 	self debugSession updateContextTo: process suspendedContext
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepToReturn [
 
 	| oldContext methodAST |
@@ -600,14 +602,14 @@ SindarinDebugger >> stepToReturn [
 			ifFalse: [ self basicStepOver ] ]
 ]
 
-{ #category : #'stepping - steps' }
+{ #category : 'stepping - steps' }
 SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 
 	aBlock whileFalse: [ self step ]
 ]
 
-{ #category : #'API - changes' }
+{ #category : 'API - changes' }
 SindarinDebugger >> tryMoveToNodeInHomeContext: aNode [
 	"Moves to node aNode if aNode is in the lexical context. Otherwise, the program state goes back to how it was before trying and signals an error as the node is not in AST"
 
@@ -623,7 +625,7 @@ SindarinDebugger >> tryMoveToNodeInHomeContext: aNode [
 			^ NodeNotInASTError signal ]
 ]
 
-{ #category : #'execution predicates' }
+{ #category : 'execution predicates' }
 SindarinDebugger >> willStoreButNotPop [
 
 	^ self instructionStream willStoreButNotPop

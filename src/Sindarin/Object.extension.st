@@ -1,6 +1,6 @@
-Extension { #name : #Object }
+Extension { #name : 'Object' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 Object >> isExceptionSignalledForDebuggedExecution [
 	^ false
 ]

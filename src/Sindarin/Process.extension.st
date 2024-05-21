@@ -1,6 +1,6 @@
-Extension { #name : #Process }
+Extension { #name : 'Process' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 Process >> stepToSendOrReturnOrJump [
 
 	^Processor activeProcess

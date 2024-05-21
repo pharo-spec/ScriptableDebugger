@@ -6,46 +6,48 @@ Has an automatic mechanism to register its script on the ScriptableDebugger clas
 - `dbg`: the SindarinDebugger instance that will control the interrupted execution
 "
 Class {
-	#name : #SindarinScript,
-	#superclass : #Object,
+	#name : 'SindarinScript',
+	#superclass : 'Object',
 	#instVars : [
 		'dbg',
 		'args'
 	],
-	#category : #'Sindarin-Scripts-core'
+	#category : 'Sindarin-Scripts-core',
+	#package : 'Sindarin-Scripts',
+	#tag : 'core'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinScript >> arguments: anArray [
 	args := anArray
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinScript >> debugger [
 	^dbg
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinScript >> debugger: aSindarinDebugger [
 	dbg := aSindarinDebugger 
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 SindarinScript >> execute [
 	"By default: does nothing"
 ]
 
-{ #category : #deprecated }
+{ #category : 'deprecated' }
 SindarinScript >> execute: aScriptableDebugger [
 	self subclassResponsibility
 ]
 
-{ #category : #deprecated }
+{ #category : 'deprecated' }
 SindarinScript >> execute: aScriptableDebugger withArgs: anOrderedCollection [
 	self subclassResponsibility.
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 SindarinScript >> executeWith: aSindarinDebugger [
 	dbg := aSindarinDebugger.
 	self execute

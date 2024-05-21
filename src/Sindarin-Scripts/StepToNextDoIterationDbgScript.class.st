@@ -2,42 +2,44 @@
 If aContext has among its senders a context for the #do: method of an instance of Collection (or subclasses), step until the next time the argument block of #do: is executed (or until the #do: context is popped if it happens first)
 "
 Class {
-	#name : #StepToNextDoIterationDbgScript,
-	#superclass : #SindarinScript,
+	#name : 'StepToNextDoIterationDbgScript',
+	#superclass : 'SindarinScript',
 	#instVars : [
 		'startContext',
 		'doContext',
 		'doArgumentBlock'
 	],
-	#category : #'Sindarin-Scripts-examples'
+	#category : 'Sindarin-Scripts-examples',
+	#package : 'Sindarin-Scripts',
+	#tag : 'examples'
 }
 
-{ #category : #example }
+{ #category : 'example' }
 StepToNextDoIterationDbgScript class >> doCollectionExample [
 	|a|
 	a := OrderedCollection new.
 	{ 1 . 2 . 3 } do: [ :int | a add: int. a add: int ].
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 StepToNextDoIterationDbgScript class >> scriptName [
 	^ 'StepToNextDoIteration'
 ]
 
-{ #category : #helper }
+{ #category : 'helper' }
 StepToNextDoIterationDbgScript >> context: aContext isForBlock: aBlock [
 	"Returns whether aContext is a block context for aBlock"
 	aContext isBlockContext ifFalse: [ ^ false ].
 	^ aContext closure sourceNode == aBlock sourceNode.
 ]
 
-{ #category : #helper }
+{ #category : 'helper' }
 StepToNextDoIterationDbgScript >> contextIsOnStack: aContext [
 	"Returns whether aContext is somewhere on the stack"
 	^ (dbg context findContextSuchThat: [ :aContexta| aContexta == aContext ]) isNotNil.
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 StepToNextDoIterationDbgScript >> execute: aScriptableDebugger [
 	| stepHook |
 	dbg := aScriptableDebugger.
@@ -68,18 +70,18 @@ StepToNextDoIterationDbgScript >> execute: aScriptableDebugger [
 	].
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 StepToNextDoIterationDbgScript >> execute: aScriptableDebugger withArgs: anOrderedCollection [
 	self execute: aScriptableDebugger.
 ]
 
-{ #category : #helper }
+{ #category : 'helper' }
 StepToNextDoIterationDbgScript >> findContextForSelector: aSymbol andClassOrSubclassOf: aClass [
 	"Run through the context stack from top to bottom to find a context whose selector is aSymbol and for which the class of its receiver is equal to or a subclass of aClass"
 	^ dbg context findContextSuchThat: [ :ctxt | (ctxt method selector = aSymbol) and: [ ctxt receiver isKindOf: aClass  ] ]
 ]
 
-{ #category : #helper }
+{ #category : 'helper' }
 StepToNextDoIterationDbgScript >> stepToContextForBlock: aBlock [
 	"Runs the execution until the current context is a block context for aBlock"
 	[ self context: (dbg context) isForBlock: aBlock ] whileFalse: [dbg step].

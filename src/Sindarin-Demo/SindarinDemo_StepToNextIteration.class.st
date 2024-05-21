@@ -1,15 +1,16 @@
 Class {
-	#name : #'SindarinDemo_StepToNextIteration',
-	#superclass : #Object,
-	#category : #'Sindarin-Demo'
+	#name : 'SindarinDemo_StepToNextIteration',
+	#superclass : 'Object',
+	#category : 'Sindarin-Demo',
+	#package : 'Sindarin-Demo'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDemo_StepToNextIteration >> start [
 	self sum
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDemo_StepToNextIteration >> sum [
 	| count |
 	self halt.

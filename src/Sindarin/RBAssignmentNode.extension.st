@@ -1,6 +1,6 @@
-Extension { #name : #RBAssignmentNode }
+Extension { #name : 'RBAssignmentNode' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBAssignmentNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger skipAssignmentNodeCompletely 

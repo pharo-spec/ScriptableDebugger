@@ -1,19 +1,20 @@
 Class {
-	#name : #Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue,
-	#superclass : #Object,
+	#name : 'Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue',
+	#superclass : 'Object',
 	#instVars : [
 		'var'
 	],
-	#category : #'Sindarin-Experiments'
+	#category : 'Sindarin-Experiments',
+	#package : 'Sindarin-Experiments'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue >> doNothing [
 	^ 1
 	
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue >> helper1 [
 	self doNothing.
 	self helper2.
@@ -21,7 +22,7 @@ Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue >> helper1 [
 	self doNothing.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue >> helper2 [
 	var := 2.
 	self doNothing.
@@ -29,7 +30,7 @@ Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue >> helper2 [
 	
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 Scenario1SetBreakpointWhenAGivenFieldIsAssignedAGivenValue >> helper3 [
 	var := nil.
 	

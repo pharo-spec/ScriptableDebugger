@@ -1,6 +1,6 @@
-Extension { #name : #SindarinDebugger }
+Extension { #name : 'SindarinDebugger' }
 
-{ #category : #'*Sindarin-Scripts' }
+{ #category : '*Sindarin-Scripts' }
 SindarinDebugger >> run: aSindarinScript [
 
 	aSindarinScript executeWith: self

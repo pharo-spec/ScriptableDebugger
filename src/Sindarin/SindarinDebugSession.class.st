@@ -4,17 +4,19 @@ stepRecord: StepRecord
 StepRecords: LinkedList[StepRecord]
 "
 Class {
-	#name : #SindarinDebugSession,
-	#superclass : #Object,
+	#name : 'SindarinDebugSession',
+	#superclass : 'Object',
 	#instVars : [
 		'triggerEventOn',
 		'canBeTerminated',
 		'debugSession'
 	],
-	#category : #'Sindarin-Core'
+	#category : 'Sindarin-Core',
+	#package : 'Sindarin',
+	#tag : 'Core'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 SindarinDebugSession class >> newWithName: aString forProcess: aProcess [
 
 	^ DebugSession new
@@ -23,50 +25,50 @@ SindarinDebugSession class >> newWithName: aString forProcess: aProcess [
 		  asSindarinDebugSession
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 SindarinDebugSession >> activateEventTriggering [
 	triggerEventOn := true.
 	self flag: 'Why not refreshing?'.
 	"self refreshAttachedDebugger."
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 SindarinDebugSession >> asSindarinDebugSession [
 
 	^ self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSession >> canBeTerminated [
 
 	^ canBeTerminated
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSession >> canBeTerminated: anObject [
 
 	canBeTerminated := anObject
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 SindarinDebugSession >> deactivateEventTriggering [
 
 	triggerEventOn := false
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSession >> debugSession [
 
 	^ debugSession
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinDebugSession >> debugSession: anObject [
 
 	debugSession := anObject
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 SindarinDebugSession >> initialize [
 
 	super initialize.
@@ -74,14 +76,14 @@ SindarinDebugSession >> initialize [
 	canBeTerminated := true
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 SindarinDebugSession >> refreshAttachedDebugger [
 	"The following lines are to force possible debuggers observing the same debug session to update themselves based"
 
 	self debugSession triggerEvent: #contextChanged
 ]
 
-{ #category : #'debugging actions' }
+{ #category : 'debugging actions' }
 SindarinDebugSession >> resumeAndClear [
 
 	self debugSession
@@ -89,7 +91,7 @@ SindarinDebugSession >> resumeAndClear [
 		clear
 ]
 
-{ #category : #'debugging actions' }
+{ #category : 'debugging actions' }
 SindarinDebugSession >> stepInto: aContext [
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self flag: 'Why the image gets locked? Please investigate.'.
@@ -99,7 +101,7 @@ SindarinDebugSession >> stepInto: aContext [
 	^ self debugSession stepInto: aContext
 ]
 
-{ #category : #'debugging actions' }
+{ #category : 'debugging actions' }
 SindarinDebugSession >> stepOver: aContext [
 	"Should not step more a process that is terminating, otherwise the image will get locked."
 	self flag: 'Why the image gets locked? Please investigate.'.
@@ -109,13 +111,13 @@ SindarinDebugSession >> stepOver: aContext [
 	^ self debugSession stepOver: aContext
 ]
 
-{ #category : #'debugging actions' }
+{ #category : 'debugging actions' }
 SindarinDebugSession >> terminate [
 
 	canBeTerminated ifTrue: [ ^ self debugSession terminate ]
 ]
 
-{ #category : #'debugging actions' }
+{ #category : 'debugging actions' }
 SindarinDebugSession >> triggerEvent: anEventSelector [
 
 	triggerEventOn ifTrue: [ 

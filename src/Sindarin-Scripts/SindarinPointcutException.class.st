@@ -6,15 +6,17 @@ When Sindarin debugs me, it executes the debugging script that I reference.
 
 "
 Class {
-	#name : #SindarinPointcutException,
-	#superclass : #Halt,
+	#name : 'SindarinPointcutException',
+	#superclass : 'Halt',
 	#instVars : [
 		'script'
 	],
-	#category : #'Sindarin-Scripts-core'
+	#category : 'Sindarin-Scripts-core',
+	#package : 'Sindarin-Scripts',
+	#tag : 'core'
 }
 
-{ #category : #debugging }
+{ #category : 'debugging' }
 SindarinPointcutException class >> signalWith: aSindarinScript [
 
 	<debuggerCompleteToSender>
@@ -24,26 +26,26 @@ SindarinPointcutException class >> signalWith: aSindarinScript [
 	scriptingException debug 
 ]
 
-{ #category : #handling }
+{ #category : 'handling' }
 SindarinPointcutException >> debug [
 	signalContext := thisContext contextTag.
 	signaler ifNil: [ signaler := self receiver ].
 	super debug
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 SindarinPointcutException >> isHandleableBy: aDebugger [
 
 	^ aDebugger == SindarinDebugger
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinPointcutException >> script [
 
 	^ script
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinPointcutException >> script: anObject [
 
 	script := anObject

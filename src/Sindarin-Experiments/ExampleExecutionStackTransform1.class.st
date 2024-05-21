@@ -12,16 +12,17 @@ scdbg1 activateAutoRefreshOfAttachedGraphicalDebugger. scdbg2 activateAutoRefres
 scdbg2 refreshAttachedGraphicalDebugger 
 "
 Class {
-	#name : #ExampleExecutionStackTransform1,
-	#superclass : #TestCase,
+	#name : 'ExampleExecutionStackTransform1',
+	#superclass : 'TestCase',
 	#instVars : [
 		'stack',
 		'expected'
 	],
-	#category : #'Sindarin-Experiments'
+	#category : 'Sindarin-Experiments',
+	#package : 'Sindarin-Experiments'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 ExampleExecutionStackTransform1 >> setUp [
 	stack := Stack new.
 	stack push: $3; push: 'b'; push: $a.
@@ -29,12 +30,12 @@ ExampleExecutionStackTransform1 >> setUp [
 	expected push: '3'; push: 'b'; push: 'a'.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 ExampleExecutionStackTransform1 >> testTransformStack [
 	[expected isEmpty] whileFalse: [ self transformTopStack. self assert: (stack pop) equals: (expected pop) ].
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 ExampleExecutionStackTransform1 >> transformTopStack [
 	(stack top isInteger) ifTrue: [ stack push: (stack pop asCharacterDigit) ].
 	(stack top isCharacter) ifTrue: [ stack push: (stack pop asString) ].

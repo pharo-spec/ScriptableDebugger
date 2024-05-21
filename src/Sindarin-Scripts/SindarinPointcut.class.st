@@ -1,6 +1,6 @@
 Class {
-	#name : #SindarinPointcut,
-	#superclass : #Object,
+	#name : 'SindarinPointcut',
+	#superclass : 'Object',
 	#instVars : [
 		'ast',
 		'metalink'
@@ -8,27 +8,29 @@ Class {
 	#classVars : [
 		'Pointcuts'
 	],
-	#category : #'Sindarin-Scripts-core'
+	#category : 'Sindarin-Scripts-core',
+	#package : 'Sindarin-Scripts',
+	#tag : 'core'
 }
 
-{ #category : #adding }
+{ #category : 'adding' }
 SindarinPointcut class >> addPointcut: aSindarinPointcut [
 	self pointcuts add: aSindarinPointcut
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinPointcut class >> pointcuts [
 
 	^ Pointcuts ifNil: [ Pointcuts := Set new ]
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 SindarinPointcut class >> removePointcut: aSindarinPointcut [
 	aSindarinPointcut uninstall.
 	self pointcuts remove: aSindarinPointcut
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinPointcut class >> target: anAst [
 
 	^ self new
@@ -36,18 +38,18 @@ SindarinPointcut class >> target: anAst [
 		  install
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 SindarinPointcut >> ast: anObject [
 	ast := anObject
 ]
 
-{ #category : #actions }
+{ #category : 'actions' }
 SindarinPointcut >> install [
 	self class addPointcut: self.
 	ast link: self link
 ]
 
-{ #category : #building }
+{ #category : 'building' }
 SindarinPointcut >> link [
 	metalink ifNotNil: [ metalink uninstall ].
 	metalink := MetaLink new.
@@ -57,7 +59,7 @@ SindarinPointcut >> link [
 	^metalink
 ]
 
-{ #category : #installing }
+{ #category : 'installing' }
 SindarinPointcut >> uninstall [
 	metalink uninstall
 ]

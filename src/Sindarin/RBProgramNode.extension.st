@@ -1,6 +1,6 @@
-Extension { #name : #RBProgramNode }
+Extension { #name : 'RBProgramNode' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBProgramNode >> allChildrenPostOrder [
 
 	| children |
@@ -11,7 +11,7 @@ RBProgramNode >> allChildrenPostOrder [
 	^ children
 ]
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBProgramNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger step

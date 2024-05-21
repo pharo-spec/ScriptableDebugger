@@ -1,49 +1,51 @@
 Class {
-	#name : #SindarinTDebuggerTest,
-	#superclass : #TestCase,
+	#name : 'SindarinTDebuggerTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'script'
 	],
-	#category : #'Sindarin-Scripts-Tests-tests'
+	#category : 'Sindarin-Scripts-Tests-tests',
+	#package : 'Sindarin-Scripts-Tests',
+	#tag : 'tests'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 SindarinTDebuggerTest >> setUp [
 	super setUp.
 	
 	script := SindarinTestDebuggerScript new
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testDefaultArguments [
 	self assertEmpty: script class defaultArguments.
 	self assertEmpty: script arguments
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testDefaultHooks [
 	self assertEmpty: script class defaultHooks.
 	self assertEmpty: script hooks
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testDefaultPredicates [
 	self assertEmpty: script class defaultPredicates.
 	self assertEmpty: script predicates
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testDefaultShouldExecute [
 	self assert: script shouldExecute
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testEmptyScriptExecution [
 
 	self assert: (script executeWith: SindarinTestDebugger new) identicalTo: script
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testExecuteRaiseScriptingException [
 
 	self should: [ script execute ] raise: SindarinPointcutException.
@@ -52,7 +54,7 @@ SindarinTDebuggerTest >> testExecuteRaiseScriptingException [
 		do: [ :e | self assert: e script identicalTo: script ]
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testMultipleScriptExecution [
 
 	| example |
@@ -64,7 +66,7 @@ SindarinTDebuggerTest >> testMultipleScriptExecution [
 	self assert: example result equals: 16
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinTDebuggerTest >> testScriptExecution [
 
 	| example |

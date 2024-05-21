@@ -1,22 +1,24 @@
 Class {
-	#name : #SindarinScriptTest,
-	#superclass : #TestCase,
-	#category : #'Sindarin-Scripts-Tests-tests'
+	#name : 'SindarinScriptTest',
+	#superclass : 'TestCase',
+	#category : 'Sindarin-Scripts-Tests-tests',
+	#package : 'Sindarin-Scripts-Tests',
+	#tag : 'tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinScriptTest >> testAnonymousScript [
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinScriptTest >> testAsAnonymousCommand [
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinScriptTest >> testAsCommand [
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinScriptTest >> testDebuggerForScript [
 	|debugger script|
 	debugger := SindarinDebugger new.
@@ -26,10 +28,10 @@ SindarinScriptTest >> testDebuggerForScript [
 	
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinScriptTest >> testExecute [
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinScriptTest >> testExecuteWithArguments [
 ]

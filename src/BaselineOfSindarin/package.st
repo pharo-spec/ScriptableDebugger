@@ -1,1 +1,1 @@
-Package { #name : #BaselineOfSindarin }
+Package { #name : 'BaselineOfSindarin' }

@@ -136,7 +136,6 @@ SindarinDebuggerTest >> methodWithNotEvaluatedBlockWhoseCreationIsFirstBytecodeI
  	^ a * 42
 ]
 
-
 { #category : 'helpers' }
 SindarinDebuggerTest >> methodWithOneAssignment [
 
@@ -1399,7 +1398,7 @@ SindarinDebuggerTest >> testSkipCanSkipReturnIfItIsNotTheLastReturn [
 	self assert: scdbg node value value equals: 2
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 SindarinDebuggerTest >> testSkipCannotSkipReturnIfItIsTheLastReturn [
 
 	| scdbg nodeWithImplicitReturn |

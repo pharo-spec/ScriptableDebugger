@@ -1,6 +1,6 @@
-Extension { #name : #TSindarin }
+Extension { #name : 'TSindarin' }
 
-{ #category : #'*Sindarin-Scripts' }
+{ #category : '*Sindarin-Scripts' }
 TSindarin classSide >> debugSessionWithScript: aDebugSession [
 
 	| debugger exception sindarinPointCutExceptionClass |

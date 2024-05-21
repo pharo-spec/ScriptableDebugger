@@ -1,51 +1,53 @@
 Trait {
-	#name : #TDebuggerScript,
-	#category : #'Sindarin-Scripts-core'
+	#name : 'TDebuggerScript',
+	#category : 'Sindarin-Scripts-core',
+	#package : 'Sindarin-Scripts',
+	#tag : 'core'
 }
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript classSide >> defaultArguments [
 	^OrderedCollection new
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript classSide >> defaultHooks [
 	^OrderedCollection new
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript classSide >> defaultPredicates [
 	^OrderedCollection new
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript >> arguments [ 
 	^self class defaultArguments
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript >> execute [
 
 	<debuggerCompleteToSender>
 	^ SindarinPointcutException signalWith: self
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript >> executeWith: aDebugger [
 	^self
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript >> hooks [
 	^self class defaultHooks 
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript >> predicates [ 
 	^self class defaultPredicates 
 ]
 
-{ #category : #executing }
+{ #category : 'executing' }
 TDebuggerScript >> shouldExecute [
 	^self predicates allSatisfy: [ :p| p evaluate ]
 ]

@@ -1,5 +1,7 @@
 Class {
-	#name : #DebuggedExecutionIsFinished,
-	#superclass : #DebuggedExecutionException,
-	#category : #'Sindarin-Exceptions'
+	#name : 'DebuggedExecutionIsFinished',
+	#superclass : 'DebuggedExecutionException',
+	#category : 'Sindarin-Exceptions',
+	#package : 'Sindarin',
+	#tag : 'Exceptions'
 }

@@ -2,17 +2,19 @@
 When executed, this script steps the execution until it is about to signal an exception.
 "
 Class {
-	#name : #StepUntilAboutToSignalExceptionDbgScript,
-	#superclass : #SindarinScript,
-	#category : #'Sindarin-Scripts-examples'
+	#name : 'StepUntilAboutToSignalExceptionDbgScript',
+	#superclass : 'SindarinScript',
+	#category : 'Sindarin-Scripts-examples',
+	#package : 'Sindarin-Scripts',
+	#tag : 'examples'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 StepUntilAboutToSignalExceptionDbgScript class >> scriptName [
 	^ 'StepUntilAboutToSignalException'
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 StepUntilAboutToSignalExceptionDbgScript >> contextIsAboutToSignalException: aContext [
 	"Returns whether aContext is about to execute a message-send of selector #signal to an instance of the Exception class (or one of its subclasses)"
 	| node |
@@ -26,13 +28,13 @@ StepUntilAboutToSignalExceptionDbgScript >> contextIsAboutToSignalException: aCo
 	
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 StepUntilAboutToSignalExceptionDbgScript >> execute: aScriptableDebugger [
 	dbg := aScriptableDebugger.
 	[ self contextIsAboutToSignalException: dbg context ] whileFalse: [ dbg step ].
 ]
 
-{ #category : #running }
+{ #category : 'running' }
 StepUntilAboutToSignalExceptionDbgScript >> execute: aScriptableDebugger withArgs: anOrderedCollection [
 	self execute: aScriptableDebugger
 ]

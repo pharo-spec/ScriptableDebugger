@@ -1,10 +1,11 @@
 Class {
-	#name : #BaselineOfSindarin,
-	#superclass : #BaselineOf,
-	#category : #BaselineOfSindarin
+	#name : 'BaselineOfSindarin',
+	#superclass : 'BaselineOf',
+	#category : 'BaselineOfSindarin',
+	#package : 'BaselineOfSindarin'
 }
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfSindarin >> baseline: spec [
 
 	<baseline>
@@ -21,7 +22,7 @@ BaselineOfSindarin >> baseline: spec [
 		group: 'experiments' with: #( 'default' 'Sindarin-Experiments' )
 ]
 
-{ #category : #baselines }
+{ #category : 'baselines' }
 BaselineOfSindarin >> postloadWithLoader: loader withPackageSpec: spec [
 
 	InstructionStream compiledMethodAt: #willJumpIfFalse ifAbsent: [

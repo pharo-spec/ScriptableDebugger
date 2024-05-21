@@ -1,6 +1,6 @@
-Extension { #name : #RBMessageNode }
+Extension { #name : 'RBMessageNode' }
 
-{ #category : #'*Sindarin' }
+{ #category : '*Sindarin' }
 RBMessageNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger skipMessageNode 

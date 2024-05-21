@@ -1,1 +1,1 @@
-Package { #name : #'Sindarin-Scripts-Tests' }
+Package { #name : 'Sindarin-Scripts-Tests' }

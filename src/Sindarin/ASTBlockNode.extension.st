@@ -1,7 +1,7 @@
-Extension { #name : 'RBMethodNode' }
+Extension { #name : 'ASTBlockNode' }
 
 { #category : '*Sindarin' }
-RBMethodNode >> executedNodesAfter: aNode [
+ASTBlockNode >> executedNodesAfter: aNode [
 
 	"Gives all nodes that are executed after aNode. Assuming that aNode is a recursive child, then all nodes executed after it are all nodes after it in allChildrenPostOrder"
 
@@ -14,13 +14,13 @@ RBMethodNode >> executedNodesAfter: aNode [
 ]
 
 { #category : '*Sindarin' }
-RBMethodNode >> firstPCOfStatement: aStatementNode [
+ASTBlockNode >> firstPCOfStatement: aStatementNode [
 
 	^ self bcToASTCache firstRecursiveBcOffsetForStatementNode: aStatementNode
 ]
 
 { #category : '*Sindarin' }
-RBMethodNode >> nextExecutedNodeAfter: aNode [
+ASTBlockNode >> nextExecutedNodeAfter: aNode [
 
 	"Find first node that is after aNode that has an associated pc in method node all children (post-order)"
 
@@ -32,7 +32,7 @@ RBMethodNode >> nextExecutedNodeAfter: aNode [
 ]
 
 { #category : '*Sindarin' }
-RBMethodNode >> parentOfIdenticalSubtree: subtree [
+ASTBlockNode >> parentOfIdenticalSubtree: subtree [
 
 	^ self allChildren reversed
 		  detect: [ :e | e == subtree ]
@@ -41,17 +41,7 @@ RBMethodNode >> parentOfIdenticalSubtree: subtree [
 ]
 
 { #category : '*Sindarin' }
-RBMethodNode >> statementNodeContaining: aNode [
+ASTBlockNode >> skipWithDebugger: aSindarinDebugger [
 
-	| statementNode parentOfStatementNode |
-	statementNode := aNode.
-	parentOfStatementNode := self parentOfIdenticalSubtree:
-		                         statementNode.
-	parentOfStatementNode
-		ifNil: [ ^ NodeNotInASTError signal ]
-		ifNotNil: [ 
-			[ parentOfStatementNode isSequence ] whileFalse: [ 
-				statementNode := parentOfStatementNode.
-				parentOfStatementNode := parentOfStatementNode parent ] ].
-	^ statementNode
+	aSindarinDebugger skipBlockNode 
 ]

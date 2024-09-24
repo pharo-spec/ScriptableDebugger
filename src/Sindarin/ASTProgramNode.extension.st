@@ -1,7 +1,7 @@
-Extension { #name : 'RBProgramNode' }
+Extension { #name : 'ASTProgramNode' }
 
 { #category : '*Sindarin' }
-RBProgramNode >> allChildrenPostOrder [
+ASTProgramNode >> allChildrenPostOrder [
 
 	| children |
 	children := OrderedCollection new.
@@ -12,7 +12,7 @@ RBProgramNode >> allChildrenPostOrder [
 ]
 
 { #category : '*Sindarin' }
-RBProgramNode >> skipWithDebugger: aSindarinDebugger [
+ASTProgramNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger step
 ]

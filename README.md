@@ -2,8 +2,14 @@
 Instanciate a UI-less debugger on your execution, allowing you to manipulate and inspect it via scripting.
 The API is on the `SindarinDebugger` class.
 
-- Original author: **Thomas Dupriez** (dupriezt on github)
-- Research paper: [Sindarin: A Versatile Scripting API for the Pharo Debugger](https://hal.archives-ouvertes.fr/hal-02280915)
+**Research paper:** [Sindarin: A Versatile Scripting API for the Pharo Debugger](https://hal.archives-ouvertes.fr/hal-02280915)
+
+### Main authors
+- [Steven Costiou](https://github.com/StevenCostiou) (2019 - ...)
+- [Adrien Vanègue](https://github.com/adri09070) (2022 - 2024)
+
+### Original author
+- [Thomas Dupriez](https://github.com/dupriezt) (2019 - 2021)
 
 ## Usage
 

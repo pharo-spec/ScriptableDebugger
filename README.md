@@ -1,6 +1,9 @@
 # Sindarin
-Instanciate a UI-less debugger on your execution, allowing you to manipulate and inspect it via scripting.
-The API is on the `SindarinDebugger` class.
+Sindarin is a versatile and interactive debugger scripting API
+for object-oriented programming languages. Sindarin is designed to help building dedicated debugging tools targeting specific problems or domains. 
+To do this, Sindarin attaches to a running process then exposes stepping and introspection operations to control, manipulate and observe that process’ execution. 
+It simplifies the creation of personalized debugging scripts by providing an AST-based API, thus also proposing different stepping granularity over the debugging session. 
+Once written, scripts are extensible and reusable on other scenario, and can be used to build more complex debugging tools.
 
 **Research paper:** [Sindarin: A Versatile Scripting API for the Pharo Debugger](https://hal.archives-ouvertes.fr/hal-02280915)
 
@@ -12,6 +15,9 @@ The API is on the `SindarinDebugger` class.
 - [Thomas Dupriez](https://github.com/dupriezt) (2019 - 2021)
 
 ## Usage
+
+Instanciate a UI-less debugger on your execution, allowing you to manipulate and inspect it via scripting.
+The API is on the `SindarinDebugger` class.
 
 ```Smalltalk
 dbg := SindarinDebugger debug: [<your code>].

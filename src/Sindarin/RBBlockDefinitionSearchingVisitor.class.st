@@ -1,6 +1,6 @@
 Class {
 	#name : 'RBBlockDefinitionSearchingVisitor',
-	#superclass : 'ASTProgramNodeVisitor',
+	#superclass : 'OCProgramNodeVisitor',
 	#instVars : [
 		'blockToSearch',
 		'isBlockFound'

@@ -4,6 +4,6 @@ Extension { #name : 'Process' }
 Process >> stepToSendOrReturnOrJump [
 
 	^Processor activeProcess
-		evaluate: [suspendedContext := suspendedContext stepToSendOrReturnOrJump]
+		evaluate: [ suspendedContext := suspendedContext stepToSendOrReturnOrJump ]
 		onBehalfOf: self
 ]

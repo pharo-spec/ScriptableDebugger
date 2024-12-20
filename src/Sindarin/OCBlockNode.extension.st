@@ -1,7 +1,7 @@
-Extension { #name : 'RBBlockNode' }
+Extension { #name : 'OCBlockNode' }
 
 { #category : '*Sindarin' }
-RBBlockNode >> executedNodesAfter: aNode [
+OCBlockNode >> executedNodesAfter: aNode [
 
 	"Gives all nodes that are executed after aNode. Assuming that aNode is a recursive child, then all nodes executed after it are all nodes after it in allChildrenPostOrder"
 
@@ -14,13 +14,13 @@ RBBlockNode >> executedNodesAfter: aNode [
 ]
 
 { #category : '*Sindarin' }
-RBBlockNode >> firstPCOfStatement: aStatementNode [
+OCBlockNode >> firstPCOfStatement: aStatementNode [
 
 	^ self bcToASTCache firstRecursiveBcOffsetForStatementNode: aStatementNode
 ]
 
 { #category : '*Sindarin' }
-RBBlockNode >> nextExecutedNodeAfter: aNode [
+OCBlockNode >> nextExecutedNodeAfter: aNode [
 
 	"Find first node that is after aNode that has an associated pc in method node all children (post-order)"
 
@@ -32,7 +32,7 @@ RBBlockNode >> nextExecutedNodeAfter: aNode [
 ]
 
 { #category : '*Sindarin' }
-RBBlockNode >> parentOfIdenticalSubtree: subtree [
+OCBlockNode >> parentOfIdenticalSubtree: subtree [
 
 	^ self allChildren reversed
 		  detect: [ :e | e == subtree ]
@@ -41,7 +41,7 @@ RBBlockNode >> parentOfIdenticalSubtree: subtree [
 ]
 
 { #category : '*Sindarin' }
-RBBlockNode >> skipWithDebugger: aSindarinDebugger [
+OCBlockNode >> skipWithDebugger: aSindarinDebugger [
 
 	aSindarinDebugger skipBlockNode 
 ]

@@ -112,7 +112,7 @@ SindarinDebugger >> isAboutToInstantiateClass [
 	self isMessageSend ifFalse: [ ^ false ].
 	methodAboutToExecute := self receiver class lookupSelector:
 		                        self node selector.
-	^ methodAboutToExecute notNil and: [ 
+	^ methodAboutToExecute isNotNil and: [ 
 		  self instanceCreationPrimitives includes:
 			  methodAboutToExecute primitive ]
 ]

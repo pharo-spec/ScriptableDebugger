@@ -126,7 +126,7 @@ TSindarin >> instanceCreationPrimitives [
 	"* 70 */ primitiveNew,
 	/* 71 */ primitiveNewWithArg,
 	/* 79 */ primitiveNewMethod,
-	/* 148 */ primitiveClone,
+	/* 148 */ primitiveClone, 
 	/* 160 */ primitiveAdoptInstance"
 
 	self flag: 'These numbers may have changed. This is to be checked'.
@@ -161,7 +161,7 @@ TSindarin >> method [
 	"Returns the method of the current stack-frame."
 
 	self flag:
-		'There is something bad here. Context>>#method returns a CompiledCode that can be a CompiledBlock. So the naming of the method is not completely correct. We should distinguish method and methodOrBlock'.
+		'There is something bad here. Context >> #method returns a CompiledCode that can be a CompiledBlock. So the naming of the method is not completely correct. We should distinguish method and methodOrBlock'.
 	^ self context method
 ]
 

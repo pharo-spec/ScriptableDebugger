@@ -42,12 +42,6 @@ SindarinDebugger >> assignmentVariableName [
 	^ self node variable name
 ]
 
-{ #category : 'astAndAstMapping' }
-SindarinDebugger >> bestNodeFor: anInterval [
-
-	^ self node methodNode bestNodeFor: anInterval
-]
-
 { #category : 'ast manipulation' }
 SindarinDebugger >> canStillExecute: aProgramNode [
 	"returns true if the last pc mapped to aProgramNode is greater than `self pc` in the right context "
@@ -607,6 +601,12 @@ SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 
 	aBlock whileFalse: [ self step ]
+]
+
+{ #category : 'astAndAstMapping' }
+SindarinDebugger >> targetNodeFor: anInterval [
+
+	^ self node methodNode bestNodeFor: anInterval
 ]
 
 { #category : 'API - changes' }

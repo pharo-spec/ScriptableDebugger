@@ -1258,7 +1258,7 @@ SindarinDebuggerTest >> testNode [
 	self assert: node selector equals: #asInteger
 ]
 
-{ #category : 'tests' }
+{ #category : 'tests - pc' }
 SindarinDebuggerTest >> testPc [
 	| dbg |
 	dbg := SindarinDebugger

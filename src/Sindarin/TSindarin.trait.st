@@ -195,7 +195,7 @@ TSindarin >> outerMostContextOf: aContext [
 	oldContext := nil.
 	[currentContext ~= oldContext] whileTrue: [ 
 		oldContext := currentContext.
-		currentContext := currentContext outerMostContext ].
+		currentContext := currentContext outerContext ifNil:[currentContext]].
 	^ currentContext
 ]
 

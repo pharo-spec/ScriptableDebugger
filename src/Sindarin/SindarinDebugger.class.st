@@ -42,22 +42,17 @@ SindarinDebugger >> assignmentVariableName [
 	^ self node variable name
 ]
 
-{ #category : 'astAndAstMapping' }
-SindarinDebugger >> bestNodeFor: anInterval [
-
-	^ self node methodNode bestNodeFor: anInterval
-]
-
 { #category : 'ast manipulation' }
 SindarinDebugger >> canStillExecute: aProgramNode [
 	"returns true if the last pc mapped to aProgramNode is greater than `self pc` in the right context "
 
-	| lastPcForNode rightContext |
+	| lastPcForNode rightContext outerContext |
 	rightContext := self context.
+	outerContext := rightContext outerContext ifNil: [ rightContext ].
 
 	[
-	rightContext == rightContext outerMostContext or: [
-		rightContext method ast allChildren identityIncludes: aProgramNode ] ]
+		rightContext == outerContext or: [
+			rightContext method ast allChildren identityIncludes: aProgramNode ] ]
 		whileFalse: [ rightContext := rightContext sender ].
 
 	lastPcForNode := (rightContext method ast lastPcForNode: aProgramNode)
@@ -607,6 +602,12 @@ SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 
 	aBlock whileFalse: [ self step ]
+]
+
+{ #category : 'astAndAstMapping' }
+SindarinDebugger >> targetNodeFor: anInterval [
+
+	^ self node methodNode bestNodeFor: anInterval
 ]
 
 { #category : 'API - changes' }

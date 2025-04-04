@@ -46,12 +46,13 @@ SindarinDebugger >> assignmentVariableName [
 SindarinDebugger >> canStillExecute: aProgramNode [
 	"returns true if the last pc mapped to aProgramNode is greater than `self pc` in the right context "
 
-	| lastPcForNode rightContext |
+	| lastPcForNode rightContext outerContext |
 	rightContext := self context.
+	outerContext := rightContext outerContext ifNil: [ rightContext ].
 
 	[
-	rightContext == rightContext outerMostContext or: [
-		rightContext method ast allChildren identityIncludes: aProgramNode ] ]
+		rightContext == outerContext or: [
+			rightContext method ast allChildren identityIncludes: aProgramNode ] ]
 		whileFalse: [ rightContext := rightContext sender ].
 
 	lastPcForNode := (rightContext method ast lastPcForNode: aProgramNode)

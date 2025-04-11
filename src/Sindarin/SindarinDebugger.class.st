@@ -90,7 +90,9 @@ SindarinDebugger >> continue [
 SindarinDebugger >> diveUntil: aBlock [
 	"Dives into the current context (=startingContext) until the execution returns back to the starting context's sender, or satisfies aBlock condition."
 
-	self stepUntil: [ self context == self context sender or: aBlock ]
+	| sender |
+	sender := self context sender.
+	self stepUntil: [ self context == sender or: aBlock ]
 ]
 
 { #category : 'accessing' }

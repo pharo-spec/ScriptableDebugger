@@ -38,6 +38,18 @@ SindarinDebugSession >> asSindarinDebugSession [
 	^ self
 ]
 
+{ #category : 'api' }
+SindarinDebugSession >> basicStepInto: aContext [
+
+	^ self debugSession stepInto: aContext
+]
+
+{ #category : 'api' }
+SindarinDebugSession >> basicStepOver: aContext [
+
+	^ self debugSession stepOver: aContext
+]
+
 { #category : 'accessing' }
 SindarinDebugSession >> canBeTerminated [
 

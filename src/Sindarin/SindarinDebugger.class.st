@@ -86,6 +86,13 @@ SindarinDebugger >> continue [
 		whileFalse: [ self step ]
 ]
 
+{ #category : 'stepping - steps' }
+SindarinDebugger >> diveUntil: aBlock [
+	"Dives into the current context (=startingContext) until the execution returns back to the starting context's sender, or satisfies aBlock condition."
+
+	self stepUntil: [ self context == self context sender or: aBlock ]
+]
+
 { #category : 'accessing' }
 SindarinDebugger >> firstPCOfStatement: aStatementNode [
 

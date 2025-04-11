@@ -5,9 +5,9 @@ Class {
 		'blockToSearch',
 		'isBlockFound'
 	],
-	#category : 'Sindarin-Base',
+	#category : 'Sindarin-Core',
 	#package : 'Sindarin',
-	#tag : 'Base'
+	#tag : 'Core'
 }
 
 { #category : 'instance creation' }

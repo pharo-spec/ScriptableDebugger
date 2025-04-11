@@ -31,13 +31,13 @@ SindarinDebugSession >> asSindarinDebugSession [
 	^ self
 ]
 
-{ #category : 'api' }
+{ #category : 'api - debug session' }
 SindarinDebugSession >> basicStepInto: aContext [
 
 	^ self debugSession stepInto: aContext
 ]
 
-{ #category : 'api' }
+{ #category : 'api - debug session' }
 SindarinDebugSession >> basicStepOver: aContext [
 
 	^ self debugSession stepOver: aContext

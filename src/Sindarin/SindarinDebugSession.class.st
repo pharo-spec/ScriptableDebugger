@@ -105,22 +105,25 @@ SindarinDebugSession >> resumeAndClear [
 
 { #category : 'debugging actions' }
 SindarinDebugSession >> stepInto: aContext [
-	"Should not step more a process that is terminating, otherwise the image will get locked."
-	self flag: 'Why the image gets locked? Please investigate.'.
+	"Should not step more a process that is terminating, otherwise the image will get locked.
+	The image freeze is due to the stepping of the ensure block in doTerminationFromYourself that unwind the terminating context to nil and executes a jump.
+	The ensure executes the (fake) primitive 198 which actually freezes (see issue https://github.com/pharo-spec/ScriptableDebugger/issues/105), and prevents the jump to execute which in turn provokes other freezes when trying to close opened debugger on that partially ended process."
 
 	self debugSession interruptedProcess isTerminating
 		ifTrue: [ SteppingATerminatingProcess signal ].
-	^ self debugSession stepInto: aContext
+	^ self basicStepInto: aContext
 ]
 
 { #category : 'debugging actions' }
 SindarinDebugSession >> stepOver: aContext [
-	"Should not step more a process that is terminating, otherwise the image will get locked."
-	self flag: 'Why the image gets locked? Please investigate.'.
+	"Should not step more a process that is terminating, otherwise the image will get locked.
+	The image freeze is due to the stepping of the ensure block in doTerminationFromYourself that unwind the terminating context to nil and executes a jump.
+	The ensure executes the (fake) primitive 198 which actually freezes (see issue https://github.com/pharo-spec/ScriptableDebugger/issues/105), and prevents the jump to execute which in turn provokes other freezes when trying to close opened debugger on that partially ended process."
+	
 	
 	self debugSession interruptedProcess isTerminating
 		ifTrue: [ SteppingATerminatingProcess signal ].
-	^ self debugSession stepOver: aContext
+	^ self basicStepOver: aContext
 ]
 
 { #category : 'debugging actions' }

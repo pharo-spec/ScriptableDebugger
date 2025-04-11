@@ -599,10 +599,11 @@ SindarinDebugger >> stepToReturn [
 
 { #category : 'stepping - steps' }
 SindarinDebugger >> stepUntil: aBlock [
-	"Steps the execution until aBlock evaluates to true"
+	"Steps the execution until aBlock evaluates to true.
+	Steps over ensure: blocks (primitive 198) to avoid hanging.
+	The hanging seems to be due to the execution of valueNoContextSwitch"
 
-	aBlock whileFalse: [
-			"Stepping into primitive 198 freezes the image, we do not know why.
+	aBlock whileFalse: [ "Stepping into primitive 198 freezes the image, we do not know why.
 			Stepping over the sender context fixes the freezes.
 			There is an open issue about understanding why: https://github.com/pharo-spec/ScriptableDebugger/issues/105"
 			self method primitive = 198

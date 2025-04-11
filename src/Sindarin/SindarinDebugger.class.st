@@ -601,7 +601,13 @@ SindarinDebugger >> stepToReturn [
 SindarinDebugger >> stepUntil: aBlock [
 	"Steps the execution until aBlock evaluates to true"
 
-	aBlock whileFalse: [ self step ]
+	aBlock whileFalse: [
+			"Stepping into primitive 198 freezes the image, we do not know why.
+			Stepping over the sender context fixes the freezes.
+			There is an open issue about understanding why: https://github.com/pharo-spec/ScriptableDebugger/issues/105"
+			self method primitive = 198
+				ifTrue: [ sindarinSession stepOver: self context sender ]
+				ifFalse: [ self step ] ]
 ]
 
 { #category : 'astAndAstMapping' }

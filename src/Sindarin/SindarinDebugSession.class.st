@@ -25,13 +25,6 @@ SindarinDebugSession class >> newWithName: aString forProcess: aProcess [
 		  asSindarinDebugSession
 ]
 
-{ #category : 'initialization' }
-SindarinDebugSession >> activateEventTriggering [
-	triggerEventOn := true.
-	self flag: 'Why not refreshing?'.
-	"self refreshAttachedDebugger."
-]
-
 { #category : 'converting' }
 SindarinDebugSession >> asSindarinDebugSession [
 

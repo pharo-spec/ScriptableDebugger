@@ -2012,6 +2012,21 @@ SindarinDebuggerTest >> testStepUntil [
 ]
 
 { #category : 'tests' }
+SindarinDebuggerTest >> testStepUntilOverAnEnsureBlock [
+	| i sindarin startingContext |
+	i := 20.
+	sindarin := SindarinDebugger
+		debug:  [[ 5 timesRepeat:[i := i + 1]] ensure: [i := 42] ].
+	startingContext := sindarin context. 
+	sindarin stepUntil: [ i = 23 ].
+	self assert: i equals: 23.
+	self should: [sindarin stepUntil: [ i = 30 ]] raise: DebuggedExecutionIsFinished.
+	self assert: i equals: 42.
+	"self assert: sindarin context identicalTo: startingContext "
+	
+]
+
+{ #category : 'tests' }
 SindarinDebuggerTest >> testSteppingAnExecutionSignalingExceptions [
 	| scdbg |
 	scdbg := SindarinDebugger

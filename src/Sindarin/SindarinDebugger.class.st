@@ -618,7 +618,7 @@ SindarinDebugger >> stepUntil: aBlock [
 			self method primitive = 198
 				ifTrue: [
 						self isExecutionFinished ifFalse: [
-							sindarinSession basicStepOver: self context sender ] ]
+							sindarinSession basicStepThrough: self context sender] ]
 				ifFalse: [ self step ] ]
 ]
 

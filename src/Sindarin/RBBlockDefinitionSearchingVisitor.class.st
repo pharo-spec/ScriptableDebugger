@@ -1,3 +1,6 @@
+"
+I visit an AST to find a particular block passed as parameter.
+"
 Class {
 	#name : 'RBBlockDefinitionSearchingVisitor',
 	#superclass : 'OCProgramNodeVisitor',

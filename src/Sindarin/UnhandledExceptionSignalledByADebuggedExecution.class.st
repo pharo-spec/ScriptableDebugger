@@ -1,3 +1,6 @@
+"
+I am raised when an exception is signalled within a debugged process that Sindarin executes.
+"
 Class {
 	#name : 'UnhandledExceptionSignalledByADebuggedExecution',
 	#superclass : 'DebuggedExecutionException',

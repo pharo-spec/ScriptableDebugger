@@ -614,7 +614,9 @@ SindarinDebugger >> stepUntil: aBlock [
 			Stepping over the sender context fixes the freezes.
 			There is an open issue about understanding why: https://github.com/pharo-spec/ScriptableDebugger/issues/105"
 			self method primitive = 198
-				ifTrue: [ sindarinSession stepOver: self context sender ]
+				ifTrue: [
+						self isExecutionFinished ifFalse: [
+							sindarinSession basicStepOver: self context sender ] ]
 				ifFalse: [ self step ] ]
 ]
 

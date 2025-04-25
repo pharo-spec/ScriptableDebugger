@@ -1,3 +1,6 @@
+"
+I visit an AST to find a particular block passed as parameter.
+"
 Class {
 	#name : 'RBBlockDefinitionSearchingVisitor',
 	#superclass : 'OCProgramNodeVisitor',
@@ -5,9 +8,9 @@ Class {
 		'blockToSearch',
 		'isBlockFound'
 	],
-	#category : 'Sindarin-Base',
+	#category : 'Sindarin-Core',
 	#package : 'Sindarin',
-	#tag : 'Base'
+	#tag : 'Core'
 }
 
 { #category : 'instance creation' }

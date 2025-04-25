@@ -19,9 +19,9 @@ Class {
 	#superclass : 'Object',
 	#traits : 'TDebugger + TSindarin',
 	#classTraits : 'TDebugger classTrait + TSindarin classTrait',
-	#category : 'Sindarin-Base',
+	#category : 'Sindarin-Core',
 	#package : 'Sindarin',
-	#tag : 'Base'
+	#tag : 'Core'
 }
 
 { #category : 'stackAccessHelpers' }
@@ -84,6 +84,15 @@ SindarinDebugger >> continue [
 	self flag: 'What''s the difference between this and #resume?'.
 	[ self isExecutionFinished or: [ self isAboutToSignalException ] ]
 		whileFalse: [ self step ]
+]
+
+{ #category : 'stepping - steps' }
+SindarinDebugger >> diveUntil: aBlock [
+	"Dives into the current context (=startingContext) until the execution returns back to the starting context's sender, or satisfies aBlock condition."
+
+	| sender |
+	sender := self context sender.
+	self stepUntil: [ self context == sender or: aBlock ]
 ]
 
 { #category : 'accessing' }
@@ -599,9 +608,18 @@ SindarinDebugger >> stepToReturn [
 
 { #category : 'stepping - steps' }
 SindarinDebugger >> stepUntil: aBlock [
-	"Steps the execution until aBlock evaluates to true"
+	"Steps the execution until aBlock evaluates to true.
+	Steps over ensure: blocks (primitive 198) to avoid hanging.
+	The hanging seems to be due to the execution of valueNoContextSwitch"
 
-	aBlock whileFalse: [ self step ]
+	aBlock whileFalse: [ "Stepping into primitive 198 freezes the image, we do not know why.
+			Stepping over the sender context fixes the freezes.
+			There is an open issue about understanding why: https://github.com/pharo-spec/ScriptableDebugger/issues/105"
+			self method primitive = 198
+				ifTrue: [
+						self isExecutionFinished ifFalse: [
+							sindarinSession basicStepThrough: self context sender] ]
+				ifFalse: [ self step ] ]
 ]
 
 { #category : 'astAndAstMapping' }

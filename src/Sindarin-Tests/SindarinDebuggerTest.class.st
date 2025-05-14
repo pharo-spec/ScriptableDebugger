@@ -2027,6 +2027,31 @@ SindarinDebuggerTest >> testStepUntilOverAnEnsureBlock [
 ]
 
 { #category : 'tests' }
+SindarinDebuggerTest >> testSteppingAQuickMethod [
+
+	| newContext aMethodContext |
+	aMethodContext := Context
+		sender: thisContext
+		receiver: Rectangle new
+		method: Rectangle >> #center
+		arguments: #(  ).
+
+	aMethodContext step.
+	aMethodContext stepIntoQuickMethod: true.
+	newContext := aMethodContext step.
+
+	"We're in the quick method now, it should be steppable"
+	self assert: newContext sender identicalTo: aMethodContext.
+	self deny: newContext instructionStream willReturn.
+
+	newContext := newContext step.
+	self assert: newContext instructionStream willReturn.
+
+	newContext := newContext step.
+	self assert: newContext identicalTo: aMethodContext
+]
+
+{ #category : 'tests' }
 SindarinDebuggerTest >> testSteppingAnExecutionSignalingExceptions [
 	| scdbg |
 	scdbg := SindarinDebugger
@@ -2039,6 +2064,28 @@ SindarinDebuggerTest >> testSteppingAnExecutionSignalingExceptions [
 				stepOver;
 				stepOver ]
 		raise: UnhandledExceptionSignalledByADebuggedExecution
+]
+
+{ #category : 'tests' }
+SindarinDebuggerTest >> testSteppingReturnSelfMethod [
+
+	|newContext aMethodContext |
+	aMethodContext := Context
+		sender: thisContext
+		receiver: SimulationMock new
+		method: (SimulationMock >>#exampleSelfReturnCall)
+		arguments: #().
+
+	aMethodContext step.
+	aMethodContext stepIntoQuickMethod: true.
+	newContext := aMethodContext step.
+
+	"We're in the quick method now, it should be steppable"
+	self assert: newContext sender identicalTo: aMethodContext.
+	self assert: newContext instructionStream willReturn.
+
+	newContext := newContext step.
+	self assert: newContext identicalTo: aMethodContext
 ]
 
 { #category : 'tests' }

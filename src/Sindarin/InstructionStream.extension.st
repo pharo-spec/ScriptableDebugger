@@ -22,6 +22,20 @@ InstructionStream >> willJumpTo [
 ]
 
 { #category : '*Sindarin' }
+InstructionStream >> willReturn [
+	"Answer whether the next bytecode is a return."
+
+	^ self method encoderClass isReturnAt: pc in: self method
+]
+
+{ #category : '*Sindarin' }
+InstructionStream >> willSend [
+	"Answer whether the next bytecode is a message-send."
+
+	^ self method encoderClass isSendAt: pc in: self method
+]
+
+{ #category : '*Sindarin' }
 InstructionStream >> willSendOrReturnOrStoreOrCreateBlock [
 
 	"Answer whether the next bytecode will be interesting for the debugger to stop."

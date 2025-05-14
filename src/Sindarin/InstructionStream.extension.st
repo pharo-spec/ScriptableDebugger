@@ -1,6 +1,13 @@
 Extension { #name : 'InstructionStream' }
 
 { #category : '*Sindarin' }
+InstructionStream >> willCreateBlock [
+	"next bytecode is a block creation"
+
+	^ self method encoderClass isCreateFullBlockAt: pc in: self method
+]
+
+{ #category : '*Sindarin' }
 InstructionStream >> willJump [
 	"Answer whether the next bytecode will jump."
 

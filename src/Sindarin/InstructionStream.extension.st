@@ -1,6 +1,13 @@
 Extension { #name : 'InstructionStream' }
 
 { #category : '*Sindarin' }
+InstructionStream >> willCreateBlock [
+	"next bytecode is a block creation"
+
+	^ self method encoderClass isCreateFullBlockAt: pc in: self method
+]
+
+{ #category : '*Sindarin' }
 InstructionStream >> willJump [
 	"Answer whether the next bytecode will jump."
 
@@ -19,6 +26,20 @@ InstructionStream >> willJumpTo [
 	"Answer whether the next bytecode is a jump-if-false."
 
 	^ self method encoderClass isJumpAt: pc in: self method
+]
+
+{ #category : '*Sindarin' }
+InstructionStream >> willReturn [
+	"Answer whether the next bytecode is a return."
+
+	^ self method encoderClass isReturnAt: pc in: self method
+]
+
+{ #category : '*Sindarin' }
+InstructionStream >> willSend [
+	"Answer whether the next bytecode is a message-send."
+
+	^ self method encoderClass isSendAt: pc in: self method
 ]
 
 { #category : '*Sindarin' }

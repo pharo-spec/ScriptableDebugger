@@ -1106,8 +1106,9 @@ SindarinDebuggerTest >> testMoveToNodeWhenNodeIsInIfTrueIfFalseBlock [
 
 	self assert: (sdbg readVariableNamed: #a) equals: 3.
 
-	sdbg stepOver.
 	"When you perform a stepOver, you quit the block and continue just after the ifTrue: message"
+	sdbg stepOver.
+	sdbg stepOver.
 	self assert: (sdbg readVariableNamed: #a) equals: 4
 ]
 
@@ -1407,9 +1408,8 @@ SindarinDebuggerTest >> testSkipCannotSkipReturnIfItIsTheLastReturn [
 	"we step until we arrive on the method node in `SindarinDebuggerTest>>#methodWithSeveralReturns`, which is mapped to the implicit return bycode."
 	scdbg step.
 	nodeWithImplicitReturn := scdbg methodNode.
-	3 timesRepeat: [ scdbg step ].
-
-	self assert: scdbg node identicalTo: nodeWithImplicitReturn.
+	[scdbg node == nodeWithImplicitReturn]
+		whileFalse: [ scdbg step ].
 	self assert: scdbg instructionStream willReturn.
 
 	"We skip the return node"

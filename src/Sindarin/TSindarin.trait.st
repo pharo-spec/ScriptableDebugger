@@ -52,8 +52,7 @@ TSindarin >> attachTo: aDebugSession [
 	"Attaches this scriptable debugger to an already existing instance of DebugSession or SindarinDebugSession"
 
 	sindarinSession := aDebugSession asSindarinDebugSession.
-	process := aDebugSession interruptedProcess.
-	sindarinSession deactivateEventTriggering
+	process := aDebugSession interruptedProcess
 ]
 
 { #category : 'debug - stepping' }
@@ -104,12 +103,8 @@ TSindarin >> currentProcess [
 TSindarin >> debug: aBlock [
 
 	blockToDebug := aBlock.
-	process := aBlock newProcess name:
-		           'ExecutionDebuggedByScriptableDebugger'.
-	sindarinSession := SindarinDebugSession
-		                   newWithName: 'ScriptableDebuggerDebugSession'
-		                   forProcess: process.
-	sindarinSession deactivateEventTriggering.
+	process := aBlock newProcess name: 'ExecutionDebuggedByScriptableDebugger'.
+	sindarinSession := SindarinDebugSession newWithName: 'ScriptableDebuggerDebugSession' forProcess: process.
 	"Step the process until it enters the block for which a process was created"
 	[ self context closure == blockToDebug ] whileFalse: [ self step ]
 ]

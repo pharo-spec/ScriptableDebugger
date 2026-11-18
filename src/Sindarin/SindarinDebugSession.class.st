@@ -7,7 +7,6 @@ Class {
 	#name : 'SindarinDebugSession',
 	#superclass : 'Object',
 	#instVars : [
-		'triggerEventOn',
 		'canBeTerminated',
 		'debugSession'
 	],
@@ -61,12 +60,6 @@ SindarinDebugSession >> canBeTerminated: anObject [
 	canBeTerminated := anObject
 ]
 
-{ #category : 'initialization' }
-SindarinDebugSession >> deactivateEventTriggering [
-
-	triggerEventOn := false
-]
-
 { #category : 'accessing' }
 SindarinDebugSession >> debugSession [
 
@@ -83,15 +76,7 @@ SindarinDebugSession >> debugSession: anObject [
 SindarinDebugSession >> initialize [
 
 	super initialize.
-	triggerEventOn := true.
 	canBeTerminated := true
-]
-
-{ #category : 'initialization' }
-SindarinDebugSession >> refreshAttachedDebugger [
-	"The following lines are to force possible debuggers observing the same debug session to update themselves based"
-
-	self debugSession triggerEvent: #contextChanged
 ]
 
 { #category : 'debugging actions' }
@@ -129,11 +114,4 @@ SindarinDebugSession >> stepOver: aContext [
 SindarinDebugSession >> terminate [
 
 	canBeTerminated ifTrue: [ ^ self debugSession terminate ]
-]
-
-{ #category : 'debugging actions' }
-SindarinDebugSession >> triggerEvent: anEventSelector [
-
-	triggerEventOn ifTrue: [ 
-		^ self debugSession triggerEvent: anEventSelector ]
 ]
